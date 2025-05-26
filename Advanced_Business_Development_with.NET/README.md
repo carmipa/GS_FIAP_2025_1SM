@@ -12,6 +12,18 @@ tanto, com base nas aulas deste semestre, o grupo deve desenvolver a solução a
 - Aplicação de Razor e TagHelpers;
 - Uso correto da Migration no projeto.
 
+## Aavaliação será da seguinte forma:
+- Viabilidade e Inovação; (10 pontos)
+- Cumprimento dos requisitos técnicos e boas práticas; (70 pontos)
+- Documentação com Swagger e Github. (20 pontos)
+
+## A entrega deve conter os seguintes artefatos:
+- Link do Github contendo repositório com os códigos fontes e ReadMe;
+- O ReadMe deve ter diagramas, desenvolvimento e parte de testes;
+- Além disso, o ReadMe deve ter instruções para acesso e exemplos de testes;
+- Vídeo demonstração da solução completa (máx 8 minutos);
+- Vídeo Pitch (máx. 3 minutos)
+
 
 ### 📂 **Link do Repositório:**  
 [![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)

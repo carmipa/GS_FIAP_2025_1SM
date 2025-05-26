@@ -261,7 +261,9 @@ colocar em prática. Afinal, quando ideias ganham propósito, elas têm o poder 
 
 ## <a name="documentacao"></a>📑 **Documentação**
 
-* [![PDF Completo](https://img.shields.io/badge/PDF-Completo-red?style=for-the-badge&logo=adobeacrobat&logoColor=white)](https://drive.google.com/file/d/1S9JgR8bm5PixnYltjLNFrIhC8glJuK3f/view?usp=sharing)
+[![PDF Completo](https://img.shields.io/badge/PDF-Completo-red?style=for-the-badge&logo=adobeacrobat&logoColor=white)](https://drive.google.com/file/d/1S9JgR8bm5PixnYltjLNFrIhC8glJuK3f/view?usp=sharing)
+
+---
 
 [![Global Solution](https://img.shields.io/badge/Global%20Solution-FIAP-blue)](https://www.fiap.com.br/graduacao/global-solution/)
 

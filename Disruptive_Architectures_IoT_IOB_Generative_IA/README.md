@@ -7,11 +7,11 @@ processar e exibir os dados em tempo real, utilizando plataformas e protocolos a
 comunicação entre os dispositivos.
 
 ## 🔧 **REQUISITOS TÉCNICOS MÍNIMOS:**
-- 1. Sistema IoT: O sistema IoT deve possuir, no mínimo, três dispositivos (sensores, atuadores ou ambos), que devem coletar, processar ou interagir com base nos dados coletados.
-- 2. Hardware: A plataforma utilizada deve ser uma das abordadas durante as aulas (Arduino/ESP32). A solução pode ser desenvolvida e testada no simulador Wokwi ou em hardware real.
-- 3. Dashboard: Implementação de um painel de controle para monitorar e/ou controlar os dispositivos em tempo real.
-- 4. Gateway: Utilizar Node-RED, Thinger.io, ThingSpeak ou plataformas similares como gateway. O gateway deve gerenciar a comunicação entre os dispositivos IoT e o dashboard, incluindo fluxos de processamento,  análise e visualização de dados.
-- 5. Protocolos: A comunicação deve ser feita utilizando o protocolo MQTT e/ou HTTP no padrão JSON para a troca de mensagens entre os dispositivos e o gateway. Utilize tópicos personalizados e únicos.
+- 1 Sistema IoT: O sistema IoT deve possuir, no mínimo, três dispositivos (sensores, atuadores ou ambos), que devem coletar, processar ou interagir com base nos dados coletados.
+- 2 Hardware: A plataforma utilizada deve ser uma das abordadas durante as aulas (Arduino/ESP32). A solução pode ser desenvolvida e testada no simulador Wokwi ou em hardware real.
+- 3 Dashboard: Implementação de um painel de controle para monitorar e/ou controlar os dispositivos em tempo real.
+- 4 Gateway: Utilizar Node-RED, Thinger.io, ThingSpeak ou plataformas similares como gateway. O gateway deve gerenciar a comunicação entre os dispositivos IoT e o dashboard, incluindo fluxos de processamento,  análise e visualização de dados.
+- 5 Protocolos: A comunicação deve ser feita utilizando o protocolo MQTT e/ou HTTP no padrão JSON para a troca de mensagens entre os dispositivos e o gateway. Utilize tópicos personalizados e únicos.
 
 ## ENTREGÁVEIS:
 A entrega da solução IoT deve ser composta por um conjunto de elementos que comprovem a funcionalidade, a 

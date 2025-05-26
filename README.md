@@ -1,4 +1,4 @@
-![Challenge 2025](https://drive.google.com/uc?export=view&id=1XYZiDX-1TIgX8M5a8fZGFslSe6ao9UXU)
+[GLOBAL SOLUTION 2025 - 1º SEMESTRE](https://drive.google.com/file/d/1t5auCM4IxC_09xuNt8z_MqSWTCrhJ6rE/view?usp=sharing)
 
 # 🏍️ **Challenge 2025 – 1º Semestre**
 

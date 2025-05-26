@@ -127,22 +127,11 @@
   <img src="https://github-readme-activity-graph.vercel.app/graph?username=carmipa&theme=chartreuse-dark&hide_border=true"/>
 </p>
 
-## 🐍 Meu Gráfico de Contribuições
-
-<p align="center">
-  <img 
-    src="./output/github-contribution-grid-snake-dark.svg" 
-    alt="Gráfico de contribuições animado" 
-  />
-</p>
-
-[🔝 Voltar ao topo](#)
-
 ---
 
 ## <a name="sobre-o-projeto"></a>📑 **Sobre o Projeto**
 
-### 💡 **Gestão de Frota e Mapeamento Inteligente**  
+### 💡 **EVENTOS EXTREMOS**  
 O projeto visa aprimorar a gestão de frotas de motos em pátios de múltiplas filiais, utilizando **Visão Computacional** e **IoT** para otimizar o mapeamento e monitoramento das motos em tempo real.
 
 ### 🛠 **Funcionalidades do Sistema**  

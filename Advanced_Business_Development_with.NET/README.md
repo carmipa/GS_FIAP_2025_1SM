@@ -12,7 +12,7 @@ tanto, com base nas aulas deste semestre, o grupo deve desenvolver a solução a
 - Aplicação de Razor e TagHelpers;
 - Uso correto da Migration no projeto.
 
-## Aavaliação será da seguinte forma:
+## Avaliação será da seguinte forma:
 - Viabilidade e Inovação; (10 pontos)
 - Cumprimento dos requisitos técnicos e boas práticas; (70 pontos)
 - Documentação com Swagger e Github. (20 pontos)

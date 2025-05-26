@@ -1,13 +1,15 @@
 # ☁️ **DevOps Tools & Cloud Computing**
 
 ## 🔶 **Objetivos:**
-Conteinerizar a API usando **Docker** e executá-la na nuvem (**Azure CLI**).
+Sua equipe DevOps deverá conteinerizar a API desenvolvida na disciplina de JAVA ADVANCED ou de ADVANCED BUSINESS DEVELOPMENT WITH .NET, utilizando Dockerfile e seguindo as boas práticas de infraestrutura como código.
 
 ## 🔧 **Requisitos:**
-- Conteinerização com **Docker**.
-- Deploy na nuvem com **Azure CLI**.
-- CRUD completo com **Oracle**.
-- Scripts **Azure CLI**, **Dockerfile**, **ReadMe**.
+- Montar um ambiente com pelo menos dois containers Docker integrados, sendo:
+1 Container para rodar a Aplicação: projeto em Java ou .NET.
+2 Container do Banco de Dados: escolha livre entre Oracle, PostgreSQL, MySQL, MongoDB etc. (desde que seja em container para persistência dos dados).
+
+## ATENÇÃO: Não será aceito o Banco H2 na escolha
+
 
 ### 📂 **Link do Repositório:**  
 [![Azure Docs](https://img.shields.io/badge/Azure%20CLI-Dockerfile%20%26%20Scripts-blue?style=flat-square&logo=microsoftazure)](https://docs.microsoft.com/en-us/azure/devops/)

@@ -1,6 +1,6 @@
-[GLOBAL SOLUTION 2025 - 1º SEMESTRE](https://drive.google.com/file/d/1t5auCM4IxC_09xuNt8z_MqSWTCrhJ6rE/view?usp=sharing)
+[[GLOBAL SOLUTION 2025 - 1º SEMESTRE](https://drive.google.com/file/d/1t5auCM4IxC_09xuNt8z_MqSWTCrhJ6rE/view?usp=sharing)](https://github.com/carmipa/GS_FIAP_2025_1SM/blob/main/Captura%20de%20tela%202025-05-26%20125818.png)
 
-# 🏍️ **Challenge 2025 – 1º Semestre**
+# 🏍️ **Global Solution 2025 – 1º Semestre**
 
 ## 📑 Índice
 1. [Projeto](#projeto)  

@@ -67,7 +67,7 @@
 
 
 ### 📂 **Link do Repositório:**  
-[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/challenge_2025_1_semestre_mottu/tree/main/Mobile_Application_Development)
+[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Mobile_Application_Development)
 
 ## 🎨 **Tecnologias Utilizadas:**
 ![React Native](https://img.shields.io/badge/React%20Native-61DAFB?style=flat-square&logo=react)

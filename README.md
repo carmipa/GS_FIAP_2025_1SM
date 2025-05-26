@@ -10,7 +10,6 @@
 5. [Equipe](#equipe)  
 6. [Tech Stack & Analytics](#tech-stack--analytics)  
 7. [Sobre o Projeto](#sobre-o-projeto)  
-8. [Problemas Identificados](#problemas-identificados)  
 9. [Tecnologias e Bibliotecas](#tecnologias-e-bibliotecas-utilizadas)  
 10. [Cronograma](#cronograma-de-entregas)  
 11. [Objetivos do Desafio](#objetivos-do-desafio)  
@@ -172,13 +171,6 @@ com dados reais e atuais em projetos voltados à gestão de crises, cidades resi
 emergenciais e soluções para eventos extremos
 
 [🔝 Voltar ao topo](#)
-
----
-
-## <a name="problemas-identificados"></a>🚩 **Problemas Identificados**
-
-1. **Dificuldade no mapeamento preciso das motos** dentro dos pátios, afetando a eficiência operacional.  
-2. **Falta de visibilidade em tempo real** sobre a disposição das motos, tornando a operação menos ágil e mais sujeita a erros humanos.
 
 ---
 

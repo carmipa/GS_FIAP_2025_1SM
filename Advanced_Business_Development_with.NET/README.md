@@ -1,17 +1,20 @@
 # 🖥️ **Advanced Business Development with .NET**
 
 ## 🔶 **Objetivos:**
-Implementar uma API Restful utilizando **ASP.NET Core** com **CRUD** completo e integração com banco de dados **Oracle** via **EF Core**.
+ O projeto em Adanced Business Development with .NET deve abranger uma solução criativa e inovadora para o tema proposto nesta 
+GS, criando basicamente uma API REST para tratar de problemas críticos e auxiliar as pessoas em períodos de extrema urgência. Para 
+tanto, com base nas aulas deste semestre, o grupo deve desenvolver a solução atendendo aos seguintes requisitos
 
 ## 🔧 **Requisitos:**
-- CRUD completo: **GET**, **POST**, **PUT**, **DELETE**.
-- Retornos HTTP adequados (ok, NotFound, BadRequest, NoContent, Created).
-- Open API com **Swagger**, **Redoc** ou **Scalar**.
-- Integração com **Oracle** via **EF Core** com **migrations**.
-- ReadMe completo.
+- API REST que atenda a boas práticas de programação / arquitetura
+- Persistência em Banco de Dados relacional;
+- Pelo menos um relacionamento 1:N
+- Aplicação de Razor e TagHelpers;
+- Uso correto da Migration no projeto.
+
 
 ### 📂 **Link do Repositório:**  
-[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/challenge_2025_1_semestre_mottu/tree/main/Advanced_Business_Development_with.NET)
+[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)
 
 ## 🎨 **Tecnologias Utilizadas:**
 ![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp)

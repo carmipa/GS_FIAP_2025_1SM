@@ -80,7 +80,9 @@
 
 ## <a name="repositorio-do-projeto"></a>📂 **Repositório**
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png) 
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/carmipa/GS_FIAP_2025_1SM)
+
+🔗 [Acesse o Repositório](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main)
 
 [🔝 Voltar ao topo](#)
 

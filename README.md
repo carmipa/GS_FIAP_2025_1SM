@@ -10,7 +10,6 @@
 5. [Equipe](#equipe)  
 6. [Tech Stack & Analytics](#tech-stack--analytics)  
 7. [Sobre o Projeto](#sobre-o-projeto)  
-8. [Problemas Identificados](#problemas-identificados)  
 9. [Tecnologias e Bibliotecas](#tecnologias-e-bibliotecas-utilizadas)  
 10. [Cronograma](#cronograma-de-entregas)  
 11. [Objetivos do Desafio](#objetivos-do-desafio)  
@@ -132,24 +131,46 @@
 ## <a name="sobre-o-projeto"></a>📑 **Sobre o Projeto**
 
 ### 💡 **EVENTOS EXTREMOS**  
-O projeto visa aprimorar a gestão de frotas de motos em pátios de múltiplas filiais, utilizando **Visão Computacional** e **IoT** para otimizar o mapeamento e monitoramento das motos em tempo real.
+- A natureza está cheia de surpresas. Ventos poderosos, chuvas intensas, tremores inesperados, calor de derreter ideias e frio de congelar pensamentos. Os eventos extremos estão aí e fazem parte do nosso novo cenário global. Mas em vez de temê-los, que tal enxergar tudo isso como uma grande oportunidade de criar algo incrível?
+- Na FIAP, acreditamos que cada desafio é uma chance de inovar, aprender e transformar. E quando a tecnologia se junta à criatividade, surgem soluções que fazem a diferença de verdade.
 
-### 🛠 **Funcionalidades do Sistema**  
-- **Identificação precisa das motos** utilizando visão computacional.  
-- **Modelo digital do pátio** mostrando em tempo real a disposição das motos.  
-- **Interface visual intuitiva** para visualização em tempo real.
+### 🚀 **Sugestões**  
+- Sistemas de alerta antecipado para desastres naturais
+- Aplicativos de evacuação e rotas seguras em situações de risco
+- Drones para busca, resgate e entrega de suprimentos em áreas isoladas
+- Estações móveis de energia limpa para abrigos temporários
+- Plataformas de comunicação offline para comunidades sem acesso à internet
+- Monitoramento de encostas, barragens e zonas de risco com sensores IoT
+- Reutilização de água da chuva e soluções portáteis de purificação
+- Tecnologias para reconstrução rápida e sustentável de moradias
+- Gamificação para educação sobre prevenção de desastre
+- Inteligência artificial para prever padrões de eventos extremos
+- Gestão de abrigos e recursos em tempo real com uso de dashboards
+- Apoio psicológico remoto via apps em contextos de calamidade
+- Impressão 3D de estruturas de emergência para zonas afetadas
+- Sistemas de energia solar para manter hospitais móveis funcionando
+- Mapeamento colaborativo de áreas atingidas usando dados da comunidade
 
-### 🚀 **Escalabilidade**  
-A solução é escalável para ser implementada em mais de 100 filiais no Brasil e no México, com diferentes layouts de pátios.
+### INDICAÇÃO DE FONTE:
+https://disasterscharter.org/
+https://www.youtube.com/watch?v=ZvExM-Z3E2w&t=5s
+A Carta Internacional Space and Major Disasters é uma iniciativa global que reúne agências espaciais 
+de diversos países com o objetivo de fornecer dados de satélite gratuitos e em tempo real para apoiar 
+ações de resposta a desastres naturais.
+Sempre que ocorre um grande desastre, como enchentes, terremotos, furacões ou incêndios florestais, 
+a Carta pode ser acionada por governos e instituições autorizadas. A partir disso, satélites são 
+mobilizados para capturar imagens da região afetada, permitindo o monitoramento, a análise dos 
+impactos e a tomada rápida de decisões em situações de emergência.
+No site, é possível acessar:
+Casos recentes de desastres monitorados
+Mapas e imagens de satélite com áreas impactadas
+Tipos de desastres acompanhados
+Ferramentas de visualização e relatórios técnicos
+É uma ferramenta poderosa para pesquisadores, estudantes e desenvolvedores que queiram trabalhar 
+com dados reais e atuais em projetos voltados à gestão de crises, cidades resilientes, tecnologias 
+emergenciais e soluções para eventos extremos
 
 [🔝 Voltar ao topo](#)
-
----
-
-## <a name="problemas-identificados"></a>🚩 **Problemas Identificados**
-
-1. **Dificuldade no mapeamento preciso das motos** dentro dos pátios, afetando a eficiência operacional.  
-2. **Falta de visibilidade em tempo real** sobre a disposição das motos, tornando a operação menos ágil e mais sujeita a erros humanos.
 
 ---
 
@@ -163,10 +184,12 @@ A solução é escalável para ser implementada em mais de 100 filiais no Brasil
 
 ## <a name="cronograma-de-entregas"></a>📅 **Cronograma de Entregas**
 
-| Data limite | Entrega           |
-| ----------- | ----------------- |
-| 23/05/2025  | Sprint 1          |
-| 30/05/2025  | Feedback Sprint 1 |
+| DATA       | EVENTO                  |
+|------------|-------------------------|
+| 26/05/2025 | LIVE DE ABERTURA        |
+| 26/05/2025 | CONTEÚDO PARA ALUNOS    |
+| 06/06/2025 | ENTREGA NO PORTAL FIAP  |
+| 13/06/2025 | CORREÇÃO DOS PROFESSORES |
 
 [🔝 Voltar ao topo](#)
 
@@ -174,10 +197,25 @@ A solução é escalável para ser implementada em mais de 100 filiais no Brasil
 
 ## <a name="objetivos-do-desafio"></a>🎯 **Objetivos do Desafio**
 
-* **Precisão de Identificação** das motos nos pátios.  
-* **Escalabilidade** para qualquer filial e layout.  
-* Aplicar tecnologias de **Visão Computacional** e **IoT** inovadoras.
-
+### DESAFIO FIAP: EVENTOS EXTREMOS
+- Agora é a sua vez. Imagine um cenário impactado por um evento extremo da natureza. Seu papel é 
+propor uma solução que use tecnologia, inovação e boas ideias para ajudar pessoas, proteger o meio 
+ambiente ou prevenir problemas ainda maiores.
+- Vale usar tudo o que você sabe e explorar o que ainda está aprendendo. Crie protótipos, pesquise, 
+conecte dados, crie narrativas e pense fora da caixa. O que você criaria para enfrentar um super calor? 
+Ou uma cidade isolada por um terremoto? Como a tecnologia pode ser usada de forma prática e 
+surpreendente?
+Você está no comando. Solte a criatividade e mostre como grandes ideias nascem em momentos de 
+grandes desafios
+- A inovação pode surgir no design de soluções acessíveis, no uso de sensores conectados à internet das 
+coisas, na análise de grandes volumes de dados em tempo real ou na criação de plataformas que 
+integram pessoas, serviços e recursos de forma ágil e eficaz.
+- Com criatividade, é possível simular cenários, treinar comunidades por meio de experiências imersivas, 
+construir modelos de negócio sustentáveis e fortalecer a resiliência das cidades e das pessoas. Áreas 
+como tecnologia, design, engenharia e gestão se conectam para enfrentar desafios reais e criar 
+respostas que protegem, aproximam e salvam vidas.
+- Neste desafio, o mais importante não é apenas o que você sabe, mas o que você é capaz de imaginar e 
+colocar em prática. Afinal, quando ideias ganham propósito, elas têm o poder de mudar o mundo
 ---
 
 ## <a name="responsabilidades"></a>🧑‍💻 **Responsabilidades**

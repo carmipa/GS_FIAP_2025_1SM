@@ -33,7 +33,7 @@ O documento de entrega deve conter os seguintes artefatos:--
 
 
 ### 📂 **Link do Repositório:**  
-[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/challenge_2025_1_semestre_mottu/tree/main/Java_Advanced)
+[![GitHub](https://img.shields.io/badge/GitHub-Repositório-blue?style=flat-square&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced)
 
 ## 🎨 **Tecnologias Utilizadas:**
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=springboot)

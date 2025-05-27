@@ -23,11 +23,8 @@ public class ClienteRequestDTO {
     @Size(max = 18, message = "O documento deve ter no máximo 18 caracteres")
     private String documento;
 
-    // IDs dos contatos existentes a serem associados
-    private Set<Long> contatoIds = new HashSet<>();
-
-    // IDs dos endereços existentes a serem associados
-    private Set<Long> enderecoIds = new HashSet<>();
+    private ContatoRequestDTO contato; // Ou contatoPrincipal
+    private EnderecoRequestDTO endereco; // Ou enderecoPrincipal
 
     public ClienteRequestDTO() {
     }
@@ -42,9 +39,19 @@ public class ClienteRequestDTO {
     public String getDocumento() { return documento; }
     public void setDocumento(String documento) { this.documento = documento; }
 
-    public Set<Long> getContatoIds() { return contatoIds; }
-    public void setContatoIds(Set<Long> contatoIds) { this.contatoIds = contatoIds; }
+    public ContatoRequestDTO getContato() {
+        return contato;
+    }
 
-    public Set<Long> getEnderecoIds() { return enderecoIds; }
-    public void setEnderecoIds(Set<Long> enderecoIds) { this.enderecoIds = enderecoIds; }
+    public void setContato(ContatoRequestDTO contato) {
+        this.contato = contato;
+    }
+
+    public EnderecoRequestDTO getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(EnderecoRequestDTO endereco) {
+        this.endereco = endereco;
+    }
 }

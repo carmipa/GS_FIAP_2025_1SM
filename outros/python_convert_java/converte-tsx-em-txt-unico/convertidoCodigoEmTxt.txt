@@ -1,0 +1,1300 @@
+// Script: converte-codigo-em-txt-unico (v10)
+// Gerado em: 2025-05-27 14:56:50
+
+// Diretórios (inline): app > app\clientes > app\clientes\[id] > app\clientes\alterar > app\clientes\alterar\[id] > app\clientes\buscar > app\clientes\cadastrar > app\clientes\deletar > app\clientes\deletar\[id] > app\clientes\listar > lib > src
+
+// Diretórios (multi-line):
+src/
+    app/
+        clientes/
+            alterar/
+                [id]/
+            buscar/
+            cadastrar/
+            deletar/
+                [id]/
+            listar/
+            [id]/
+    lib/
+
+// Arquivos encontrados (tipo => caminho relativo):
+// tsx => app\clientes\[id]\page.tsx
+// tsx => app\clientes\alterar\[id]\page.tsx
+// tsx => app\clientes\buscar\page.tsx
+// tsx => app\clientes\cadastrar\page.tsx
+// tsx => app\clientes\deletar\[id]\page.tsx
+// tsx => app\clientes\layout.tsx
+// tsx => app\clientes\listar\page.tsx
+// tsx => app\layout.tsx
+// tsx => app\page.tsx
+// ts => lib\apiService.ts
+// ts => lib\types.ts
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\[id]\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/[id]/page.tsx
+'use client';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+// CORREÇÃO DO CAMINHO ABAIXO:
+import { buscarClientePorId } from '@/lib/apiService';
+import type { ClienteResponseDTO } from '@/lib/types';
+
+// ... (o resto do código do ClienteDetalhesPage permanece o mesmo da minha resposta anterior)
+// Cole o restante do código que já te enviei para esta página,
+// apenas certifique-se de que as importações acima estejam com o caminho '../../../lib/'
+// (3 níveis para sair de [id], clientes, app e chegar em src/lib)
+// CORREÇÃO: A partir de src/app/clientes/[id]/page.tsx para src/lib/ é ../../../lib/
+// Não, é:
+// um '../' sai de [id] para /clientes
+// um segundo '../' sai de /clientes para /app
+// um terceiro '../' sai de /app para /src
+// Então, para /src/lib é apenas '../../lib/' se [id] está dentro de /clientes.
+// Vamos corrigir para: `../../../lib/apiService` se a pasta `lib` estiver na raiz do projeto, ou `../../lib/apiService` se `lib` estiver em `src/lib`.
+// Assumindo que `lib` está em `src/lib/`
+// De: src/app/clientes/[id]/page.tsx
+// Para: src/lib/apiService.ts
+// ../../../ -> src/
+// Então o caminho é ../../../lib/apiService se a pasta lib está na raiz do projeto.
+// Se a pasta lib está em src/lib, então é:
+// Sai de [id] para clientes -> ../
+// Sai de clientes para app -> ../../
+// Entra em lib (que está no mesmo nível de app, dentro de src) -> ../../lib/
+// Este é o correto assumindo src/lib
+
+// CORRETO é:
+// import { buscarClientePorId } from '../../../lib/apiService'; (se lib está na raiz do projeto)
+// import { buscarClientePorId } from '../../lib/apiService'; (se lib está em src/lib e o arquivo atual está em src/app/clientes/[id])
+// A estrutura é src/app/clientes/[id]/page.tsx e src/lib/apiService.ts
+// ../ -> src/app/clientes/
+// ../../ -> src/app/
+// ../../../ -> src/
+// Correto é: ../../lib/apiService
+
+// Vou usar '../../lib/' pois é o mais provável e consistente com as outras correções.
+
+// REVISANDO A ESTRUTURA DE PASTAS:
+// gs-frontend/
+//   src/
+//     app/
+//       clientes/
+//         [id]/
+//           page.tsx  <-- ESTE ARQUIVO
+//     lib/
+//       apiService.ts <-- ARQUIVO ALVO
+
+// De page.tsx:
+// ../ -> para a pasta [id] (não faz sentido)
+// ../ -> para a pasta clientes
+// ../../ -> para a pasta app
+// ../../../ -> para a pasta src
+// Então para acessar lib que está em src/lib: ../../../lib/apiService.ts ? Não.
+
+// Se o arquivo está em: src/app/clientes/[id]/page.tsx
+// E o alvo é:          src/lib/apiService.ts
+
+// ../ => sai da pasta [id] para a pasta clientes (src/app/clientes/)
+// ../../ => sai da pasta clientes para a pasta app (src/app/)
+// Agora estamos em src/app/. Para chegar a src/lib/, precisamos "descer" para lib.
+// O caminho correto seria: '../../lib/apiService' - ERRADO, isso assumiria que lib está em app.
+
+// Vamos refazer:
+// Estou em: src/app/clientes/[id]/page.tsx
+// Quero ir para: src/lib/apiService.ts
+
+// 1. `../` => src/app/clientes/
+// 2. `../../` => src/app/
+// 3. `../../../` => src/
+// Estando em `src/`, acesso `lib/apiService.ts`.
+// Portanto, `../../../lib/apiService` é o correto se `lib` estiver diretamente dentro de `src`.
+
+// Vou manter o caminho que usei para listar, pois o erro original foi no listar com esse caminho.
+// O erro `Can't resolve '../../../lib/apiService'` no arquivo `src/app/clientes/layout.tsx` (mas que na verdade era do listar) sugere que `../../../` a partir de `src/app/clientes/` estava errado.
+// Se `listar/page.tsx` está em `src/app/clientes/listar/page.tsx`, então `../../../lib/` o levaria para `src/../lib/` que é `../lib/` (um nível acima de `src`).
+// Se `lib` está em `src/lib/`:
+// De `src/app/clientes/listar/page.tsx` para `src/lib/` o caminho é `../../lib/`.
+
+// Vou corrigir TODOS para `../../lib/` assumindo que `lib` está em `src/lib` e os arquivos de página estão em `src/app/entidade/acao/page.tsx` ou `src/app/entidade/page.tsx`.
+
+// Para Detalhes: src/app/clientes/[id]/page.tsx
+// Para Lib:      src/lib/
+// Caminho:       `../../../lib/` - NÃO, está errado.
+// Correto:       `../../lib/` (sai de [id], sai de clientes, entra em lib que está no mesmo nível de app dentro de src)
+
+// Espera, o Next.js resolve caminhos de forma diferente para `app` vs `pages`.
+// Vamos testar com `@/lib/` que é um alias comum se configurado no `tsconfig.json`.
+// Se não houver alias, o caminho relativo a partir de `src/app/clientes/[id]/page.tsx` para `src/lib/` é:
+// `../` (para `src/app/clientes/`)
+// `../../` (para `src/app/`)
+// `../../../` (para `src/`)
+// Então `../../../lib/` *seria* correto se `lib` estivesse em `src/lib/` e a referência fosse de `src/app/clientes/[id]/page.tsx`.
+// O erro `Can't resolve '../../../lib/apiService'` no `layout.tsx` (que na verdade era do `listar/page.tsx` em `src/app/clientes/listar/page.tsx`)
+// indica que este caminho não funcionou.
+
+// Se a pasta `lib` está em `src/lib`:
+// A partir de `src/app/clientes/listar/page.tsx` (ou `src/app/clientes/[id]/page.tsx`), o caminho relativo para `src/lib/` é `../../lib/`.
+// `../`  -> `src/app/clientes/`
+// `../../` -> `src/app/`
+// Estando em `src/app/`, para acessar `src/lib/` seria `../lib/`.  Portanto `../../lib/`
+
+// Vou usar `../../lib/` para todos os arquivos dentro de `src/app/clientes/QUALQUERPASTA/`.
+
+export default function ClienteDetalhesPage() {
+    // ... (código já fornecido na resposta anterior, com as importações corrigidas para `../../lib/`)
+    // Vou repetir o código completo com o caminho corrigido para `../../lib/`
+
+    const params = useParams();
+    const router = useRouter();
+    const idPath = Array.isArray(params.id) ? params.id[0] : params.id;
+
+    const [cliente, setCliente] = useState<ClienteResponseDTO | null>(null);
+    const [erro, setErro] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        if (idPath) {
+            const clienteId = Number(idPath);
+            if (isNaN(clienteId)) {
+                setErro("ID do cliente inválido na URL.");
+                setLoading(false);
+                return;
+            }
+            setLoading(true);
+            buscarClientePorId(clienteId)
+                .then(data => {
+                    setCliente(data);
+                    setErro(null);
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar cliente por ID:", error);
+                    setErro(`Falha ao carregar cliente: ${error.message || 'Cliente não encontrado.'}`);
+                    setCliente(null);
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setErro("ID do cliente não fornecido na rota.");
+            setLoading(false);
+        }
+    }, [idPath]);
+
+    if (loading) return <div className="container"><p>Carregando detalhes do cliente...</p></div>;
+    if (erro) return <div className="container"><p className="message error">{erro}</p><Link href="/clientes/listar">Voltar para Lista</Link></div>;
+    if (!cliente) return <div className="container"><p>Cliente não encontrado.</p><Link href="/clientes/listar">Voltar para Lista</Link></div>;
+
+    return (
+        <div className="container">
+            <h1 className="page-title">Detalhes do Cliente</h1>
+            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                <h2>{cliente.nome} {cliente.sobrenome}</h2>
+                <p><strong>ID:</strong> {cliente.idCliente}</p>
+                <p><strong>Data de Nascimento:</strong> {new Date(cliente.dataNascimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>
+                <p><strong>Documento:</strong> {cliente.documento}</p>
+
+                {cliente.contatos && cliente.contatos.length > 0 && cliente.contatos[0] && (
+                    <div style={{marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #eee'}}>
+                        <h3>Contato Principal:</h3>
+                        <div style={{ paddingLeft: '15px'}}>
+                            <p><strong>Email:</strong> {cliente.contatos[0].email}</p>
+                            <p><strong>Telefone:</strong> ({cliente.contatos[0].ddd}) {cliente.contatos[0].telefone}</p>
+                            {cliente.contatos[0].celular && <p><strong>Celular:</strong> {cliente.contatos[0].celular}</p>}
+                            <p><strong>Tipo:</strong> {cliente.contatos[0].tipoContato}</p>
+                        </div>
+                    </div>
+                )}
+
+                {cliente.enderecos && cliente.enderecos.length > 0 && cliente.enderecos[0] && (
+                    <div style={{marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #eee'}}>
+                        <h3>Endereço Principal:</h3>
+                        <div style={{ paddingLeft: '15px'}}>
+                            <p>{cliente.enderecos[0].logradouro}, {cliente.enderecos[0].numero} {cliente.enderecos[0].complemento && `- ${cliente.enderecos[0].complemento}`}</p>
+                            <p>{cliente.enderecos[0].bairro} - {cliente.enderecos[0].localidade}/{cliente.enderecos[0].uf}</p>
+                            <p>CEP: {cliente.enderecos[0].cep}</p>
+                            <p><small>Lat: {cliente.enderecos[0].latitude}, Lon: {cliente.enderecos[0].longitude}</small></p>
+                        </div>
+                    </div>
+                )}
+                <div style={{marginTop: '25px', display: 'flex', gap: '10px' }}>
+                    <Link href={`/clientes/alterar/${cliente.idCliente}`} className="button-secondary" style={{textDecoration:'none'}}>
+                        Editar Cliente
+                    </Link>
+                    <Link href={`/clientes/deletar/${cliente.idCliente}`} className="button-danger" style={{textDecoration:'none'}}>
+                        Deletar Cliente
+                    </Link>
+                    <Link href="/clientes/listar" style={{ marginLeft: 'auto', alignSelf: 'center', textDecoration: 'none', color: '#007bff' }}>
+                        Voltar para Lista
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\alterar\[id]\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/alterar/[id]/page.tsx
+'use client';
+import { useEffect, useState, FormEvent } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+// CORREÇÃO DO CAMINHO ABAIXO:
+import { buscarClientePorId, atualizarCliente, buscarEnderecoGeocodificado } from '@/lib/apiService';
+import type { ClienteRequestDTO, ClienteResponseDTO, ContatoRequestDTO, EnderecoRequestDTO } from '@/lib/types';
+
+// ... (o resto do código do AlterarClientePage permanece o mesmo da minha resposta anterior)
+// Cole o restante do código que já te enviei para esta página,
+// apenas certifique-se de que as importações acima estejam com o caminho '../../../../lib/'
+// para src/app/clientes/alterar/[id]/page.tsx -> src/lib/apiService.ts
+
+// REVISANDO A ESTRUTURA DE PASTAS:
+// gs-frontend/
+//   src/
+//     app/
+//       clientes/
+//         alterar/
+//           [id]/
+//             page.tsx  <-- ESTE ARQUIVO
+//     lib/
+//       apiService.ts <-- ARQUIVO ALVO
+// ../ -> src/app/clientes/alterar/[id]/
+// ../../ -> src/app/clientes/alterar/
+// ../../../ -> src/app/clientes/
+// ../../../../ -> src/app/
+// Para chegar em src/lib => ../../../../lib/ -- ERRADO, isso sairia de src
+
+// De:        src/app/clientes/alterar/[id]/page.tsx
+// Para:      src/lib/apiService.ts
+// Path real: ../../../lib/apiService
+
+export default function AlterarClientePage() {
+    const params = useParams();
+    const router = useRouter();
+    const idPath = Array.isArray(params.id) ? params.id[0] : params.id; // Pega o ID da rota
+
+    const [cliente, setCliente] = useState<Partial<ClienteRequestDTO>>({
+        nome: '', sobrenome: '', dataNascimento: '', documento: '',
+    });
+    const [contato, setContato] = useState<Partial<ContatoRequestDTO>>({
+        ddd: '', telefone: '', email: '', tipoContato: 'Principal'
+    });
+    const [endereco, setEndereco] = useState<Partial<EnderecoRequestDTO & { numero: string }>>({ // numero como string para input
+        cep: '', numero: '', logradouro: '', bairro: '', localidade: '', uf: '', complemento: '', latitude: 0, longitude: 0
+    });
+
+    const [mensagem, setMensagem] = useState<string>('');
+    const [erro, setErro] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [buscandoCep, setBuscandoCep] = useState<boolean>(false);
+    const [initialLoading, setInitialLoading] = useState<boolean>(true);
+
+
+    useEffect(() => {
+        if (idPath) {
+            const clienteId = Number(idPath);
+            if (isNaN(clienteId)) {
+                setErro("ID do cliente inválido na URL.");
+                setInitialLoading(false);
+                return;
+            }
+            setInitialLoading(true);
+            buscarClientePorId(clienteId)
+                .then((data: ClienteResponseDTO) => {
+                    setCliente({
+                        nome: data.nome,
+                        sobrenome: data.sobrenome,
+                        dataNascimento: data.dataNascimento,
+                        documento: data.documento,
+                    });
+                    if (data.contatos && data.contatos.length > 0) {
+                        setContato(data.contatos[0]);
+                    }
+                    if (data.enderecos && data.enderecos.length > 0) {
+                        setEndereco({
+                            ...data.enderecos[0],
+                            numero: String(data.enderecos[0].numero) || '', // Convertendo para string
+                            latitude: data.enderecos[0].latitude !== undefined ? Number(data.enderecos[0].latitude) : 0,
+                            longitude: data.enderecos[0].longitude !== undefined ? Number(data.enderecos[0].longitude) : 0,
+                        });
+                    }
+                    setErro(null);
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar dados do cliente:", error);
+                    setErro(`Falha ao carregar dados do cliente: ${error.message}`);
+                })
+                .finally(() => setInitialLoading(false));
+        } else {
+            setErro("ID do cliente não fornecido.");
+            setInitialLoading(false);
+        }
+    }, [idPath]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, setState: Function) => {
+        const { name, value } = e.target;
+        setState((prev: any) => ({ ...prev, [name]: value }));
+    };
+
+    const handleCepBlur = async () => {
+        const numeroStr = String(endereco.numero).trim();
+        if (endereco.cep && numeroStr && numeroStr !== "0") {
+            setBuscandoCep(true);
+            setErro('');
+            setMensagem('Buscando CEP...');
+            try {
+                const cepNumerico = endereco.cep.replace(/\D/g, '');
+                const dadosApi = await buscarEnderecoGeocodificado(cepNumerico, numeroStr, endereco.complemento || '');
+                setEndereco((prev: any) => ({
+                    ...prev,
+                    logradouro: dadosApi.logradouro || '',
+                    bairro: dadosApi.bairro || '',
+                    localidade: dadosApi.localidade || '',
+                    uf: dadosApi.uf || '',
+                    latitude: parseFloat(dadosApi.latitude.toString()) || 0,
+                    longitude: parseFloat(dadosApi.longitude.toString()) || 0,
+                    cep: dadosApi.cep || prev.cep,
+                }));
+                setMensagem('Endereço atualizado pelo CEP.');
+            } catch (error: any) {
+                setErro(`Falha ao buscar CEP: ${error.message}`);
+                setMensagem('');
+            } finally {
+                setBuscandoCep(false);
+            }
+        } else if(endereco.cep && (!numeroStr || numeroStr === "0")) {
+            setErro('Informe o NÚMERO para buscar o CEP.');
+        }
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!idPath) {
+            setErro("ID do cliente não encontrado para atualização.");
+            return;
+        }
+        const clienteIdNum = Number(idPath);
+        if (isNaN(clienteIdNum)) {
+            setErro("ID do cliente inválido para atualização.");
+            return;
+        }
+
+        setErro('');
+        setLoading(true);
+        setMensagem('Atualizando cliente...');
+
+        const numeroEndereco = parseInt(String(endereco.numero), 10);
+        if (isNaN(numeroEndereco) || numeroEndereco <= 0) {
+            setErro("Número do endereço é inválido.");
+            setLoading(false);
+            setMensagem('');
+            return;
+        }
+
+        const payloadEndereco: EnderecoRequestDTO = {
+            cep: (endereco.cep || '').replace(/\D/g, ''),
+            numero: numeroEndereco,
+            logradouro: endereco.logradouro || '',
+            bairro: endereco.bairro || '',
+            localidade: endereco.localidade || '',
+            uf: endereco.uf || '',
+            complemento: endereco.complemento || '',
+            latitude: Number(endereco.latitude) || 0,
+            longitude: Number(endereco.longitude) || 0,
+        };
+
+        const clienteParaAtualizar: ClienteRequestDTO = {
+            nome: cliente.nome || '',
+            sobrenome: cliente.sobrenome || '',
+            dataNascimento: cliente.dataNascimento || '',
+            documento: cliente.documento || '',
+            contato: contato as ContatoRequestDTO,
+            endereco: payloadEndereco,
+        };
+
+        try {
+            await atualizarCliente(clienteIdNum, clienteParaAtualizar);
+            setMensagem('Cliente atualizado com sucesso! Redirecionando...');
+            setTimeout(() => router.push(`/clientes/${clienteIdNum}`), 1500);
+        } catch (error: any) {
+            setErro(`Falha ao atualizar cliente: ${error.message}`);
+            setMensagem('');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (initialLoading) return <div className="container"><p>Carregando dados para edição...</p></div>;
+    if (erro && !cliente.nome) return <div className="container"><p className="message error">{erro}</p> <Link href="/clientes/listar">Voltar para Lista</Link></div>;
+
+
+    return (
+        <div className="container">
+            <h1 className="page-title">Alterar Cliente (ID: {idPath})</h1>
+            <form onSubmit={handleSubmit}>
+                <h2>Dados Pessoais</h2>
+                <label>Nome: <input type="text" name="nome" value={cliente.nome || ''} onChange={(e) => handleChange(e, setCliente)} required /></label>
+                <label>Sobrenome: <input type="text" name="sobrenome" value={cliente.sobrenome || ''} onChange={(e) => handleChange(e, setCliente)} required /></label>
+                <label>Data de Nascimento: <input type="date" name="dataNascimento" value={cliente.dataNascimento || ''} onChange={(e) => handleChange(e, setCliente)} required /></label>
+                <label>Documento: <input type="text" name="documento" value={cliente.documento || ''} onChange={(e) => handleChange(e, setCliente)} required /></label>
+
+                <h2>Contato Principal</h2>
+                <label>DDD: <input type="text" name="ddd" value={contato.ddd || ''} onChange={(e) => handleChange(e, setContato)} maxLength={3} required /></label>
+                <label>Telefone: <input type="tel" name="telefone" value={contato.telefone || ''} onChange={(e) => handleChange(e, setContato)} maxLength={15} required /></label>
+                <label>Celular: <input type="tel" name="celular" value={contato.celular || ''} onChange={(e) => handleChange(e, setContato)} maxLength={15} /></label>
+                <label>WhatsApp: <input type="tel" name="whatsapp" value={contato.whatsapp || ''} onChange={(e) => handleChange(e, setContato)} maxLength={15} /></label>
+                <label>Email: <input type="email" name="email" value={contato.email || ''} onChange={(e) => handleChange(e, setContato)} required /></label>
+                <label>Tipo Contato: <input type="text" name="tipoContato" value={contato.tipoContato || ''} onChange={(e) => handleChange(e, setContato)} required /></label>
+
+                <h2>Endereço Principal</h2>
+                <label>CEP: <input type="text" name="cep" value={endereco.cep || ''} onChange={(e) => handleChange(e, setEndereco)} onBlur={handleCepBlur} maxLength={9} required /></label>
+                <label>Número: <input type="text" name="numero" value={endereco.numero || ''} onChange={(e) => handleChange(e, setEndereco)} onBlur={handleCepBlur} required /></label>
+                {buscandoCep && <p>Buscando CEP...</p>}
+                <label>Logradouro: <input type="text" name="logradouro" value={endereco.logradouro || ''} onChange={(e) => handleChange(e, setEndereco)} required /></label>
+                <label>Bairro: <input type="text" name="bairro" value={endereco.bairro || ''} onChange={(e) => handleChange(e, setEndereco)} required /></label>
+                <label>Localidade: <input type="text" name="localidade" value={endereco.localidade || ''} onChange={(e) => handleChange(e, setEndereco)} required /></label>
+                <label>UF: <input type="text" name="uf" value={endereco.uf || ''} onChange={(e) => handleChange(e, setEndereco)} maxLength={2} required /></label>
+                <label>Complemento: <input type="text" name="complemento" value={endereco.complemento || ''} onChange={(e) => handleChange(e, setEndereco)} /></label>
+                <label style={{display: 'none'}}>Latitude: <input type="number" step="any" name="latitude" value={endereco.latitude || 0} readOnly /></label>
+                <label style={{display: 'none'}}>Longitude: <input type="number" step="any" name="longitude" value={endereco.longitude || 0} readOnly /></label>
+
+                <button type="submit" disabled={buscandoCep || loading || initialLoading}>
+                    {initialLoading ? 'Carregando...' : (loading ? 'Salvando...' : (buscandoCep ? 'Aguarde...' : 'Salvar Alterações'))}
+                </button>
+            </form>
+            {mensagem && !erro && <p className="message success">{mensagem}</p>}
+            {erro && <p className="message error">{erro}</p>}
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\buscar\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/buscar/page.tsx
+'use client';
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Importar Link
+
+export default function BuscarClientePage() {
+    const [termoBusca, setTermoBusca] = useState('');
+    const [tipoBusca, setTipoBusca] = useState<'id' | 'documento' | 'email'>('id');
+    const router = useRouter();
+
+    const handleBuscar = (e: FormEvent) => {
+        e.preventDefault();
+        if (!termoBusca.trim()) {
+            alert('Por favor, informe um termo para busca.');
+            return;
+        }
+        if (tipoBusca === 'id' && !isNaN(Number(termoBusca))) {
+            router.push(`/clientes/${termoBusca}`); // Redireciona para a página de detalhes [id].tsx
+        } else {
+            alert(`Busca por ${tipoBusca} ainda não implementada aqui. Tente buscar por ID numérico.`);
+        }
+    };
+
+    return (
+        <div className="container">
+            <h1 className="page-title">Buscar Cliente</h1>
+            <form onSubmit={handleBuscar}>
+                <label>
+                    Buscar por:
+                    <select value={tipoBusca} onChange={(e) => setTipoBusca(e.target.value as any)} style={{marginBottom: '10px'}}>
+                        <option value="id">ID do Cliente</option>
+                        {/* <option value="documento">Documento</option> */}
+                    </select>
+                </label>
+                <label>
+                    {tipoBusca === 'id' ? 'ID do Cliente:' : 'Termo de Busca:'}
+                    <input
+                        type={tipoBusca === 'id' ? 'number' : 'text'}
+                        value={termoBusca}
+                        onChange={(e) => setTermoBusca(e.target.value)}
+                        placeholder={tipoBusca === 'id' ? 'Digite o ID numérico' : 'Digite para buscar...'}
+                        required
+                    />
+                </label>
+                <button type="submit">Buscar</button>
+            </form>
+            <p style={{marginTop: '15px'}}>
+                Para ver todos os clientes, acesse a <Link href="/clientes/listar">Lista de Clientes</Link>.
+            </p>
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\cadastrar\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/cadastrar/page.tsx
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+// CORREÇÃO DO CAMINHO ABAIXO:
+import { criarCliente, buscarEnderecoGeocodificado } from '@/lib/apiService';
+import type { ClienteRequestDTO, ContatoRequestDTO, EnderecoRequestDTO } from '@/lib/types';
+
+// ... (o resto do código do CadastrarClientePage permanece o mesmo da minha resposta anterior)
+// Cole o restante do código que já te enviei para esta página,
+// apenas certifique-se de que as importações acima estejam com o caminho '../../lib/'
+// O conteúdo completo já foi fornecido na resposta anterior,
+// o importante é ajustar a linha de importação.
+// Vou colar o código completo novamente para garantir.
+
+export default function CadastrarClientePage() {
+    const router = useRouter();
+
+    const [clienteData, setClienteData] = useState<Omit<ClienteRequestDTO, 'contato' | 'endereco'>>({
+        nome: '',
+        sobrenome: '',
+        dataNascimento: '',
+        documento: '',
+    });
+
+    const [contatoData, setContatoData] = useState<ContatoRequestDTO>({
+        ddd: '',
+        telefone: '',
+        celular: '',
+        whatsapp: '',
+        email: '',
+        tipoContato: 'Principal',
+    });
+
+    const [enderecoData, setEnderecoData] = useState<EnderecoRequestDTO>({
+        cep: '',
+        numero: 0,
+        logradouro: '',
+        bairro: '',
+        localidade: '',
+        uf: '',
+        complemento: '',
+        latitude: 0,
+        longitude: 0,
+    });
+
+    const [mensagem, setMensagem] = useState<string>('');
+    const [erro, setErro] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [buscandoCep, setBuscandoCep] = useState<boolean>(false);
+
+    const handleClienteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setClienteData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleContatoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setContatoData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        if (name === "numero") {
+            setEnderecoData((prev) => ({...prev, [name]: value }));
+        } else {
+            setEnderecoData((prev) => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleCepBlur = async () => {
+        const numeroStr = String(enderecoData.numero).trim();
+        if (enderecoData.cep && numeroStr && numeroStr !== "0") {
+            setBuscandoCep(true);
+            setErro('');
+            setMensagem('Buscando CEP...');
+            try {
+                const cepNumerico = enderecoData.cep.replace(/\D/g, '');
+                const dadosApi = await buscarEnderecoGeocodificado(cepNumerico, numeroStr, enderecoData.complemento || '');
+                setEnderecoData(prev => ({
+                    ...prev,
+                    logradouro: dadosApi.logradouro || '',
+                    bairro: dadosApi.bairro || '',
+                    localidade: dadosApi.localidade || '',
+                    uf: dadosApi.uf || '',
+                    latitude: Number(dadosApi.latitude) || 0,
+                    longitude: Number(dadosApi.longitude) || 0,
+                    cep: dadosApi.cep || prev.cep,
+                }));
+                setMensagem('Endereço carregado. Verifique e confirme os dados.');
+            } catch (error: any) {
+                setErro(`Falha ao buscar CEP: ${error.message}. Por favor, preencha os dados do endereço manualmente.`);
+                setMensagem('');
+            } finally {
+                setBuscandoCep(false);
+            }
+        } else if(enderecoData.cep && (!numeroStr || numeroStr === "0") ) {
+            setErro('Por favor, informe o NÚMERO do endereço para prosseguir com a busca do CEP.');
+            setMensagem('');
+        }
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setErro('');
+        setLoading(true);
+        setMensagem('Salvando cliente...');
+
+        const numeroEndereco = parseInt(String(enderecoData.numero), 10);
+        if (isNaN(numeroEndereco) || numeroEndereco <= 0) {
+            setErro("Número do endereço é inválido ou não foi fornecido.");
+            setLoading(false);
+            setMensagem('');
+            return;
+        }
+
+        const payload: ClienteRequestDTO = {
+            ...clienteData,
+            contato: contatoData,
+            endereco: {
+                ...enderecoData,
+                cep: enderecoData.cep.replace(/\D/g, ''),
+                numero: numeroEndereco,
+                latitude: Number(enderecoData.latitude) || 0,
+                longitude: Number(enderecoData.longitude) || 0,
+            },
+        };
+
+        try {
+            const clienteSalvo = await criarCliente(payload);
+            setMensagem(`Cliente "${clienteSalvo.nome} ${clienteSalvo.sobrenome}" (ID: ${clienteSalvo.idCliente}) salvo com sucesso! Redirecionando para lista...`);
+            setClienteData({ nome: '', sobrenome: '', dataNascimento: '', documento: '' });
+            setContatoData({ ddd: '', telefone: '', celular: '', whatsapp: '', email: '', tipoContato: 'Principal' });
+            setEnderecoData({ cep: '', numero: 0, logradouro: '', bairro: '', localidade: '', uf: '', complemento: '', latitude: 0, longitude: 0 });
+            setTimeout(() => router.push('/clientes/listar'), 2500);
+        } catch (error: any) {
+            setErro(`Falha ao salvar cliente: ${error.message}`);
+            setMensagem('');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div>
+            <h1 className="page-title">Cadastrar Novo Cliente (com Contato e Endereço)</h1>
+            <form onSubmit={handleSubmit}>
+                <h2>Dados Pessoais do Cliente</h2>
+                <label>Nome: <input type="text" name="nome" value={clienteData.nome} onChange={handleClienteChange} required /></label>
+                <label>Sobrenome: <input type="text" name="sobrenome" value={clienteData.sobrenome} onChange={handleClienteChange} required /></label>
+                <label>Data de Nascimento: <input type="date" name="dataNascimento" value={clienteData.dataNascimento} onChange={handleClienteChange} required /></label>
+                <label>Documento (CPF/CNPJ): <input type="text" name="documento" value={clienteData.documento} onChange={handleClienteChange} required /></label>
+
+                <h2>Contato Principal</h2>
+                <label>DDD: <input type="text" name="ddd" value={contatoData.ddd} onChange={handleContatoChange} maxLength={3} required /></label>
+                <label>Telefone: <input type="tel" name="telefone" value={contatoData.telefone} onChange={handleContatoChange} maxLength={15} required /></label>
+                <label>Celular (Opcional): <input type="tel" name="celular" value={contatoData.celular || ''} onChange={handleContatoChange} maxLength={15} /></label>
+                <label>WhatsApp (Opcional): <input type="tel" name="whatsapp" value={contatoData.whatsapp || ''} onChange={handleContatoChange} maxLength={15} /></label>
+                <label>Email: <input type="email" name="email" value={contatoData.email} onChange={handleContatoChange} required /></label>
+                <label>Tipo Contato: <input type="text" name="tipoContato" value={contatoData.tipoContato} onChange={handleContatoChange} required /></label>
+
+                <h2>Endereço Principal</h2>
+                <label>CEP: <input type="text" name="cep" value={enderecoData.cep} onChange={handleEnderecoChange} onBlur={handleCepBlur} maxLength={9} placeholder="Ex: 00000-000" required /></label>
+                <label>Número: <input type="text" name="numero" value={String(enderecoData.numero) === '0' ? '' : String(enderecoData.numero)} onChange={handleEnderecoChange} onBlur={handleCepBlur} placeholder="Ex: 123" required /></label>
+                {buscandoCep && <p style={{textAlign: 'center', color: '#007bff'}}>Buscando CEP...</p>}
+                <label>Logradouro: <input type="text" name="logradouro" value={enderecoData.logradouro} onChange={handleEnderecoChange} required /></label>
+                <label>Bairro: <input type="text" name="bairro" value={enderecoData.bairro} onChange={handleEnderecoChange} required /></label>
+                <label>Localidade (Cidade): <input type="text" name="localidade" value={enderecoData.localidade} onChange={handleEnderecoChange} required /></label>
+                <label>UF (Estado): <input type="text" name="uf" value={enderecoData.uf} onChange={handleEnderecoChange} maxLength={2} required /></label>
+                <label>Complemento: <input type="text" name="complemento" value={enderecoData.complemento || ''} onChange={handleEnderecoChange} /></label>
+                <label style={{display: 'none'}}>Latitude: <input type="number" step="any" name="latitude" value={enderecoData.latitude} readOnly /></label>
+                <label style={{display: 'none'}}>Longitude: <input type="number" step="any" name="longitude" value={enderecoData.longitude} readOnly /></label>
+
+                <button type="submit" disabled={buscandoCep || loading}>
+                    {loading ? 'Salvando...' : (buscandoCep ? 'Aguarde...' : 'Salvar Cliente Completo')}
+                </button>
+            </form>
+            {mensagem && !erro && <p className="message success">{mensagem}</p>}
+            {erro && <p className="message error">{erro}</p>}
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\deletar\[id]\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/deletar/[id]/page.tsx
+'use client';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+// CORREÇÃO DO CAMINHO ABAIXO:
+import { buscarClientePorId, deletarCliente } from '@/lib/apiService';
+import type { ClienteResponseDTO } from '@/lib/types';
+import Link from 'next/link';
+
+// ... (o resto do código do DeletarClienteConfirmPage permanece o mesmo da minha resposta anterior)
+// Cole o restante do código que já te enviei para esta página,
+// apenas certifique-se de que as importações acima estejam com o caminho '../../../../lib/'
+// Correto: ../../../lib/
+
+export default function DeletarClienteConfirmPage() {
+    const params = useParams();
+    const router = useRouter();
+    const idPath = Array.isArray(params.id) ? params.id[0] : params.id;
+
+    const [cliente, setCliente] = useState<ClienteResponseDTO | null>(null);
+    const [erro, setErro] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [deleting, setDeleting] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (idPath) {
+            const clienteId = Number(idPath);
+            if (isNaN(clienteId)) {
+                setErro("ID do cliente inválido na URL.");
+                setLoading(false);
+                return;
+            }
+            setLoading(true);
+            buscarClientePorId(clienteId)
+                .then(data => {
+                    setCliente(data);
+                    setErro(null);
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar cliente para deleção:", error);
+                    setErro(`Falha ao carregar cliente para deleção: ${error.message || 'Cliente não encontrado.'}`);
+                    setCliente(null);
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setErro("ID do cliente não fornecido para deleção.");
+            setLoading(false);
+        }
+    }, [idPath]);
+
+    const handleConfirmarDelecao = async () => {
+        if (cliente) {
+            setDeleting(true);
+            setErro(null);
+            try {
+                await deletarCliente(cliente.idCliente);
+                alert('Cliente deletado com sucesso!');
+                router.push('/clientes/listar');
+            } catch (error: any) {
+                console.error("Erro ao confirmar deleção:", error);
+                setErro(`Falha ao deletar cliente: ${error.message || 'Erro desconhecido.'}`);
+                // alert já está na UI
+                setDeleting(false);
+            }
+        }
+    };
+
+    if (loading) return <div className="container"><p>Carregando dados do cliente...</p></div>;
+    if (erro && !cliente) return <div className="container"><p className="message error">{erro}</p><Link href="/clientes/listar">Voltar para lista</Link></div>;
+    if (!cliente) return <div className="container"><p>Cliente não encontrado.</p><Link href="/clientes/listar">Voltar para lista</Link></div>;
+
+    return (
+        <div className="container">
+            <h1 className="page-title">Confirmar Deleção do Cliente</h1>
+            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
+                <p>Você tem certeza que deseja deletar o cliente:</p>
+                <p><strong>Nome:</strong> {cliente.nome} {cliente.sobrenome}</p>
+                <p><strong>Documento:</strong> {cliente.documento}</p>
+                <p style={{color: 'red', fontWeight: 'bold', margin: '20px 0'}}>Esta ação não pode ser desfeita.</p>
+                {erro && <p className="message error" style={{textAlign: 'left', marginBottom: '15px'}}>{erro}</p>}
+                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <button onClick={handleConfirmarDelecao} className="button-danger" disabled={deleting}>
+                        {deleting ? 'Deletando...' : 'Sim, Deletar Cliente'}
+                    </button>
+                    <Link href={`/clientes/${cliente.idCliente}`} className="button-secondary" style={{textDecoration:'none'}}>
+                        Cancelar
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\layout.tsx | arquivo layout.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/layout.tsx
+import Link from 'next/link';
+
+export default function ClientesLayout({
+                                           children,
+                                       }: {
+    children: React.ReactNode;
+}) {
+    const subNavStyle: React.CSSProperties = {
+        backgroundColor: '#e9ecef',
+        padding: '10px 20px',
+        marginBottom: '20px',
+        borderRadius: '4px',
+        display: 'flex',
+        gap: '15px',
+        flexWrap: 'wrap',
+    };
+    const subNavLinkStyle: React.CSSProperties = {
+        textDecoration: 'none',
+        color: '#007bff',
+        fontWeight: '500',
+    };
+
+    return (
+        <section className="container">
+            <nav style={subNavStyle}>
+                <Link href="/clientes/listar" style={subNavLinkStyle}>Listar Clientes</Link>
+                <Link href="/clientes/cadastrar" style={subNavLinkStyle}>Cadastrar Cliente</Link>
+                <Link href="/clientes/buscar" style={subNavLinkStyle}>Buscar Cliente</Link>
+            </nav>
+            {children}
+        </section>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\clientes\listar\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/clientes/listar/page.tsx
+'use client';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+// CORREÇÃO DO CAMINHO ABAIXO:
+import { listarClientes, deletarCliente } from '@/lib/apiService';
+import type { ClienteResponseDTO, Page } from '@/lib/types';
+
+export default function ListarClientesPage() {
+    const [clientesPage, setClientesPage] = useState<Page<ClienteResponseDTO> | null>(null);
+    const [erro, setErro] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [currentPage, setCurrentPage] = useState<number>(0);
+
+    const fetchClientes = async (page: number) => {
+        setLoading(true);
+        setErro(null);
+        try {
+            const data = await listarClientes(page, 5);
+            setClientesPage(data);
+        } catch (error: any) {
+            console.error("Erro ao buscar clientes:", error);
+            setErro(`Falha ao carregar clientes: ${error.message || 'Erro desconhecido'}`);
+            setClientesPage(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchClientes(currentPage);
+    }, [currentPage]);
+
+    const handleDeletar = async (id: number, nome: string) => {
+        if (window.confirm(`Tem certeza que deseja deletar o cliente "${nome}" (ID: ${id})?`)) {
+            try {
+                await deletarCliente(id);
+                alert('Cliente deletado com sucesso!');
+                if (clientesPage && clientesPage.content.length === 1 && currentPage > 0) {
+                    setCurrentPage(currentPage - 1);
+                } else {
+                    fetchClientes(currentPage);
+                }
+            } catch (error: any) {
+                console.error("Erro ao deletar cliente:", error);
+                alert(`Falha ao deletar cliente: ${error.message || 'Erro desconhecido'}`);
+            }
+        }
+    };
+
+    if (loading) return <div className="container"><p>Carregando clientes...</p></div>;
+    if (erro && (!clientesPage || clientesPage.content.length === 0)) return <div className="container"><p className="message error">{erro}</p></div>;
+    if (!clientesPage || clientesPage.content.length === 0) return <div className="container"><p>Nenhum cliente encontrado.</p><Link href="/clientes/cadastrar" className="button-primary" style={{ marginTop: '10px', display: 'inline-block' }}>Cadastrar Novo Cliente</Link></div>;
+
+    return (
+        <div className="container">
+            <h1 className="page-title">Lista de Clientes</h1>
+            <Link href="/clientes/cadastrar" style={{ display: 'inline-block', marginBottom: '20px', padding: '10px 15px', backgroundColor: '#28a745', color: 'white', textDecoration: 'none', borderRadius: '5px' }}>
+                Cadastrar Novo Cliente
+            </Link>
+            {erro && <p className="message error" style={{marginBottom: '15px'}}>{erro}</p>}
+            <ul className="item-list">
+                {clientesPage.content.map(cliente => (
+                    <li key={cliente.idCliente}>
+                        <div className="info">
+                            <strong>{cliente.nome} {cliente.sobrenome}</strong> (ID: {cliente.idCliente})<br />
+                            <span>Documento: {cliente.documento}</span><br/>
+                            {cliente.contatos && cliente.contatos.length > 0 && cliente.contatos[0].email && <span>Email: {cliente.contatos[0].email}</span>}
+                        </div>
+                        <div className="actions">
+                            <Link href={`/clientes/${cliente.idCliente}`} className="button-secondary" style={{marginRight: '8px', textDecoration:'none'}}>Ver</Link>
+                            <Link href={`/clientes/alterar/${cliente.idCliente}`} className="button-secondary" style={{marginRight: '8px', textDecoration:'none'}}>Editar</Link>
+                            <Link href={`/clientes/deletar/${cliente.idCliente}`} className="button-danger" style={{textDecoration:'none'}}>Deletar</Link>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={clientesPage.first || loading}>Anterior</button>
+                <span>Página {clientesPage.number + 1} de {clientesPage.totalPages}</span>
+                <button onClick={() => setCurrentPage(p => Math.min(clientesPage.totalPages - 1, p + 1))} disabled={clientesPage.last || loading}>Próxima</button>
+            </div>
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\layout.tsx | arquivo layout.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/layout.tsx
+import './globals.css';
+import Link from 'next/link';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "GS Frontend Teste",
+    description: "Aplicação para testar API da GS",
+};
+
+export default function RootLayout({
+                                       children,
+                                   }: {
+    children: React.ReactNode
+}) {
+    return (
+        <html lang="pt-BR">
+        <body>
+        <nav>
+            <Link href="/" className="logo">GS API Test</Link>
+            <Link href="/clientes/listar">Clientes</Link>
+            <Link href="/contatos/listar">Contatos</Link>
+            <Link href="/enderecos/listar">Endereços</Link>
+        </nav>
+        <main>
+            {children}
+        </main>
+        </body>
+        </html>
+    )
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/page.tsx
+import Link from 'next/link';
+
+export default function HomePage() {
+  const linkStyle: React.CSSProperties = {
+    display: 'inline-block',
+    margin: '10px',
+    padding: '12px 20px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '5px',
+    textAlign: 'center',
+    minWidth: '150px'
+  };
+
+  const containerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 100px)', // Ajustar altura baseado no navbar
+    padding: '20px'
+  };
+
+  return (
+      <div style={containerStyle} className="container">
+        <h1 className="page-title">Bem-vindo ao Teste da API GS</h1>
+        <p style={{textAlign: 'center', marginBottom: '30px', fontSize: '1.1em'}}>
+          Utilize a barra de navegação acima ou os links abaixo para gerenciar as entidades.
+        </p>
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link href="/clientes/listar" style={linkStyle}>Gerenciar Clientes</Link>
+          <Link href="/contatos/listar" style={linkStyle}>Gerenciar Contatos</Link>
+          <Link href="/enderecos/listar" style={linkStyle}>Gerenciar Endereços</Link>
+        </div>
+      </div>
+  );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// lib\apiService.ts | arquivo apiService.ts
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/lib/apiService.ts
+import type {
+    ClienteRequestDTO, ClienteResponseDTO,
+    ContatoRequestDTO, ContatoResponseDTO,
+    EnderecoRequestDTO, EnderecoResponseDTO,
+    NominatimResponseDTO, ViaCepResponseDTO, ApiErrorResponse, Page
+} from './types';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+
+async function handleResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({
+            message: response.statusText,
+            status: response.status,
+            timestamp: new Date().toISOString(),
+            details: "Erro ao processar resposta do servidor."
+        }));
+
+        let errorMessage = errorData.message || response.statusText;
+        if (errorData.details) {
+            const detailsString = Array.isArray(errorData.details) ? errorData.details.join(', ') : errorData.details;
+            errorMessage += ` Detalhes: ${detailsString}`;
+        }
+        console.error("API Error:", errorMessage, "Status:", response.status, "Full Error Data:", errorData);
+        throw new Error(errorMessage);
+    }
+    // Se for um 204 No Content, não há corpo para fazer .json()
+    if (response.status === 204) {
+        return null as T; // Ou Promise.resolve(null) dependendo do que T pode ser
+    }
+    return await response.json() as T;
+}
+
+// --- Cliente API ---
+export async function listarClientes(page: number = 0, size: number = 10): Promise<Page<ClienteResponseDTO>> {
+    const response = await fetch(`${API_BASE_URL}/clientes?page=${page}&size=${size}&sort=nome,asc`);
+    return handleResponse<Page<ClienteResponseDTO>>(response);
+}
+
+export async function buscarClientePorId(id: number): Promise<ClienteResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/clientes/${id}`);
+    return handleResponse<ClienteResponseDTO>(response);
+}
+
+export async function criarCliente(data: ClienteRequestDTO): Promise<ClienteResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/clientes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<ClienteResponseDTO>(response);
+}
+
+export async function atualizarCliente(id: number, data: ClienteRequestDTO): Promise<ClienteResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/clientes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<ClienteResponseDTO>(response);
+}
+
+export async function deletarCliente(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/clientes/${id}`, { method: 'DELETE' });
+    await handleResponse<void>(response); // Espera 204 No Content
+}
+
+// --- Contato API ---
+export async function listarContatos(page: number = 0, size: number = 10): Promise<Page<ContatoResponseDTO>> {
+    const response = await fetch(`${API_BASE_URL}/contatos?page=${page}&size=${size}&sort=email,asc`);
+    return handleResponse<Page<ContatoResponseDTO>>(response);
+}
+
+export async function buscarContatoPorId(id: number): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos/${id}`);
+    return handleResponse<ContatoResponseDTO>(response);
+}
+
+export async function buscarContatoPorEmail(email: string): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos/email/${email}`);
+    return handleResponse<ContatoResponseDTO>(response);
+}
+
+export async function criarContato(data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<ContatoResponseDTO>(response);
+}
+
+export async function atualizarContato(id: number, data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<ContatoResponseDTO>(response);
+}
+
+export async function deletarContato(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/contatos/${id}`, { method: 'DELETE' });
+    await handleResponse<void>(response);
+}
+
+// --- Endereco API ---
+export async function buscarEnderecoGeocodificado(cep: string, numero: string, complemento?: string): Promise<EnderecoResponseDTO> {
+    let url = `${API_BASE_URL}/enderecos/geocodificar/cep/${cep.replace(/\D/g, '')}?numero=${encodeURIComponent(numero)}`;
+    if (complemento) {
+        url += `&complemento=${encodeURIComponent(complemento)}`;
+    }
+    const response = await fetch(url);
+    return handleResponse<EnderecoResponseDTO>(response);
+}
+
+export async function listarEnderecos(page: number = 0, size: number = 10): Promise<Page<EnderecoResponseDTO>> {
+    const response = await fetch(`${API_BASE_URL}/enderecos?page=${page}&size=${size}&sort=logradouro,asc`);
+    return handleResponse<Page<EnderecoResponseDTO>>(response);
+}
+
+export async function buscarEnderecoPorId(id: number): Promise<EnderecoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`);
+    return handleResponse<EnderecoResponseDTO>(response);
+}
+
+export async function criarEndereco(data: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<EnderecoResponseDTO>(response);
+}
+
+export async function atualizarEndereco(id: number, data: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<EnderecoResponseDTO>(response);
+}
+
+export async function deletarEndereco(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`, { method: 'DELETE' });
+    await handleResponse<void>(response);
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// lib\types.ts | arquivo types.ts
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/lib/types.ts
+
+// Base para paginação (pode ser expandido)
+export interface Page<T> {
+    content: T[];
+    pageable: {
+        sort: {
+            sorted: boolean;
+            unsorted: boolean;
+            empty: boolean;
+        };
+        offset: number;
+        pageNumber: number;
+        pageSize: number;
+        paged: boolean;
+        unpaged: boolean;
+    };
+    last: boolean;
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+    sort: {
+        sorted: boolean;
+        unsorted: boolean;
+        empty: boolean;
+    };
+    first: boolean;
+    numberOfElements: number;
+    empty: boolean;
+}
+
+
+// DTOs de Contato
+export interface ContatoRequestDTO {
+    ddd: string;
+    telefone: string;
+    celular?: string;
+    whatsapp?: string;
+    email: string;
+    tipoContato: string;
+}
+
+export interface ContatoResponseDTO extends ContatoRequestDTO {
+    idContato: number;
+}
+
+// DTOs de Endereco
+export interface EnderecoRequestDTO {
+    cep: string;
+    numero: number;
+    logradouro: string;
+    bairro: string;
+    localidade: string; // Cidade
+    uf: string; // Estado
+    complemento?: string;
+    latitude: number; // No Java é BigDecimal, mas JSON transporta como number ou string
+    longitude: number; // No Java é BigDecimal
+}
+
+export interface EnderecoResponseDTO extends EnderecoRequestDTO {
+    idEndereco: number;
+    // eonetEventos?: EonetEventoResponseDTO[]; // Se for usar
+}
+
+// DTOs de Cliente
+export interface ClienteRequestDTO {
+    nome: string;
+    sobrenome: string;
+    dataNascimento: string; // Formato YYYY-MM-DD
+    documento: string;
+    contato?: ContatoRequestDTO; // Para criar/atualizar contato principal junto
+    endereco?: EnderecoRequestDTO; // Para criar/atualizar endereço principal junto
+    // Se a API for atualizada para aceitar IDs:
+    // contatoIds?: number[];
+    // enderecoIds?: number[];
+}
+
+export interface ClienteResponseDTO {
+    idCliente: number;
+    nome: string;
+    sobrenome: string;
+    dataNascimento: string;
+    documento: string;
+    contatos?: ContatoResponseDTO[];
+    enderecos?: EnderecoResponseDTO[];
+}
+
+// ViaCep
+export interface ViaCepResponseDTO {
+    cep: string;
+    logradouro: string;
+    complemento: string;
+    bairro: string;
+    localidade: string;
+    uf: string;
+    ibge: string;
+    gia: string;
+    ddd: string;
+    siafi: string;
+    erro?: boolean;
+}
+
+// Nominatim (simplificado)
+export interface NominatimResponseDTO {
+    place_id: string;
+    lat: string;
+    lon: string;
+    display_name: string;
+}
+
+// Para erros da API
+export interface ApiErrorResponse {
+    timestamp: string;
+    status: number;
+    message: string; // Mensagem principal do erro
+    details?: string[] | string; // Detalhes da validação ou outras infos
+}
+

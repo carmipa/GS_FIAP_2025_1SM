@@ -1,26 +1,199 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* src/app/globals.css */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+main {
+  padding: 20px;
+}
+
+h1, h2, h3 {
+  color: #1a2b4d; /* Azul escuro */
+}
+
+nav {
+  background-color: #1a2b4d; /* Azul escuro */
+  padding: 15px 30px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1em;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+nav a:hover {
+  background-color: #0056b3; /* Azul mais claro para hover */
+}
+
+nav .logo {
+  font-weight: bold;
+  font-size: 1.5em;
+  margin-right: auto; /* Empurra os outros links para a direita */
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 25px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+form h2 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #007bff; /* Azul para títulos de seção */
+  padding-bottom: 8px;
+  font-size: 1.4em;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  outline: none;
+}
+
+
+input[readonly] {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+button {
+  padding: 12px 20px;
+  background-color: #007bff; /* Azul primário */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.05em;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3; /* Azul mais escuro para hover */
+}
+
+button:disabled {
+  background-color: #adb5bd; /* Cinza para desabilitado */
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background-color: #6c757d; /* Cinza secundário */
+}
+.button-secondary:hover {
+  background-color: #5a6268;
+}
+
+.button-danger {
+  background-color: #dc3545; /* Vermelho perigo */
+}
+.button-danger:hover {
+  background-color: #c82333;
+}
+
+.message {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 0.95em;
+}
+
+.message.success {
+  background-color: #d1e7dd; /* Verde claro para sucesso */
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.message.error {
+  background-color: #f8d7da; /* Vermelho claro para erro */
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+/* Estilos para listas */
+.item-list {
+  list-style: none;
+  padding: 0;
+}
+.item-list li {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.item-list li .info {
+  flex-grow: 1;
+}
+.item-list li .actions button {
+  margin-left: 8px;
+  padding: 8px 12px;
+  font-size: 0.9em;
+}
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-title {
+  margin-bottom: 20px;
+  font-size: 2em;
+  color: #1a2b4d;
 }

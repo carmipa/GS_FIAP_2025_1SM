@@ -2,9 +2,13 @@
 package br.com.fiap.gs.gsapi.service;
 
 import br.com.fiap.gs.gsapi.dto.request.ClienteRequestDTO;
+import br.com.fiap.gs.gsapi.dto.request.ContatoRequestDTO;
+import br.com.fiap.gs.gsapi.dto.request.EnderecoRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.ClienteResponseDTO;
 import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
 import br.com.fiap.gs.gsapi.mapper.ClienteMapper;
+import br.com.fiap.gs.gsapi.mapper.ContatoMapper;
+import br.com.fiap.gs.gsapi.mapper.EnderecoMapper;
 import br.com.fiap.gs.gsapi.model.Cliente;
 import br.com.fiap.gs.gsapi.model.Contato;
 import br.com.fiap.gs.gsapi.model.Endereco;
@@ -19,17 +23,16 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException; // Para usar no deletar
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils; // Para CollectionUtils.isEmpty
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @CacheConfig(cacheNames = "clientes")
@@ -39,16 +42,25 @@ public class ClienteService {
     private final ContatoRepository contatoRepository;
     private final EnderecoRepository enderecoRepository;
     private final ClienteMapper clienteMapper;
+    private final ContatoMapper contatoMapper;
+    private final EnderecoMapper enderecoMapper;
+    private final EnderecoGeocodingService enderecoGeocodingService;
 
     @Autowired
     public ClienteService(ClienteRepository clienteRepository,
                           ContatoRepository contatoRepository,
                           EnderecoRepository enderecoRepository,
-                          ClienteMapper clienteMapper) {
+                          ClienteMapper clienteMapper,
+                          ContatoMapper contatoMapper,
+                          EnderecoMapper enderecoMapper,
+                          EnderecoGeocodingService enderecoGeocodingService) {
         this.clienteRepository = clienteRepository;
         this.contatoRepository = contatoRepository;
         this.enderecoRepository = enderecoRepository;
         this.clienteMapper = clienteMapper;
+        this.contatoMapper = contatoMapper;
+        this.enderecoMapper = enderecoMapper;
+        this.enderecoGeocodingService = enderecoGeocodingService;
     }
 
     @Transactional(readOnly = true)
@@ -68,46 +80,75 @@ public class ClienteService {
     }
 
     @Transactional
-    @CacheEvict(value = "clientes", allEntries = true) // Invalida todos os caches de cliente na criação
+    @CacheEvict(value = "clientes", allEntries = true)
     public ClienteResponseDTO criar(ClienteRequestDTO clienteRequestDTO) {
         clienteRepository.findByDocumento(clienteRequestDTO.getDocumento()).ifPresent(c -> {
             throw new IllegalArgumentException("Cliente com o documento '" + clienteRequestDTO.getDocumento() + "' já existe.");
         });
 
         Cliente cliente = clienteMapper.toCliente(clienteRequestDTO);
+        cliente.setContatos(new HashSet<>());
+        cliente.setEnderecos(new HashSet<>());
 
-        // Associar contatos existentes
-        if (!CollectionUtils.isEmpty(clienteRequestDTO.getContatoIds())) {
-            Set<Contato> contatosParaAssociar = new HashSet<>(contatoRepository.findAllById(clienteRequestDTO.getContatoIds()));
-            if (contatosParaAssociar.size() != clienteRequestDTO.getContatoIds().size()) {
-                throw new ResourceNotFoundException("Um ou mais IDs de contato fornecidos não foram encontrados.");
-            }
-            // Usar os métodos addContato para manter a bidirecionalidade se implementado corretamente
-            contatosParaAssociar.forEach(cliente::addContato);
+        // Processar e criar/associar Contato Principal
+        if (clienteRequestDTO.getContato() == null) {
+            throw new IllegalArgumentException("Dados de contato principal são obrigatórios para criar um cliente.");
+        }
+        ContatoRequestDTO contatoDto = clienteRequestDTO.getContato();
+        Optional<Contato> contatoExistenteOpt = contatoRepository.findByEmail(contatoDto.getEmail());
+        Contato contatoParaAssociar;
+        if (contatoExistenteOpt.isPresent()) {
+            contatoParaAssociar = contatoExistenteOpt.get();
+            contatoMapper.updateContatoFromDto(contatoDto, contatoParaAssociar); // Atualiza dados do existente
+            contatoParaAssociar = contatoRepository.save(contatoParaAssociar);
+        } else {
+            Contato novoContato = contatoMapper.toContato(contatoDto);
+            contatoParaAssociar = contatoRepository.save(novoContato);
+        }
+        cliente.addContato(contatoParaAssociar);
+
+        // Processar e criar/associar Endereco Principal
+        if (clienteRequestDTO.getEndereco() == null) {
+            throw new IllegalArgumentException("Dados de endereço principal são obrigatórios para criar um cliente.");
+        }
+        EnderecoRequestDTO enderecoDto = clienteRequestDTO.getEndereco();
+        Endereco enderecoParaAssociar = enderecoGeocodingService.obterOuCriarEnderecoCompleto(
+                enderecoDto.getCep(),
+                String.valueOf(enderecoDto.getNumero()), // Geocoding service espera String
+                enderecoDto.getComplemento()
+        ).orElseThrow(() -> new RuntimeException("Não foi possível processar o endereço do cliente."));
+
+        // Se o DTO de endereço do cliente já vier com lat/lon e você confia neles,
+        // pode atualizar o 'enderecoParaAssociar' aqui, APÓS o geocoding service (que pode já ter salvo).
+        // Isso é útil se o frontend fornecer coordenadas mais precisas (ex: de um clique no mapa).
+        boolean enderecoAtualizadoComLatLonDoDto = false;
+        if (enderecoDto.getLatitude() != null && enderecoParaAssociar.getLatitude().compareTo(enderecoDto.getLatitude()) != 0) {
+            enderecoParaAssociar.setLatitude(enderecoDto.getLatitude());
+            enderecoAtualizadoComLatLonDoDto = true;
+        }
+        if (enderecoDto.getLongitude() != null && enderecoParaAssociar.getLongitude().compareTo(enderecoDto.getLongitude()) != 0) {
+            enderecoParaAssociar.setLongitude(enderecoDto.getLongitude());
+            enderecoAtualizadoComLatLonDoDto = true;
+        }
+        if (enderecoAtualizadoComLatLonDoDto) {
+            enderecoParaAssociar = enderecoRepository.save(enderecoParaAssociar); // Salva as novas lat/lon
         }
 
-        // Associar endereços existentes
-        if (!CollectionUtils.isEmpty(clienteRequestDTO.getEnderecoIds())) {
-            Set<Endereco> enderecosParaAssociar = new HashSet<>(enderecoRepository.findAllById(clienteRequestDTO.getEnderecoIds()));
-            if (enderecosParaAssociar.size() != clienteRequestDTO.getEnderecoIds().size()) {
-                throw new ResourceNotFoundException("Um ou mais IDs de endereço fornecidos não foram encontrados.");
-            }
-            // Usar os métodos addEndereco para manter a bidirecionalidade
-            enderecosParaAssociar.forEach(cliente::addEndereco);
-        }
+        cliente.addEndereco(enderecoParaAssociar);
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
         return clienteMapper.toClienteResponseDTO(clienteSalvo);
     }
 
     @Transactional
-    @CachePut(value = "clientes", key = "#id") // Atualiza o cache do cliente específico
-    @CacheEvict(value = "clientes", allEntries = true, condition = "#result != null && #root.methodName == 'atualizar'") // Invalida outros caches de cliente (listas) na atualização bem-sucedida
+    @CachePut(value = "clientes", key = "#id")
+    @CacheEvict(value = "clientes", allEntries = true, condition = "#result != null") // Removido #root.methodName para simplificar
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO clienteRequestDTO) {
         Cliente clienteExistente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + id));
 
-        if (clienteRequestDTO.getDocumento() != null && !clienteExistente.getDocumento().equals(clienteRequestDTO.getDocumento())) {
+        if (clienteRequestDTO.getDocumento() != null &&
+                !clienteExistente.getDocumento().equals(clienteRequestDTO.getDocumento())) {
             clienteRepository.findByDocumento(clienteRequestDTO.getDocumento()).ifPresent(c -> {
                 if (!c.getIdCliente().equals(id)) {
                     throw new IllegalArgumentException("Outro cliente com o documento '" + clienteRequestDTO.getDocumento() + "' já existe.");
@@ -117,43 +158,60 @@ public class ClienteService {
 
         clienteMapper.updateClienteFromDto(clienteRequestDTO, clienteExistente);
 
-        // Atualizar associações de contatos
-        // Remove todos os contatos existentes e adiciona os novos (abordagem simples)
-        // Para uma abordagem mais otimizada (delta), seria necessário comparar as coleções.
-        clienteExistente.getContatos().clear(); // Cuidado com a bidirecionalidade aqui, o ideal é chamar removeContato
-        // Melhor:
-        // new HashSet<>(clienteExistente.getContatos()).forEach(clienteExistente::removeContato);
+        // Atualizar Contato Principal (se fornecido no DTO)
+        if (clienteRequestDTO.getContato() != null) {
+            ContatoRequestDTO contatoDto = clienteRequestDTO.getContato();
+            // Lógica: Remove todos os contatos associados antigos e adiciona/atualiza o novo.
+            // Isso assume que um cliente tem apenas UM contato principal gerenciado por este fluxo.
+            Set<Contato> contatosAtuais = new HashSet<>(clienteExistente.getContatos());
+            contatosAtuais.forEach(clienteExistente::removeContato); // Garante desassociação bidirecional
 
-
-        if (!CollectionUtils.isEmpty(clienteRequestDTO.getContatoIds())) {
-            Set<Contato> contatosParaAssociar = new HashSet<>(contatoRepository.findAllById(clienteRequestDTO.getContatoIds()));
-            if (contatosParaAssociar.size() != clienteRequestDTO.getContatoIds().size()) {
-                throw new ResourceNotFoundException("Um ou mais IDs de contato fornecidos para atualização não foram encontrados.");
+            Optional<Contato> contatoExistenteNoBancoOpt = contatoRepository.findByEmail(contatoDto.getEmail());
+            Contato contatoParaAssociar;
+            if (contatoExistenteNoBancoOpt.isPresent()) {
+                contatoParaAssociar = contatoExistenteNoBancoOpt.get();
+                contatoMapper.updateContatoFromDto(contatoDto, contatoParaAssociar);
+            } else {
+                contatoParaAssociar = contatoMapper.toContato(contatoDto);
             }
-            contatosParaAssociar.forEach(clienteExistente::addContato);
-        } else {
-            // Se a lista de contatoIds for vazia, significa que todos os contatos devem ser desassociados.
-            // Precisamos garantir que a relação bidirecional seja desfeita.
-            Set<Contato> contatosAtuais = new HashSet<>(clienteExistente.getContatos()); // Copia para evitar ConcurrentModificationException
-            contatosAtuais.forEach(contato -> clienteExistente.removeContato(contato));
+            contatoParaAssociar = contatoRepository.save(contatoParaAssociar);
+            clienteExistente.addContato(contatoParaAssociar);
         }
+        // Se clienteRequestDTO.getContato() for null, a lógica de atualização pode
+        // optar por manter os contatos existentes ou removê-los.
+        // A lógica atual com forEach(removeContato) já os removeria se o DTO não trouxesse um novo.
 
-
-        // Atualizar associações de endereços (abordagem similar)
-        // new HashSet<>(clienteExistente.getEnderecos()).forEach(clienteExistente::removeEndereco);
-
-        if (!CollectionUtils.isEmpty(clienteRequestDTO.getEnderecoIds())) {
-            Set<Endereco> enderecosParaAssociar = new HashSet<>(enderecoRepository.findAllById(clienteRequestDTO.getEnderecoIds()));
-            if (enderecosParaAssociar.size() != clienteRequestDTO.getEnderecoIds().size()) {
-                throw new ResourceNotFoundException("Um ou mais IDs de endereço fornecidos para atualização não foram encontrados.");
-            }
-            enderecosParaAssociar.forEach(clienteExistente::addEndereco);
-        } else {
-            // Se a lista de enderecoIds for vazia, desassociar todos os endereços.
+        // Atualizar Endereço Principal (se fornecido no DTO)
+        if (clienteRequestDTO.getEndereco() != null) {
+            EnderecoRequestDTO enderecoDto = clienteRequestDTO.getEndereco();
+            // Lógica: Remove todos os endereços associados antigos e adiciona/atualiza o novo.
             Set<Endereco> enderecosAtuais = new HashSet<>(clienteExistente.getEnderecos());
-            enderecosAtuais.forEach(endereco -> clienteExistente.removeEndereco(endereco));
-        }
+            enderecosAtuais.forEach(clienteExistente::removeEndereco); // Garante desassociação bidirecional
 
+            // Usar o geocoding service para obter ou criar o endereço.
+            // Isso também garante que o endereço seja persistido/atualizado no banco.
+            Endereco enderecoParaAssociar = enderecoGeocodingService.obterOuCriarEnderecoCompleto(
+                    enderecoDto.getCep(),
+                    String.valueOf(enderecoDto.getNumero()),
+                    enderecoDto.getComplemento()
+            ).orElseThrow(() -> new RuntimeException("Não foi possível processar o endereço para atualização do cliente."));
+
+            // Se o DTO tiver lat/lon e forem diferentes do que o geocoding retornou/encontrou, atualize.
+            boolean enderecoAtualizadoComLatLonDoDto = false;
+            if (enderecoDto.getLatitude() != null && (enderecoParaAssociar.getLatitude() == null || enderecoParaAssociar.getLatitude().compareTo(enderecoDto.getLatitude()) != 0)) {
+                enderecoParaAssociar.setLatitude(enderecoDto.getLatitude());
+                enderecoAtualizadoComLatLonDoDto = true;
+            }
+            if (enderecoDto.getLongitude() != null && (enderecoParaAssociar.getLongitude() == null || enderecoParaAssociar.getLongitude().compareTo(enderecoDto.getLongitude()) != 0 )) {
+                enderecoParaAssociar.setLongitude(enderecoDto.getLongitude());
+                enderecoAtualizadoComLatLonDoDto = true;
+            }
+            if (enderecoAtualizadoComLatLonDoDto) {
+                enderecoParaAssociar = enderecoRepository.save(enderecoParaAssociar);
+            }
+
+            clienteExistente.addEndereco(enderecoParaAssociar);
+        }
 
         Cliente clienteAtualizado = clienteRepository.save(clienteExistente);
         return clienteMapper.toClienteResponseDTO(clienteAtualizado);
@@ -165,14 +223,10 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + id + " para exclusão."));
 
-        // A deleção em cascata ou a manutenção da integridade referencial
-        // são geralmente tratadas pela configuração do JPA (orphanRemoval, CascadeType.REMOVE)
-        // ou por constraints no banco de dados.
-        // Como Cliente é o "dono" das tabelas de junção (gs_clientecontato, gs_clienteendereco),
-        // a remoção do cliente deve remover as entradas correspondentes nessas tabelas de junção.
-        // As entidades Contato e Endereco em si não serão removidas por padrão, apenas a associação.
-        // Isso está correto se Contatos e Enderecos podem existir independentemente.
-
+        // A remoção das entradas nas tabelas de junção (gs_clientecontato, gs_clienteendereco)
+        // será gerenciada pelo JPA devido à propriedade do relacionamento e CascadeType.MERGE/PERSIST.
+        // As entidades Contato e Endereco em si não são deletadas em cascata do Cliente,
+        // o que é geralmente o comportamento desejado.
         clienteRepository.deleteById(id);
     }
 }

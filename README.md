@@ -1,3 +1,5 @@
+[![Global Solution](https://img.shields.io/badge/Global%20Solution-FIAP-blue)](https://www.fiap.com.br/graduacao/global-solution/)
+
 ![GLOBAL SOLUTION 2025 - 1º SEMESTRE](https://raw.githubusercontent.com/carmipa/GS_FIAP_2025_1SM/main/Captura%20de%20tela%202025-05-26%20125818.png)
 
 # **Global Solution 2025 – 1º Semestre**
@@ -259,7 +261,11 @@ colocar em prática. Afinal, quando ideias ganham propósito, elas têm o poder 
 
 ## <a name="documentacao"></a>📑 **Documentação**
 
-* [![PDF Completo](https://img.shields.io/badge/PDF-Completo-red?style=for-the-badge&logo=adobeacrobat&logoColor=white)](https://drive.google.com/file/d/1S9JgR8bm5PixnYltjLNFrIhC8glJuK3f/view?usp=sharing)
+[![PDF Completo](https://img.shields.io/badge/PDF-Completo-red?style=for-the-badge&logo=adobeacrobat&logoColor=white)](https://drive.google.com/file/d/1S9JgR8bm5PixnYltjLNFrIhC8glJuK3f/view?usp=sharing)
+
+---
+
+[![Global Solution](https://img.shields.io/badge/Global%20Solution-FIAP-blue)](https://www.fiap.com.br/graduacao/global-solution/)
 
 [🔝 Voltar ao topo](#)
 

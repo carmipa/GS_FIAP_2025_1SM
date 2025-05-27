@@ -1,5 +1,3 @@
-// Pacote: br.com.fiap.gs.gsapi.dto.request
-
 package br.com.fiap.gs.gsapi.dto.request;
 
 import jakarta.validation.constraints.DecimalMax;
@@ -10,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal; // IMPORTAR
 
 public class EnderecoRequestDTO {
 
@@ -19,7 +18,7 @@ public class EnderecoRequestDTO {
 
     @NotNull(message = "O número não pode ser nulo")
     @Min(value = 1, message = "O número deve ser no mínimo 1")
-    @Max(value = 99999, message = "O número deve ser no máximo 99999") // Conforme DDL NUMBER(5)
+    @Max(value = 99999, message = "O número deve ser no máximo 99999")
     private int numero;
 
     @NotBlank(message = "O logradouro não pode estar em branco")
@@ -39,24 +38,25 @@ public class EnderecoRequestDTO {
     private String uf;
 
     @Size(max = 255, message = "O complemento deve ter no máximo 255 caracteres")
-    private String complemento; // Complemento é opcional
+    private String complemento; // Complemento é opcional, mas o DDL tinha NOT NULL. Ajuste conforme necessidade.
 
     @NotNull(message = "A latitude não pode ser nula")
-    @DecimalMin(value = "-90.0", message = "Latitude mínima é -90.0")
-    @DecimalMax(value = "90.0", message = "Latitude máxima é 90.0")
-    @Digits(integer = 3, fraction = 7, message = "Latitude deve ter até 3 dígitos inteiros e 7 fracionários") // Para NUMBER(10,7)
-    private Double latitude;
+    @DecimalMin(value = "-90.0000000", inclusive = true, message = "Latitude mínima é -90.0")
+    @DecimalMax(value = "90.0000000", inclusive = true, message = "Latitude máxima é 90.0")
+    @Digits(integer = 3, fraction = 7, message = "Latitude deve ter até 3 dígitos inteiros e 7 fracionários")
+    private BigDecimal latitude; // ALTERADO para BigDecimal
 
     @NotNull(message = "A longitude não pode ser nula")
-    @DecimalMin(value = "-180.0", message = "Longitude mínima é -180.0")
-    @DecimalMax(value = "180.0", message = "Longitude máxima é 180.0")
-    @Digits(integer = 3, fraction = 7, message = "Longitude deve ter até 3 dígitos inteiros e 7 fracionários") // Para NUMBER(10,7)
-    private Double longitude;
+    @DecimalMin(value = "-180.0000000", inclusive = true, message = "Longitude mínima é -180.0")
+    @DecimalMax(value = "180.0000000", inclusive = true, message = "Longitude máxima é 180.0")
+    @Digits(integer = 3, fraction = 7, message = "Longitude deve ter até 3 dígitos inteiros e 7 fracionários")
+    private BigDecimal longitude; // ALTERADO para BigDecimal
 
     public EnderecoRequestDTO() {
     }
 
-    public EnderecoRequestDTO(String cep, int numero, String logradouro, String bairro, String localidade, String uf, String complemento, Double latitude, Double longitude) {
+    // Construtor atualizado
+    public EnderecoRequestDTO(String cep, int numero, String logradouro, String bairro, String localidade, String uf, String complemento, BigDecimal latitude, BigDecimal longitude) {
         this.cep = cep;
         this.numero = numero;
         this.logradouro = logradouro;
@@ -68,6 +68,7 @@ public class EnderecoRequestDTO {
         this.longitude = longitude;
     }
 
+    // Getters e Setters
     public String getCep() { return cep; }
     public void setCep(String cep) { this.cep = cep; }
     public int getNumero() { return numero; }
@@ -82,8 +83,8 @@ public class EnderecoRequestDTO {
     public void setUf(String uf) { this.uf = uf; }
     public String getComplemento() { return complemento; }
     public void setComplemento(String complemento) { this.complemento = complemento; }
-    public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
-    public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public BigDecimal getLatitude() { return latitude; } // Tipo de retorno atualizado
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; } // Tipo do parâmetro atualizado
+    public BigDecimal getLongitude() { return longitude; } // Tipo de retorno atualizado
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; } // Tipo do parâmetro atualizado
 }

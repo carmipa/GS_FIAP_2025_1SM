@@ -1,19 +1,20 @@
 package br.com.fiap.gs.gsapi.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.*; // Para todas as anotações JPA
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
-@Table(name = "gs_contato")
+@Table(name = "gs_contato", uniqueConstraints = {
+        @UniqueConstraint(name = "unq_gs_contato_email", columnNames = {"email"})
+})
 public class Contato {
 
     @Id
-    @SequenceGenerator(name = "gs_contato_seq", sequenceName = "gs_contato_id_contato_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gs_contato_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_contato")
-    private long idContato;
+    private Long idContato;
 
     @Column(name = "ddd", length = 3, nullable = false)
     private String ddd;
@@ -33,7 +34,7 @@ public class Contato {
     @Column(name = "tipo_contato", length = 50, nullable = false)
     private String tipoContato;
 
-    @ManyToMany(mappedBy = "contatos", fetch = FetchType.LAZY) // Mapeado pelo campo "contatos" em Cliente
+    @ManyToMany(mappedBy = "contatos", fetch = FetchType.LAZY)
     private Set<Cliente> clientes = new HashSet<>();
 
     public Contato() {
@@ -48,10 +49,9 @@ public class Contato {
         this.tipoContato = tipoContato;
     }
 
-    // Getters e Setters para todos os campos
-
-    public long getIdContato() { return idContato; }
-    public void setIdContato(long idContato) { this.idContato = idContato; }
+    // Getters e Setters
+    public Long getIdContato() { return idContato; }
+    public void setIdContato(Long idContato) { this.idContato = idContato; }
     public String getDdd() { return ddd; }
     public void setDdd(String ddd) { this.ddd = ddd; }
     public String getTelefone() { return telefone; }
@@ -64,19 +64,38 @@ public class Contato {
     public void setEmail(String email) { this.email = email; }
     public String getTipoContato() { return tipoContato; }
     public void setTipoContato(String tipoContato) { this.tipoContato = tipoContato; }
-    public Set<Cliente> getClientes() { return clientes; }
-    public void setClientes(Set<Cliente> clientes) { this.clientes = clientes; }
+
+    public Set<Cliente> getClientes() {
+        return clientes;
+    }
+
+    Set<Cliente> getClientesInternal() {
+        return clientes;
+    }
+
+    protected void setClientes(Set<Cliente> clientes) {
+        this.clientes = clientes;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Contato contato = (Contato) o;
-        return idContato != 0 && idContato == contato.idContato;
+        return idContato != null && idContato.equals(contato.idContato);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idContato);
+        return idContato != null ? Objects.hash(idContato) : super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Contato{" +
+                "idContato=" + idContato +
+                ", email='" + email + '\'' +
+                ", tipoContato='" + tipoContato + '\'' +
+                '}';
     }
 }

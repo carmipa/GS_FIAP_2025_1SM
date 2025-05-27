@@ -1,7 +1,7 @@
 // Pacote: br.com.fiap.gs.gsapi.dto.response
-
 package br.com.fiap.gs.gsapi.dto.response;
 
+import java.math.BigDecimal; // IMPORTAR
 import java.util.Set;
 
 public class EnderecoResponseDTO {
@@ -13,14 +13,14 @@ public class EnderecoResponseDTO {
     private String localidade;
     private String uf;
     private String complemento;
-    private double latitude;
-    private double longitude;
-    private Set<EonetEventoResponseDTO> eonetEventos; // Assumindo que você terá um DTO para EonetEventos
+    private BigDecimal latitude;  // ALTERADO para BigDecimal
+    private BigDecimal longitude; // ALTERADO para BigDecimal
+    private Set<EonetEventoResponseDTO> eonetEventos;
 
     public EnderecoResponseDTO() {
     }
 
-    // Construtor, Getters e Setters
+    // Getters e Setters
     public long getIdEndereco() { return idEndereco; }
     public void setIdEndereco(long idEndereco) { this.idEndereco = idEndereco; }
     public String getCep() { return cep; }
@@ -37,10 +37,10 @@ public class EnderecoResponseDTO {
     public void setUf(String uf) { this.uf = uf; }
     public String getComplemento() { return complemento; }
     public void setComplemento(String complemento) { this.complemento = complemento; }
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public BigDecimal getLatitude() { return latitude; } // Tipo de retorno atualizado
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; } // Tipo do parâmetro atualizado
+    public BigDecimal getLongitude() { return longitude; } // Tipo de retorno atualizado
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; } // Tipo do parâmetro atualizado
     public Set<EonetEventoResponseDTO> getEonetEventos() { return eonetEventos; }
     public void setEonetEventos(Set<EonetEventoResponseDTO> eonetEventos) { this.eonetEventos = eonetEventos; }
 }

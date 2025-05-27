@@ -2,7 +2,8 @@ package br.com.fiap.gs.gsapi.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-// importe outras anotações de validação conforme necessário
+import java.util.Set; // Importar Set
+import java.util.HashSet; // Importar HashSet
 
 public class ClienteRequestDTO {
 
@@ -22,10 +23,11 @@ public class ClienteRequestDTO {
     @Size(max = 18, message = "O documento deve ter no máximo 18 caracteres")
     private String documento;
 
-    // Relacionamentos (contatos, endereços) geralmente são gerenciados
-    // através de IDs em DTOs ou por endpoints separados.
-    // Ex: private Set<Long> idsContatos;
-    // Ou você pode aninhar CreateContatoRequestDTO etc., mas pode ficar complexo.
+    // IDs dos contatos existentes a serem associados
+    private Set<Long> contatoIds = new HashSet<>();
+
+    // IDs dos endereços existentes a serem associados
+    private Set<Long> enderecoIds = new HashSet<>();
 
     public ClienteRequestDTO() {
     }
@@ -39,4 +41,10 @@ public class ClienteRequestDTO {
     public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
     public String getDocumento() { return documento; }
     public void setDocumento(String documento) { this.documento = documento; }
+
+    public Set<Long> getContatoIds() { return contatoIds; }
+    public void setContatoIds(Set<Long> contatoIds) { this.contatoIds = contatoIds; }
+
+    public Set<Long> getEnderecoIds() { return enderecoIds; }
+    public void setEnderecoIds(Set<Long> enderecoIds) { this.enderecoIds = enderecoIds; }
 }

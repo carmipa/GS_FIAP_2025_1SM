@@ -1,7 +1,7 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="D9DD507D-FB18-BA24-9D45-BCE82F074961" name="GS_CLIENTE">
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="50E72CE3-6FC1-2187-A093-F7E57065E5A4" name="GS_EONET">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:04:40 UTC</createdTime>
+<createdTime>2025-05-27 10:16:41 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
 <item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
@@ -15,9 +15,9 @@
 <minVolumes>0</minVolumes>
 <normalForm>Third</normalForm>
 <attributes itemClass="oracle.dbtools.crest.model.design.logical.Attribute">
-<Attribute name="id_cliente" id="355BFB94-ECFE-F8DB-69D2-03E842D8EC6C">
+<Attribute name="id_eonet" id="2A8E9037-E677-8513-B224-BD8952405EE5">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:04:55 UTC</createdTime>
+<createdTime>2025-05-27 10:17:29 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
 <item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
@@ -27,35 +27,35 @@
 <logicalDatatype>LOGDT019</logicalDatatype>
 <ownDataTypeParameters>,,</ownDataTypeParameters>
 </Attribute>
-<Attribute name="nome" id="A73D94E4-E664-89A6-F694-CCC84844227E">
+<Attribute name="json" id="2E71CD2F-E57E-AC94-21F7-CC4D67B5CD24">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:07:33 UTC</createdTime>
+<createdTime>2025-05-27 10:17:45 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
 <item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
+<nullsAllowed>true</nullsAllowed>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
-<logicalDatatype>LOGDT024</logicalDatatype>
-<dataTypeSize>100</dataTypeSize>
-<ownDataTypeParameters>100,,</ownDataTypeParameters>
+<logicalDatatype>LOGDT028</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
 </Attribute>
-<Attribute name="sobrenome" id="E88D5441-252B-9803-D35B-D1028A504B6D">
+<Attribute name="data" id="E581AA56-B572-EA55-C793-BB1D66C64670">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:07:48 UTC</createdTime>
+<createdTime>2025-05-27 10:19:39 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
 <item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
+<nullsAllowed>true</nullsAllowed>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
-<logicalDatatype>LOGDT024</logicalDatatype>
-<dataTypeSize>100</dataTypeSize>
-<ownDataTypeParameters>100,,</ownDataTypeParameters>
+<logicalDatatype>LOGDT047</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
 </Attribute>
-<Attribute name="data_nascimento" id="A25AF195-EFB8-6D5F-99A0-0662ED5DF77A">
+<Attribute name="eonet_id" id="5769A29B-F657-C139-66C6-4B228A4EE755">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:08:03 UTC</createdTime>
+<createdTime>2025-05-27 11:12:35 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
 <item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
@@ -63,27 +63,14 @@
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
 <logicalDatatype>LOGDT024</logicalDatatype>
-<dataTypeSize>10</dataTypeSize>
-<ownDataTypeParameters>10,,</ownDataTypeParameters>
-</Attribute>
-<Attribute name="documento" id="7393C2D2-909E-7DA9-A389-6429B7F772F8">
-<createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:08:28 UTC</createdTime>
-<ownerDesignName>modelo_logico</ownerDesignName>
-<engineerTo>
-<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
-</engineerTo>
-<useDomainConstraints>false</useDomainConstraints>
-<use>1</use>
-<logicalDatatype>LOGDT024</logicalDatatype>
-<dataTypeSize>18</dataTypeSize>
-<ownDataTypeParameters>18,,</ownDataTypeParameters>
+<dataTypeSize>50</dataTypeSize>
+<ownDataTypeParameters>50,,</ownDataTypeParameters>
 </Attribute>
 </attributes>
 <identifiers itemClass="oracle.dbtools.crest.model.design.logical.CandidateKey">
-<identifier id="27B6DE8C-C2D5-59E8-F06C-B2B32BFD3BB1" name="GS_CLIENTE PK">
+<identifier id="ACC8312B-1DF6-2D30-6626-68F0A7A0BACA" name="GS_EONET_EVENTOS PK">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:05:27 UTC</createdTime>
+<createdTime>2025-05-27 10:17:41 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <shouldEngineer>false</shouldEngineer>
 <engineerTo>
@@ -91,7 +78,7 @@
 </engineerTo>
 <pk>true</pk>
 <usedAttributes>
-<attributeRef>355BFB94-ECFE-F8DB-69D2-03E842D8EC6C</attributeRef>
+<attributeRef>2A8E9037-E677-8513-B224-BD8952405EE5</attributeRef>
 </usedAttributes>
 </identifier>
 </identifiers>

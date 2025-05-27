@@ -1,0 +1,85 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="78142522-6635-BA5B-D087-6FE077C2813D" name="GS_CLIENTE">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>D9DD507D-FB18-BA24-9D45-BCE82F074961</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="id_cliente" id="4217354C-94E3-4A51-920E-299EE9B1B0F9">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>355BFB94-ECFE-F8DB-69D2-03E842D8EC6C</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="nome" id="96C3F51B-BA45-CEF6-C4ED-9DCF3ED94F44">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>A73D94E4-E664-89A6-F694-CCC84844227E</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>100</dataTypeSize>
+<ownDataTypeParameters>100,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="sobrenome" id="501E0453-8AD6-4403-D3CD-8BA2DA876201">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>E88D5441-252B-9803-D35B-D1028A504B6D</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>100</dataTypeSize>
+<ownDataTypeParameters>100,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="data_nascimento" id="F9EB1BE7-9C07-6A0F-091A-B87ED79CA830">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>A25AF195-EFB8-6D5F-99A0-0662ED5DF77A</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10</dataTypeSize>
+<ownDataTypeParameters>10,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="documento" id="5976D2ED-D49F-545D-86B9-AC2A44D4A689">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>7393C2D2-909E-7DA9-A389-6429B7F772F8</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>18</dataTypeSize>
+<ownDataTypeParameters>18,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="AEC17863-CE0F-6380-22F6-DD02472EE695" name="GS_CLIENTE_PK">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>27B6DE8C-C2D5-59E8-F06C-B2B32BFD3BB1</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="4217354C-94E3-4A51-920E-299EE9B1B0F9"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

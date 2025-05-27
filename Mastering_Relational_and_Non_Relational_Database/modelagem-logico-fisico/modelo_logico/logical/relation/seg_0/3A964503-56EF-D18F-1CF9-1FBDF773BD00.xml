@@ -1,10 +1,10 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Relation class="oracle.dbtools.crest.model.design.logical.Relation" name="Relation_2" directorySegmentName="seg_0" id="1D82CCFD-0402-BF88-6A33-3F55C2E7165B">
+<Relation class="oracle.dbtools.crest.model.design.logical.Relation" name="Relation_9" directorySegmentName="seg_0" id="3A964503-56EF-D18F-1CF9-1FBDF773BD00">
 <createdBy>paulo</createdBy>
-<createdTime>2025-05-26 23:17:55 UTC</createdTime>
+<createdTime>2025-05-27 11:21:25 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <sourcePk>AC8BF994-3838-4894-E5C5-B03AC9462228</sourcePk>
 <identifying>true</identifying>

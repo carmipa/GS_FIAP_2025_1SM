@@ -4,7 +4,7 @@
 <createdTime>2025-05-26 23:13:55 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <adequatelyNormalized>NO</adequatelyNormalized>
 <expectedVolumes>0</expectedVolumes>
@@ -20,7 +20,7 @@
 <createdTime>2025-05-26 23:14:08 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -32,7 +32,7 @@
 <createdTime>2025-05-26 23:16:04 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -45,7 +45,7 @@
 <createdTime>2025-05-26 23:14:23 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -58,7 +58,7 @@
 <createdTime>2025-05-26 23:14:44 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -71,7 +71,7 @@
 <createdTime>2025-05-26 23:15:05 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -84,7 +84,7 @@
 <createdTime>2025-05-26 23:15:32 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -97,7 +97,7 @@
 <createdTime>2025-05-26 23:16:41 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
 </engineerTo>
 <useDomainConstraints>false</useDomainConstraints>
 <use>1</use>
@@ -111,8 +111,9 @@
 <createdBy>paulo</createdBy>
 <createdTime>2025-05-26 23:14:17 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
+<shouldEngineer>false</shouldEngineer>
 <engineerTo>
-<item key="14FD87FD-6B82-E4FC-50B0-06AF2648BBA8" value="true"/>
+<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="false"/>
 </engineerTo>
 <pk>true</pk>
 <usedAttributes>

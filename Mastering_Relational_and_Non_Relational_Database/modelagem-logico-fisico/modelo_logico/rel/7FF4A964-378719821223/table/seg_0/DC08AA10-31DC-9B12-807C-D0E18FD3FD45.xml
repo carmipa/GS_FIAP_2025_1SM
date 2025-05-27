@@ -1,0 +1,73 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="DC08AA10-31DC-9B12-807C-D0E18FD3FD45" name="GS_EONET">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>50E72CE3-6FC1-2187-A093-F7E57065E5A4</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="id_eonet" id="E76D6B98-249D-1DB7-B4D4-F592945A1A55">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>2A8E9037-E677-8513-B224-BD8952405EE5</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="json" id="9014AC96-F11A-B16A-6B72-64E80BA45192">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>2E71CD2F-E57E-AC94-21F7-CC4D67B5CD24</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT028</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="data" id="8D3B32AA-73DB-9BF0-696F-5502E5EC8612">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>E581AA56-B572-EA55-C793-BB1D66C64670</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT047</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="eonet_id" id="C86E8B7A-12DC-EB80-E364-86BE460444F1">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>5769A29B-F657-C139-66C6-4B228A4EE755</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>50</dataTypeSize>
+<ownDataTypeParameters>50,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="DC8C18BF-F225-32D7-6388-E307D35A9003" name="GS_EONET_PK">
+<createdBy>paulo</createdBy>
+<createdTime>2025-05-27 11:26:39 UTC</createdTime>
+<generatorID>ACC8312B-1DF6-2D30-6626-68F0A7A0BACA</generatorID>
+<ownerDesignName>modelo_logico</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="E76D6B98-249D-1DB7-B4D4-F592945A1A55"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,6 +1,6 @@
 // src/lib/types.ts
 
-// Base para paginação (Page<T>) - MANTÉM COMO ESTÁ
+// --- Tipos para Paginação (Existente) ---
 export interface Page<T> {
     content: T[];
     pageable: {
@@ -30,8 +30,7 @@ export interface Page<T> {
     empty: boolean;
 }
 
-
-// DTOs de Contato (MANTÊM COMO ESTÃO)
+// --- Tipos de Contato (Existente) ---
 export interface ContatoRequestDTO {
     ddd: string;
     telefone: string;
@@ -40,12 +39,11 @@ export interface ContatoRequestDTO {
     email: string;
     tipoContato: string;
 }
-
 export interface ContatoResponseDTO extends ContatoRequestDTO {
     idContato: number;
 }
 
-// DTOs de Endereco (MANTÊM COMO ESTÃO)
+// --- Tipos de Endereço (Existente) ---
 export interface EnderecoRequestDTO {
     cep: string;
     numero: number;
@@ -57,32 +55,30 @@ export interface EnderecoRequestDTO {
     latitude: number;
     longitude: number;
 }
-
 export interface EnderecoResponseDTO extends EnderecoRequestDTO {
     idEndereco: number;
 }
 
-// DTOs de Cliente (AJUSTADO PARA USAR IDs)
+// --- Tipos de Cliente (Existente) ---
 export interface ClienteRequestDTO {
     nome: string;
     sobrenome: string;
-    dataNascimento: string; // Formato YYYY-MM-DD (do input date) ou dd/MM/yyyy (se o backend aceitar ambos)
+    dataNascimento: string;
     documento: string;
-    contatosIds?: number[];  // <--- MUDANÇA
-    enderecosIds?: number[]; // <--- MUDANÇA
+    contatosIds?: number[];
+    enderecosIds?: number[];
 }
-
 export interface ClienteResponseDTO {
     idCliente: number;
     nome: string;
     sobrenome: string;
     dataNascimento: string;
     documento: string;
-    contatos?: ContatoResponseDTO[];  // Resposta pode continuar com DTOs completos
-    enderecos?: EnderecoResponseDTO[];// Resposta pode continuar com DTOs completos
+    contatos?: ContatoResponseDTO[];
+    enderecos?: EnderecoResponseDTO[];
 }
 
-// ViaCep (MANTÉM COMO ESTÁ)
+// --- Tipos de API Externas e Utilitários (Existente) ---
 export interface ViaCepResponseDTO {
     cep: string;
     logradouro: string;
@@ -97,28 +93,16 @@ export interface ViaCepResponseDTO {
     erro?: boolean;
 }
 
-// Nominatim (MANTÉM COMO ESTÁ, mas ajuste o nome se necessário)
-export interface NominatimResultDTO { // Renomeado para clareza, já que é um item da lista
-    place_id: string; // Nominatim usa string para place_id em alguns casos
-    lat: string;
-    lon: string;
-    display_name: string;
-    // Adicione outros campos se precisar, ex: type, importance
-}
-
-
-// Para erros da API (MANTÉM COMO ESTÁ)
 export interface ApiErrorResponse {
     timestamp: string;
     status: number;
-    error?: string; // Adicionado para o formato do GlobalExceptionHandler
+    error?: string;
     message: string;
-    messages?: string[]; // Para MethodArgumentNotValidException
-    path?: string; // Adicionado para o formato do GlobalExceptionHandler
-    details?: string[] | string; // Mantido para compatibilidade, mas 'messages' é mais específico para validação
+    messages?: string[];
+    path?: string;
+    details?: string[] | string;
 }
 
-// DTO para requisição de geocodificação (MANTÉM COMO ESTÁ)
 export interface EnderecoGeoRequestDTO {
     logradouro: string;
     numero?: string;
@@ -128,9 +112,59 @@ export interface EnderecoGeoRequestDTO {
     cep?: string;
 }
 
-// DTO para resposta da nossa API de geocodificação (MANTÉM COMO ESTÁ)
 export interface GeoCoordinatesDTO {
     latitude: number;
     longitude: number;
     matchedAddress?: string;
 }
+
+// --- Tipos para EONET (Backend Local - Existente) ---
+export interface EonetResponseDTO {
+    idEonet: number;
+    json: string; // String JSON do evento original da NASA
+    data?: string | Date; // Data principal do evento ou data de registro
+    eonetIdApi: string; // ID do evento na API da NASA
+}
+
+// --- NOVOS TIPOS: Estrutura para NASA EONET Events (para parsear o EonetResponseDTO.json e para a resposta de /nasa/proximos) ---
+export interface NasaEonetCategoryDTO {
+    id: string;
+    title: string;
+}
+
+export interface NasaEonetSourceDTO {
+    id: string;
+    url: string;
+}
+
+// As coordenadas podem ser um array de números para um Ponto [lon, lat],
+// ou um array de arrays para Polígonos e Linhas. Usamos 'any' para flexibilidade,
+// mas você pode refinar isso se souber os tipos de geometria exatos que irá encontrar.
+export interface NasaEonetGeometryDTO {
+    magnitudeValue?: number; // Alguns eventos podem ter magnitude
+    magnitudeUnit?: string;
+    date: string | Date; // A API retorna como string ISO 8601
+    type: "Point" | "Polygon" | string; // Pode haver outros tipos
+    coordinates: any; // Ex: [lon, lat] para Point, [[[lon,lat],...]] para Polygon
+    // Para polígonos, a estrutura pode ser mais aninhada. Ex: number[][][]
+}
+
+export interface NasaEonetEventDTO {
+    id: string;
+    title: string;
+    description?: string; // Pode ser nulo ou ausente
+    link: string; // Link para o evento na fonte
+    categories: NasaEonetCategoryDTO[];
+    sources: NasaEonetSourceDTO[];
+    geometry: NasaEonetGeometryDTO[];
+    closed?: string | Date | null; // Data de fechamento do evento, se aplicável
+}
+
+// (Opcional) Se a API /nasa/proximos retornar a estrutura completa da NasaEonetApiResponseDTO
+// export interface NasaEonetApiResponseDTO {
+//   title: string;
+//   description: string;
+//   link: string;
+//   events: NasaEonetEventDTO[];
+// }
+

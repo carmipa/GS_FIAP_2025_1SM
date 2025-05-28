@@ -1,7 +1,7 @@
 package br.com.fiap.gs.gsapi.client;
 
-import br.com.fiap.gs.gsapi.dto.external.NasaEonetApiResponseDTO; // Import do pacote correto
-import br.com.fiap.gs.gsapi.dto.external.NasaEonetEventDTO; // Import do pacote correto
+import br.com.fiap.gs.gsapi.dto.external.NasaEonetApiResponseDTO;
+import br.com.fiap.gs.gsapi.dto.external.NasaEonetEventDTO;
 import br.com.fiap.gs.gsapi.exception.ServiceUnavailableException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -33,16 +33,19 @@ public class NasaEonetClient {
     @Value("${nasa.eonet.api.url:https://eonet.gsfc.nasa.gov/api/v3/events}")
     private String eonetApiUrl;
 
+    // Se você tiver uma chave API da NASA e a EONET começar a suportá-la ou exigi-la:
+    // @Value("${nasa.api.key:#{null}}") // Lê de application.properties, null se não definida
+    // private String nasaApiKey;
+
     @Autowired
     public NasaEonetClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
-        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Importante para OffsetDateTime
-        // this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Opcional para JSON legível
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source) {
+    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source, String bbox) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(eonetApiUrl);
 
         if (limit != null && limit > 0) {
@@ -57,10 +60,18 @@ public class NasaEonetClient {
         if (source != null && !source.trim().isEmpty()) {
             uriBuilder.queryParam("source", source);
         }
+        if (bbox != null && !bbox.trim().isEmpty()) { // Adicionado parâmetro bbox
+            uriBuilder.queryParam("bbox", bbox);
+        }
+        // Se você for usar uma chave API da NASA:
+        // if (nasaApiKey != null && !nasaApiKey.trim().isEmpty()) {
+        //     uriBuilder.queryParam("api_key", nasaApiKey);
+        // }
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0"); // Boa prática
+        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0");
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         String url = uriBuilder.toUriString();

@@ -2,7 +2,8 @@ package br.com.fiap.gs.gsapi.service;
 
 import br.com.fiap.gs.gsapi.client.GeoCodingClient;
 import br.com.fiap.gs.gsapi.client.ViaCepClient;
-import br.com.fiap.gs.gsapi.dto.response.NominatimResponseDTO;
+import br.com.fiap.gs.gsapi.dto.external.GoogleGeocodingApiResponseDTO;
+import br.com.fiap.gs.gsapi.dto.external.GoogleGeocodingResultDTO;
 import br.com.fiap.gs.gsapi.dto.response.ViaCepResponseDTO;
 import br.com.fiap.gs.gsapi.dto.request.EnderecoGeoRequestDTO;
 import br.com.fiap.gs.gsapi.dto.request.EnderecoRequestDTO;
@@ -28,7 +29,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map; // Para o mapa de UF para Nome do Estado
+// Removido import java.util.Map; pois UF_PARA_NOME_ESTADO não é mais usado com Google
 
 @Service
 public class EnderecoService {
@@ -39,14 +40,6 @@ public class EnderecoService {
     private final EnderecoMapper enderecoMapper;
     private final ViaCepClient viaCepClient;
     private final GeoCodingClient geoCodingClient;
-
-    // Mapa simples para converter UF para nome do estado (pode ser expandido ou externalizado)
-    private static final Map<String, String> UF_PARA_NOME_ESTADO = Map.ofEntries(
-            Map.entry("SP", "São Paulo"),
-            Map.entry("RJ", "Rio de Janeiro"),
-            Map.entry("MG", "Minas Gerais")
-            // Adicione outros estados conforme necessário
-    );
 
     @Autowired
     public EnderecoService(EnderecoRepository enderecoRepository,
@@ -59,7 +52,8 @@ public class EnderecoService {
         this.geoCodingClient = geoCodingClient;
     }
 
-    // ... (métodos listarTodos, buscarPorId, criarEndereco, atualizarEndereco, deletarEndereco, formatarCep, consultarDadosPorCep - permanecem os mesmos da última versão) ...
+    // ... (métodos listarTodos, buscarPorId, criarEndereco, atualizarEndereco, deletarEndereco, formatarCep, consultarDadosPorCep permanecem os mesmos) ...
+    // Cole-os da sua versão funcional anterior ou da minha última resposta completa para EnderecoService.
     @Transactional(readOnly = true)
     @Cacheable(value = "enderecos", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<EnderecoResponseDTO> listarTodos(Pageable pageable) {
@@ -145,72 +139,90 @@ public class EnderecoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "geoCoordenadas", key = "#enderecoGeoRequestDTO.toString()")
+    @Cacheable(value = "geoCoordenadasGoogle", key = "#enderecoGeoRequestDTO.toString()")
     public GeoCoordinatesDTO calcularCoordenadasPorEndereco(EnderecoGeoRequestDTO enderecoGeoRequestDTO) {
-        List<String> queryParts = new ArrayList<>();
-        String query;
-        boolean tentativaDetalhadaFeita = false;
+        // Construir a string de endereço para a API do Google de forma mais simples
+        StringBuilder addressBuilder = new StringBuilder();
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getLogradouro())) {
+            addressBuilder.append(enderecoGeoRequestDTO.getLogradouro());
+        }
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getNumero())) {
+            addressBuilder.append(", ").append(enderecoGeoRequestDTO.getNumero());
+        }
+        // Bairro pode ou não ajudar, às vezes é melhor omitir para Google se logradouro é preciso
+        // if (StringUtils.hasText(enderecoGeoRequestDTO.getBairro())) {
+        //     addressBuilder.append(", ").append(enderecoGeoRequestDTO.getBairro());
+        // }
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getCidade())) {
+            addressBuilder.append(", ").append(enderecoGeoRequestDTO.getCidade());
+        }
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+            addressBuilder.append(" - ").append(enderecoGeoRequestDTO.getUf());
+        }
+        // CEP pode ser usado no components ou na query principal.
+        // if (StringUtils.hasText(enderecoGeoRequestDTO.getCep())) {
+        //     addressBuilder.append(", ").append(formatarCep(enderecoGeoRequestDTO.getCep()));
+        // }
+        // Adicionar país é uma boa prática para desambiguação, mas o 'components' já faz isso.
+        // addressBuilder.append(", Brasil");
 
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getLogradouro()) &&
-                StringUtils.hasText(enderecoGeoRequestDTO.getNumero()) &&
-                StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) &&
-                StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+        String addressQuery = addressBuilder.toString().replaceFirst("^, ", "").trim();
 
-            queryParts.add(enderecoGeoRequestDTO.getLogradouro());
-            queryParts.add(enderecoGeoRequestDTO.getNumero());
-            if (StringUtils.hasText(enderecoGeoRequestDTO.getBairro()) &&
-                    (enderecoGeoRequestDTO.getLogradouro() == null || !enderecoGeoRequestDTO.getLogradouro().toLowerCase().contains(enderecoGeoRequestDTO.getBairro().toLowerCase()))) {
-                queryParts.add(enderecoGeoRequestDTO.getBairro());
+        if (!StringUtils.hasText(addressQuery) || !StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) || !StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+            throw new IllegalArgumentException("Dados de endereço insuficientes para geocodificação (requer pelo menos logradouro/número, cidade e UF, ou cidade e UF).");
+        }
+
+        String components = "country:BR";
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getCep())) {
+            components += "|postal_code:" + formatarCep(enderecoGeoRequestDTO.getCep());
+        }
+        // Você pode também adicionar 'administrative_area' para o estado e 'locality' para a cidade aqui
+        // if (StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+        //    components += "|administrative_area:" + enderecoGeoRequestDTO.getUf();
+        // }
+        // if (StringUtils.hasText(enderecoGeoRequestDTO.getCidade())) {
+        //    components += "|locality:" + enderecoGeoRequestDTO.getCidade();
+        // }
+
+        logger.info("Iniciando geocodificação com Google para endereço: '{}', componentes: '{}'", addressQuery, components);
+        GoogleGeocodingApiResponseDTO googleResponse = geoCodingClient.buscarCoordenadasPorEnderecoGoogle(addressQuery, components, "pt-BR");
+
+        if (googleResponse == null || !"OK".equals(googleResponse.getStatus()) || googleResponse.getResults() == null || googleResponse.getResults().isEmpty()) {
+            String status = googleResponse != null ? googleResponse.getStatus() : "Resposta Nula da API";
+            String errorMessage = googleResponse != null ? googleResponse.getErrorMessage() : "Nenhuma informação de erro detalhada.";
+            logger.warn("Google Geocoding API não retornou resultados válidos para o endereço '{}'. Status: {}. Mensagem: {}", addressQuery, status, errorMessage);
+
+            // Tentar uma query ainda mais simples (apenas cidade, estado, país) se a primeira falhou com ZERO_RESULTS
+            if ("ZERO_RESULTS".equals(status) && StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) && StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+                String simplerAddressQuery = String.join(", ", enderecoGeoRequestDTO.getCidade(), enderecoGeoRequestDTO.getUf(), "Brasil");
+                String simplerComponents = "country:BR"; // Mantém a restrição de país
+                logger.info("Tentando fallback com query mais simples para Google: '{}', componentes: '{}'", simplerAddressQuery, simplerComponents);
+                googleResponse = geoCodingClient.buscarCoordenadasPorEnderecoGoogle(simplerAddressQuery, simplerComponents, "pt-BR");
+
+                if (googleResponse == null || !"OK".equals(googleResponse.getStatus()) || googleResponse.getResults() == null || googleResponse.getResults().isEmpty()) {
+                    status = googleResponse != null ? googleResponse.getStatus() : "Resposta Nula da API (fallback)";
+                    errorMessage = googleResponse != null ? googleResponse.getErrorMessage() : "Nenhuma informação de erro detalhada (fallback).";
+                    logger.warn("Fallback da Google Geocoding API também falhou. Status: {}. Mensagem: {}", status, errorMessage);
+                    throw new ResourceNotFoundException("Não foi possível encontrar coordenadas para o endereço fornecido via Google. Status da API: " + status);
+                }
+            } else {
+                throw new ResourceNotFoundException("Não foi possível encontrar coordenadas para o endereço fornecido via Google. Status da API: " + status);
             }
-            queryParts.add(enderecoGeoRequestDTO.getCidade());
-            queryParts.add(enderecoGeoRequestDTO.getUf());
-            query = String.join(", ", queryParts);
-            logger.info("Tentando geocodificação detalhada para query: {}", query);
-            tentativaDetalhadaFeita = true;
-        } else if (StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) &&
-                StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
-            String nomeEstado = UF_PARA_NOME_ESTADO.getOrDefault(enderecoGeoRequestDTO.getUf().toUpperCase(), enderecoGeoRequestDTO.getUf());
-            queryParts.add(enderecoGeoRequestDTO.getCidade());
-            queryParts.add(nomeEstado); // Usa nome do estado por extenso
-            queryParts.add("Brasil");   // Adiciona país
-            query = String.join(", ", queryParts);
-            logger.info("Tentando geocodificação por cidade/estado/país para query: {}", query);
-        } else {
-            throw new IllegalArgumentException("Dados insuficientes para geocodificação. Requer (Logradouro, Número, Cidade e UF) OU (Cidade e UF).");
         }
 
-        List<NominatimResponseDTO> nominatimResults = geoCodingClient.buscarCoordenadasPorEndereco(query);
+        GoogleGeocodingResultDTO bestResult = googleResponse.getResults().get(0);
 
-        // Fallback para cidade/estado/país se a busca detalhada falhou e ainda não foi tentada
-        if ((nominatimResults == null || nominatimResults.isEmpty()) && tentativaDetalhadaFeita &&
-                StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) && StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
-
-            queryParts.clear();
-            String nomeEstado = UF_PARA_NOME_ESTADO.getOrDefault(enderecoGeoRequestDTO.getUf().toUpperCase(), enderecoGeoRequestDTO.getUf());
-            queryParts.add(enderecoGeoRequestDTO.getCidade());
-            queryParts.add(nomeEstado);
-            queryParts.add("Brasil");
-            query = String.join(", ", queryParts);
-            logger.info("Busca detalhada falhou. Tentando fallback por cidade/estado/país para query: {}", query);
-            nominatimResults = geoCodingClient.buscarCoordenadasPorEndereco(query);
+        if (bestResult.getGeometry() == null || bestResult.getGeometry().getLocation() == null) {
+            logger.warn("Resultado do Google Geocoding API sem geometria ou localização para o endereço '{}'.", addressQuery);
+            throw new ResourceNotFoundException("Resultado da geocodificação do Google inválido (sem geometria/localização).");
         }
 
-        if (nominatimResults == null || nominatimResults.isEmpty()) {
-            logger.warn("Nenhum resultado da geocodificação para a query final: {}", query);
-            throw new ResourceNotFoundException("Não foi possível encontrar coordenadas para os dados de endereço fornecidos.");
-        }
+        double latitude = bestResult.getGeometry().getLocation().getLatitude();
+        double longitude = bestResult.getGeometry().getLocation().getLongitude();
+        String formattedAddress = bestResult.getFormattedAddress();
 
-        NominatimResponseDTO bestResult = nominatimResults.get(0);
-        try {
-            double latitude = Double.parseDouble(bestResult.getLatitude());
-            double longitude = Double.parseDouble(bestResult.getLongitude());
-            logger.info("Coordenadas encontradas para query '{}': Lat={}, Lon={}, Endereço Encontrado='{}'",
-                    query, latitude, longitude, bestResult.getDisplayName());
-            return new GeoCoordinatesDTO(latitude, longitude, bestResult.getDisplayName());
-        } catch (NumberFormatException e) {
-            logger.error("Erro ao converter lat/lon do Nominatim para double: lat={}, lon={}",
-                    bestResult.getLatitude(), bestResult.getLongitude(), e);
-            throw new ServiceUnavailableException("Formato de coordenadas inválido retornado pelo serviço de geocodificação.");
-        }
+        logger.info("Coordenadas encontradas via Google para query '{}': Lat={}, Lon={}, Endereço Formatado='{}'",
+                addressQuery, latitude, longitude, formattedAddress);
+        return new GeoCoordinatesDTO(latitude, longitude, formattedAddress);
     }
 }

@@ -1,14 +1,15 @@
 package br.com.fiap.gs.gsapi.service;
 
-import br.com.fiap.gs.gsapi.client.NasaEonetClient; // Import correto
-import br.com.fiap.gs.gsapi.dto.external.NasaEonetApiResponseDTO; // Import do pacote correto
-import br.com.fiap.gs.gsapi.dto.external.NasaEonetEventDTO; // Import do pacote correto
+import br.com.fiap.gs.gsapi.client.NasaEonetClient;
+import br.com.fiap.gs.gsapi.dto.external.NasaEonetApiResponseDTO;
+import br.com.fiap.gs.gsapi.dto.external.NasaEonetEventDTO;
 import br.com.fiap.gs.gsapi.dto.request.EonetRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.EonetResponseDTO;
 import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
 import br.com.fiap.gs.gsapi.mapper.EonetMapper;
 import br.com.fiap.gs.gsapi.model.Eonet;
 import br.com.fiap.gs.gsapi.repository.EonetRepository;
+import br.com.fiap.gs.gsapi.utils.GeoUtils; // Importar GeoUtils
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections; // Importar Collections
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,14 +36,17 @@ public class EonetService {
     private final EonetRepository eonetRepository;
     private final EonetMapper eonetMapper;
     private final NasaEonetClient nasaEonetClient;
+    // Não precisamos de GeoUtils injetado se seus métodos forem estáticos
+    // private final GeoUtils geoUtils;
 
     @Autowired
     public EonetService(EonetRepository eonetRepository,
                         EonetMapper eonetMapper,
-                        NasaEonetClient nasaEonetClient) {
+                        NasaEonetClient nasaEonetClient /*, GeoUtils geoUtils */) {
         this.eonetRepository = eonetRepository;
         this.eonetMapper = eonetMapper;
         this.nasaEonetClient = nasaEonetClient;
+        // this.geoUtils = geoUtils;
     }
 
     @Transactional(readOnly = true)
@@ -73,7 +78,6 @@ public class EonetService {
         eonetRepository.findByEonetIdApi(eonetRequestDTO.getEonetIdApi()).ifPresent(existingEvent -> {
             throw new IllegalArgumentException("Já existe um evento EONET registrado com o API ID: " + eonetRequestDTO.getEonetIdApi());
         });
-
         Eonet evento = eonetMapper.toEntity(eonetRequestDTO);
         Eonet eventoSalvo = eonetRepository.save(evento);
         return eonetMapper.toResponseDTO(eventoSalvo);
@@ -124,12 +128,12 @@ public class EonetService {
     }
 
     @Transactional
-    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData"}, allEntries = true)
+    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eventosProximosDaAPI"}, allEntries = true)
     public List<EonetResponseDTO> sincronizarEventosDaNasa(Integer limit, Integer days, String status, String source) {
         logger.info("Iniciando sincronização de eventos da NASA EONET. Limite: {}, Dias: {}, Status: {}, Fonte: {}",
                 limit, days, status, source);
-
-        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, days, status, source);
+        // Passando null para bbox, já que esta é a sincronização geral, não por proximidade
+        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, days, status, source, null);
         List<EonetResponseDTO> eventosSalvosOuAtualizados = new ArrayList<>();
 
         if (respostaDaApi != null && respostaDaApi.getEvents() != null) {
@@ -143,12 +147,11 @@ public class EonetService {
                         .orElse(new Eonet());
 
                 eventoParaSalvar.setEonetIdApi(eventoDtoDaApi.getId());
-
                 String eventoJsonString = nasaEonetClient.convertEventDtoToJsonString(eventoDtoDaApi);
                 eventoParaSalvar.setJson(eventoJsonString);
 
-                OffsetDateTime principalDate = eventoDtoDaApi.getPrincipalDate();
-                if (principalDate == null && eventoDtoDaApi.getGeometry() != null && !eventoDtoDaApi.getGeometry().isEmpty()) {
+                OffsetDateTime principalDate = null;
+                if (eventoDtoDaApi.getGeometry() != null && !eventoDtoDaApi.getGeometry().isEmpty() && eventoDtoDaApi.getGeometry().get(0) != null) {
                     principalDate = eventoDtoDaApi.getGeometry().get(0).getDate();
                 }
                 eventoParaSalvar.setData(principalDate);
@@ -163,5 +166,29 @@ public class EonetService {
             logger.warn("Nenhum evento recebido da API da NASA EONET para os parâmetros fornecidos.");
         }
         return eventosSalvosOuAtualizados;
+    }
+
+    /**
+     * Busca eventos EONET diretamente da API da NASA próximos a uma coordenada geográfica.
+     * Os resultados NÃO são persistidos localmente por este método.
+     */
+    @Transactional(readOnly = true) // Acesso à API externa, não modifica o banco local diretamente aqui
+    @Cacheable(value = "eventosProximosDaAPI", key = "{#latitude, #longitude, #raioKm, #limit, #days, #status, #source}")
+    public List<NasaEonetEventDTO> buscarEventosEonetProximosDaAPI(
+            double latitude, double longitude, double raioKm,
+            Integer limit, Integer days, String status, String source) {
+
+        logger.info("Buscando eventos EONET próximos a Lat: {}, Lon: {}, Raio: {}km", latitude, longitude, raioKm);
+        String bbox = GeoUtils.calcularBoundingBox(latitude, longitude, raioKm);
+        logger.info("Bounding Box calculado: {}", bbox);
+
+        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, days, status, source, bbox);
+
+        if (respostaDaApi != null && respostaDaApi.getEvents() != null) {
+            logger.info("{} eventos próximos encontrados na API da NASA.", respostaDaApi.getEvents().size());
+            return respostaDaApi.getEvents();
+        }
+        logger.info("Nenhum evento próximo encontrado na API da NASA para os parâmetros fornecidos.");
+        return Collections.emptyList();
     }
 }

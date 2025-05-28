@@ -3,20 +3,20 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   margin: 0;
   padding: 0;
-  background-color: #f4f6f8;
-  color: #333;
+  background-color: #f4f6f8; /* Cinza de fundo suave */
+  color: #333; /* Cor de texto padrão */
 }
 
 main {
-  padding: 20px;
+  padding: 20px; /* Padding principal para o conteúdo */
 }
 
 h1, h2, h3 {
-  color: #1a2b4d; /* Azul escuro */
+  color: #1a2b4d; /* Azul escuro para títulos */
 }
 
 nav {
-  background-color: #1a2b4d; /* Azul escuro */
+  background-color: #1a2b4d; /* Azul escuro para navbar */
   padding: 15px 30px;
   display: flex;
   gap: 20px;
@@ -40,15 +40,16 @@ nav a:hover {
 nav .logo {
   font-weight: bold;
   font-size: 1.5em;
-  margin-right: auto; /* Empurra os outros links para a direita */
+  margin-right: auto; /* Empurra outros links para a direita */
 }
 
-form {
+/* Estilos de Formulário */
+.form-container { /* Classe para o container do formulário */
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  max-width: 600px;
-  margin: 20px auto;
+  /* gap: 15px; -- Removido, o espaçamento virá dos fieldsets e HRs */
+  max-width: 750px; /* Largura máxima do formulário */
+  margin: 20px auto; /* Centraliza o formulário na página */
   padding: 25px;
   background-color: white;
   border: 1px solid #e0e0e0;
@@ -56,21 +57,42 @@ form {
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
-form h2 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #007bff; /* Azul para títulos de seção */
-  padding-bottom: 8px;
-  font-size: 1.4em;
+.form-section { /* Estilo para <fieldset> */
+  margin-bottom: 1.5rem; /* ESPAÇO ABAIXO DE CADA SEÇÃO (fieldset) */
+  border: 1px solid #dee2e6; /* Borda mais suave para o fieldset */
+  padding: 1.25rem;
+  border-radius: 6px;
 }
 
-label {
+.section-title { /* Para as <legend> dos fieldsets */
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1rem; /* Espaço abaixo do título da seção, dentro do fieldset */
+  color: #007bff;
+  padding: 0 0.25rem;
+  width: auto; /* Permite que a legenda tenha a largura do seu conteúdo */
+  border-bottom: none; /* Remove a borda inferior do h2 que estava antes */
+}
+
+.section-divider { /* Para <hr /> */
+  margin-top: 1.5rem;    /* ESPAÇO ACIMA de cada <hr> */
+  margin-bottom: 1.5rem; /* ESPAÇO ABAIXO de cada <hr> */
+  border: 0;
+  border-top: 1px solid #e9ecef;
+}
+
+.form-group {
+  margin-bottom: 1rem; /* Espaçamento padrão para grupos de formulário */
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.95em;
+  gap: 0.3rem; /* Espaço entre label e input */
+}
+
+.form-group label {
+  font-size: 0.90em;
   font-weight: 500;
-  color: #555;
+  color: #495057;
+  margin-bottom: 0.1rem;
 }
 
 input[type="text"],
@@ -80,11 +102,13 @@ input[type="tel"],
 input[type="number"],
 textarea,
 select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1em;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.95em;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input[type="text"]:focus,
@@ -99,101 +123,314 @@ select:focus {
   outline: none;
 }
 
-
 input[readonly] {
   background-color: #e9ecef;
   cursor: not-allowed;
 }
 
-button {
-  padding: 12px 20px;
-  background-color: #007bff; /* Azul primário */
+/* Layout em Linha */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem; /* Espaço ENTRE os form-groups na linha */
+  margin-bottom: 0; /* A margem inferior virá do .form-group se ele não estiver no fim */
+}
+
+.form-row + .form-row { /* Adiciona margem superior se uma form-row vier depois de outra */
+  margin-top: 1rem;
+}
+
+
+.form-row .form-group {
+  flex: 1 1 0; /* Permite crescer e encolher, base flex 0 para dividir pelo flex-grow */
+  min-width: 120px;
+  margin-bottom: 0; /* Remove margem inferior quando em linha */
+}
+
+/* Ajustes de tamanho para itens flex específicos */
+.form-group.grow-1 { flex-grow: 1; } /* Equivalente a flex-item antigo */
+.form-group.grow-2 { flex-grow: 2; }
+.form-group.grow-3 { flex-grow: 3; }
+
+/* Para bases de tamanho fixo ou proporcional menor (se necessário) */
+.form-group.basis-ddd { flex: 0 0 80px; } /* Exemplo para DDD */
+.form-group.basis-cep { flex: 0 0 140px; } /* Exemplo para CEP */
+.form-group.basis-numero { flex: 0 0 100px; } /* Exemplo para Número */
+.form-group.basis-uf { flex: 0 0 80px; } /* Exemplo para UF */
+
+
+/* Botões */
+button, .button { /* Adicionada classe .button para Links estilizados como botões */
+  padding: 10px 18px; /* Ajustado padding */
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1.05em;
+  font-size: 1em; /* Ajustado tamanho da fonte */
   font-weight: 500;
   transition: background-color 0.2s ease-in-out;
   margin-top: 10px;
+  text-decoration: none; /* Para Links estilizados como botões */
+  display: inline-block; /* Para Links estilizados como botões */
+  text-align: center;
 }
 
-button:hover {
-  background-color: #0056b3; /* Azul mais escuro para hover */
+button:hover, .button:hover {
+  opacity: 0.85;
 }
 
-button:disabled {
-  background-color: #adb5bd; /* Cinza para desabilitado */
+button:disabled, .button:disabled {
+  background-color: #adb5bd;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.button-primary { background-color: #007bff; }
+.button-primary:hover { background-color: #0056b3; }
+
+.button-secondary { background-color: #6c757d; }
+.button-secondary:hover { background-color: #5a6268; }
+
+.button-danger { background-color: #dc3545; }
+.button-danger:hover { background-color: #c82333; }
+
+/* Mensagens */
+.message { margin-top: 15px; padding: 12px; border-radius: 5px; text-align: center; font-size: 0.95em; }
+.message.success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+.message.error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+.message.info { text-align: left; color: #004085; background-color: #cce5ff; border-color: #b8daff; margin: 5px 0 10px 0; font-size: 0.9em; }
+
+/* Estilos para listas (mantidos) */
+.item-list { list-style: none; padding: 0; }
+.item-list li { background-color: white; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+.item-list li .info { flex-grow: 1; }
+.item-list li .actions button { margin-left: 8px; padding: 8px 12px; font-size: 0.9em; }
+
+/* Container e Título da Página (mantidos) */
+.container { padding: 20px; max-width: 800px; margin: 0 auto; }
+.page-title { margin-bottom: 25px; font-size: 1.8em; color: #1a2b4d; text-align: center; }
+
+/* Seção de Coordenadas */
+.coordinate-section {
+  background-color: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  margin-top: 1.5rem;
+}
+.coordinate-section p { margin-top: 0; margin-bottom: 8px; font-size: 0.9em; }
+.coordinates-display { min-height: 20px; padding-top: 5px; font-size: 0.9em; }
+.coordinates-display p { margin: 3px 0 0 0; font-size: 0.95em;}
+.coordinates-display p span { font-family: monospace; }
+.coordinates-display p span:first-child { font-weight: 500; color: #333;} /* "Latitude:", "Longitude:" */
+
+/* src/app/globals.css */
+
+/* ... (seus estilos existentes) ... */
+
+.button {
+  padding: 8px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.95em;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* Espaço entre ícone e texto */
+  font-weight: 500;
+  min-width: 80px; /* Largura mínima para botões de ação */
+}
+
+.button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0px);
+}
+
+
+.button-primary {
+  background-color: #007bff; /* Azul primário */
+  color: white;
+}
+.button-primary:hover {
+  background-color: #0056b3;
 }
 
 .button-secondary {
   background-color: #6c757d; /* Cinza secundário */
+  color: white;
 }
 .button-secondary:hover {
-  background-color: #5a6268;
+  background-color: #545b62;
 }
 
 .button-danger {
   background-color: #dc3545; /* Vermelho perigo */
+  color: white;
 }
 .button-danger:hover {
-  background-color: #c82333;
+  background-color: #b02a37;
 }
 
-.message {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 5px;
-  text-align: center;
-  font-size: 0.95em;
+.button-success {
+  background-color: #28a745; /* Verde sucesso */
+  color: white;
+}
+.button-success:hover {
+  background-color: #1e7e34;
 }
 
-.message.success {
-  background-color: #d1e7dd; /* Verde claro para sucesso */
-  color: #0f5132;
-  border: 1px solid #badbcc;
+.button-edit {
+  background-color: #ffc107; /* Amarelo para editar */
+  color: #212529;
+}
+.button-edit:hover {
+  background-color: #e0a800;
 }
 
-.message.error {
-  background-color: #f8d7da; /* Vermelho claro para erro */
-  color: #842029;
-  border: 1px solid #f5c2c7;
+
+.button:disabled,
+.button-primary:disabled,
+.button-secondary:disabled,
+.button-danger:disabled,
+.button-success:disabled,
+.button-edit:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
 }
 
-/* Estilos para listas */
-.item-list {
-  list-style: none;
-  padding: 0;
+/* Estilos para itens da lista de clientes */
+.client-list-item {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espaço entre seções de informação */
 }
-.item-list li {
-  background-color: white;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+
+.client-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Espaço entre linhas de informação */
+}
+
+.client-info-section strong {
+  font-size: 1.1em;
+  color: #333;
+}
+
+.client-info-section span, .client-info-section p {
+  font-size: 0.9em;
+  color: #555;
+  line-height: 1.4;
+}
+.client-info-section .label {
+  font-weight: 600;
+  color: #444;
+}
+
+
+.client-actions {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Paginação */
+.pagination-controls {
+  margin-top: 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-.item-list li .info {
-  flex-grow: 1;
-}
-.item-list li .actions button {
-  margin-left: 8px;
-  padding: 8px 12px;
-  font-size: 0.9em;
+  padding: 10px 0;
+  border-top: 1px solid #e0e0e0;
 }
 
-.container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+.pagination-controls span {
+  font-size: 0.95em;
+  color: #333;
 }
 
-.page-title {
+/* src/app/globals.css */
+/* ... (seus estilos existentes, incluindo os de .button, .client-list-item, etc.) ... */
+
+/* Estilos para Material Icons usados como botões ou em labels */
+.material-icons-outlined {
+  vertical-align: middle; /* Ajuda a alinhar com o texto */
+  margin-right: 5px; /* Espaço se estiver antes do texto */
+  font-size: 1.2em; /* Tamanho do ícone um pouco maior que o texto */
+}
+.button .material-icons-outlined {
+  margin-right: 6px; /* Espaço dentro do botão */
+  font-size: 1.3em; /* Ícones em botões um pouco maiores */
+}
+label .material-icons-outlined {
+  margin-right: 8px;
+  font-size: 1.3em;
+  color: #555; /* Cor para ícones em labels */
+}
+legend .material-icons-outlined {
+  margin-right: 8px;
+  font-size: 1.2em; /* Ajuste para legendas de fieldset */
+  color: #333;
+}
+
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-content p {
   margin-bottom: 20px;
-  font-size: 2em;
-  color: #1a2b4d;
+  color: #555;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
 }

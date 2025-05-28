@@ -2,7 +2,6 @@ package br.com.fiap.gs.gsapi.service;
 
 import br.com.fiap.gs.gsapi.client.GeoCodingClient;
 import br.com.fiap.gs.gsapi.client.ViaCepClient;
-// Correção: Imports para DTOs externos devem vir do pacote 'response' conforme sua estrutura
 import br.com.fiap.gs.gsapi.dto.response.NominatimResponseDTO;
 import br.com.fiap.gs.gsapi.dto.response.ViaCepResponseDTO;
 import br.com.fiap.gs.gsapi.dto.request.EnderecoGeoRequestDTO;
@@ -10,7 +9,7 @@ import br.com.fiap.gs.gsapi.dto.request.EnderecoRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.EnderecoResponseDTO;
 import br.com.fiap.gs.gsapi.dto.response.GeoCoordinatesDTO;
 import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
-import br.com.fiap.gs.gsapi.exception.ServiceUnavailableException; // Import da exceção correta
+import br.com.fiap.gs.gsapi.exception.ServiceUnavailableException;
 import br.com.fiap.gs.gsapi.mapper.EnderecoMapper;
 import br.com.fiap.gs.gsapi.model.Endereco;
 import br.com.fiap.gs.gsapi.repository.EnderecoRepository;
@@ -27,7 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map; // Para o mapa de UF para Nome do Estado
 
 @Service
 public class EnderecoService {
@@ -38,6 +39,14 @@ public class EnderecoService {
     private final EnderecoMapper enderecoMapper;
     private final ViaCepClient viaCepClient;
     private final GeoCodingClient geoCodingClient;
+
+    // Mapa simples para converter UF para nome do estado (pode ser expandido ou externalizado)
+    private static final Map<String, String> UF_PARA_NOME_ESTADO = Map.ofEntries(
+            Map.entry("SP", "São Paulo"),
+            Map.entry("RJ", "Rio de Janeiro"),
+            Map.entry("MG", "Minas Gerais")
+            // Adicione outros estados conforme necessário
+    );
 
     @Autowired
     public EnderecoService(EnderecoRepository enderecoRepository,
@@ -50,6 +59,7 @@ public class EnderecoService {
         this.geoCodingClient = geoCodingClient;
     }
 
+    // ... (métodos listarTodos, buscarPorId, criarEndereco, atualizarEndereco, deletarEndereco, formatarCep, consultarDadosPorCep - permanecem os mesmos da última versão) ...
     @Transactional(readOnly = true)
     @Cacheable(value = "enderecos", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<EnderecoResponseDTO> listarTodos(Pageable pageable) {
@@ -69,16 +79,13 @@ public class EnderecoService {
     @CacheEvict(value = {"enderecos", "enderecoById", "enderecosPorCep"}, allEntries = true)
     public EnderecoResponseDTO criarEndereco(EnderecoRequestDTO enderecoRequestDTO) {
         Endereco endereco = enderecoMapper.toEntity(enderecoRequestDTO);
-
         endereco.setCep(formatarCep(endereco.getCep()));
         if (endereco.getUf() != null) {
             endereco.setUf(endereco.getUf().toUpperCase());
         }
-
-        if (enderecoRequestDTO.getLatitude() == null || enderecoRequestDTO.getLongitude() == null) {
-            throw new IllegalArgumentException("Latitude e Longitude são obrigatórias para criar um endereço.");
+        if (enderecoRequestDTO.getLatitude() == null || enderecoRequestDTO.getLongitude() == null || enderecoRequestDTO.getLatitude() == 0 || enderecoRequestDTO.getLongitude() == 0) {
+            throw new IllegalArgumentException("Latitude e Longitude são obrigatórias e devem ser válidas para criar um endereço.");
         }
-
         Endereco enderecoSalvo = enderecoRepository.save(endereco);
         return enderecoMapper.toResponseDTO(enderecoSalvo);
     }
@@ -89,7 +96,6 @@ public class EnderecoService {
     public EnderecoResponseDTO atualizarEndereco(Long id, EnderecoRequestDTO enderecoRequestDTO) {
         Endereco enderecoExistente = enderecoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado com o ID: " + id));
-
         enderecoExistente.setCep(formatarCep(enderecoRequestDTO.getCep()));
         enderecoExistente.setNumero(enderecoRequestDTO.getNumero());
         enderecoExistente.setLogradouro(enderecoRequestDTO.getLogradouro());
@@ -99,13 +105,11 @@ public class EnderecoService {
             enderecoExistente.setUf(enderecoRequestDTO.getUf().toUpperCase());
         }
         enderecoExistente.setComplemento(enderecoRequestDTO.getComplemento());
-
-        if (enderecoRequestDTO.getLatitude() == null || enderecoRequestDTO.getLongitude() == null) {
-            throw new IllegalArgumentException("Latitude e Longitude são obrigatórias para atualizar um endereço.");
+        if (enderecoRequestDTO.getLatitude() == null || enderecoRequestDTO.getLongitude() == null || enderecoRequestDTO.getLatitude() == 0 || enderecoRequestDTO.getLongitude() == 0) {
+            throw new IllegalArgumentException("Latitude e Longitude são obrigatórias e devem ser válidas para atualizar um endereço.");
         }
         enderecoExistente.setLatitude(enderecoRequestDTO.getLatitude());
         enderecoExistente.setLongitude(enderecoRequestDTO.getLongitude());
-
         Endereco enderecoAtualizado = enderecoRepository.save(enderecoExistente);
         return enderecoMapper.toResponseDTO(enderecoAtualizado);
     }
@@ -143,39 +147,57 @@ public class EnderecoService {
     @Transactional(readOnly = true)
     @Cacheable(value = "geoCoordenadas", key = "#enderecoGeoRequestDTO.toString()")
     public GeoCoordinatesDTO calcularCoordenadasPorEndereco(EnderecoGeoRequestDTO enderecoGeoRequestDTO) {
-        StringBuilder queryBuilder = new StringBuilder();
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getLogradouro())) {
-            queryBuilder.append(enderecoGeoRequestDTO.getLogradouro());
-        }
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getNumero())) {
-            queryBuilder.append(", ").append(enderecoGeoRequestDTO.getNumero());
-        }
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getBairro())) {
-            queryBuilder.append(", ").append(enderecoGeoRequestDTO.getBairro());
-        }
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getCidade())) {
-            queryBuilder.append(", ").append(enderecoGeoRequestDTO.getCidade());
-        }
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
-            queryBuilder.append(" - ").append(enderecoGeoRequestDTO.getUf());
-        }
-        if (StringUtils.hasText(enderecoGeoRequestDTO.getCep())) {
-            queryBuilder.append(", CEP ").append(formatarCep(enderecoGeoRequestDTO.getCep()));
-        }
-        queryBuilder.append(", Brasil");
+        List<String> queryParts = new ArrayList<>();
+        String query;
+        boolean tentativaDetalhadaFeita = false;
 
-        String query = queryBuilder.toString().replaceFirst("^, ", "");
+        if (StringUtils.hasText(enderecoGeoRequestDTO.getLogradouro()) &&
+                StringUtils.hasText(enderecoGeoRequestDTO.getNumero()) &&
+                StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) &&
+                StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
 
-        if (!StringUtils.hasText(query)) {
-            throw new IllegalArgumentException("Dados insuficientes para geocodificação.");
+            queryParts.add(enderecoGeoRequestDTO.getLogradouro());
+            queryParts.add(enderecoGeoRequestDTO.getNumero());
+            if (StringUtils.hasText(enderecoGeoRequestDTO.getBairro()) &&
+                    (enderecoGeoRequestDTO.getLogradouro() == null || !enderecoGeoRequestDTO.getLogradouro().toLowerCase().contains(enderecoGeoRequestDTO.getBairro().toLowerCase()))) {
+                queryParts.add(enderecoGeoRequestDTO.getBairro());
+            }
+            queryParts.add(enderecoGeoRequestDTO.getCidade());
+            queryParts.add(enderecoGeoRequestDTO.getUf());
+            query = String.join(", ", queryParts);
+            logger.info("Tentando geocodificação detalhada para query: {}", query);
+            tentativaDetalhadaFeita = true;
+        } else if (StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) &&
+                StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+            String nomeEstado = UF_PARA_NOME_ESTADO.getOrDefault(enderecoGeoRequestDTO.getUf().toUpperCase(), enderecoGeoRequestDTO.getUf());
+            queryParts.add(enderecoGeoRequestDTO.getCidade());
+            queryParts.add(nomeEstado); // Usa nome do estado por extenso
+            queryParts.add("Brasil");   // Adiciona país
+            query = String.join(", ", queryParts);
+            logger.info("Tentando geocodificação por cidade/estado/país para query: {}", query);
+        } else {
+            throw new IllegalArgumentException("Dados insuficientes para geocodificação. Requer (Logradouro, Número, Cidade e UF) OU (Cidade e UF).");
         }
 
-        logger.info("Iniciando geocodificação para query: {}", query);
         List<NominatimResponseDTO> nominatimResults = geoCodingClient.buscarCoordenadasPorEndereco(query);
 
+        // Fallback para cidade/estado/país se a busca detalhada falhou e ainda não foi tentada
+        if ((nominatimResults == null || nominatimResults.isEmpty()) && tentativaDetalhadaFeita &&
+                StringUtils.hasText(enderecoGeoRequestDTO.getCidade()) && StringUtils.hasText(enderecoGeoRequestDTO.getUf())) {
+
+            queryParts.clear();
+            String nomeEstado = UF_PARA_NOME_ESTADO.getOrDefault(enderecoGeoRequestDTO.getUf().toUpperCase(), enderecoGeoRequestDTO.getUf());
+            queryParts.add(enderecoGeoRequestDTO.getCidade());
+            queryParts.add(nomeEstado);
+            queryParts.add("Brasil");
+            query = String.join(", ", queryParts);
+            logger.info("Busca detalhada falhou. Tentando fallback por cidade/estado/país para query: {}", query);
+            nominatimResults = geoCodingClient.buscarCoordenadasPorEndereco(query);
+        }
+
         if (nominatimResults == null || nominatimResults.isEmpty()) {
-            logger.warn("Nenhum resultado da geocodificação para a query: {}", query);
-            throw new ResourceNotFoundException("Não foi possível encontrar coordenadas para o endereço fornecido.");
+            logger.warn("Nenhum resultado da geocodificação para a query final: {}", query);
+            throw new ResourceNotFoundException("Não foi possível encontrar coordenadas para os dados de endereço fornecidos.");
         }
 
         NominatimResponseDTO bestResult = nominatimResults.get(0);

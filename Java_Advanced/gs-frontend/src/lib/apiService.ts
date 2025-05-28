@@ -3,33 +3,51 @@ import type {
     ClienteRequestDTO, ClienteResponseDTO,
     ContatoRequestDTO, ContatoResponseDTO,
     EnderecoRequestDTO, EnderecoResponseDTO,
-    NominatimResponseDTO, ViaCepResponseDTO, ApiErrorResponse, Page
+    EnderecoGeoRequestDTO, GeoCoordinatesDTO,
+    NominatimResultDTO, // Nome atualizado para NominatimResultDTO
+    ViaCepResponseDTO, ApiErrorResponse, Page
 } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({
-            message: response.statusText,
-            status: response.status,
-            timestamp: new Date().toISOString(),
-            details: "Erro ao processar resposta do servidor."
-        }));
-
-        let errorMessage = errorData.message || response.statusText;
-        if (errorData.details) {
-            const detailsString = Array.isArray(errorData.details) ? errorData.details.join(', ') : errorData.details;
-            errorMessage += ` Detalhes: ${detailsString}`;
+        let errorData: ApiErrorResponse;
+        try {
+            errorData = await response.json();
+        } catch (e) {
+            errorData = {
+                message: response.statusText || "Erro desconhecido na resposta da API.",
+                status: response.status,
+                timestamp: new Date().toISOString(),
+            };
         }
+
+        let errorMessage = errorData.message || response.statusText || "Erro desconhecido";
+        // Ajuste para pegar 'messages' do GlobalExceptionHandler para erros de validação
+        const detailsArray = errorData.messages || (typeof errorData.details === 'string' ? [errorData.details] : errorData.details);
+        if (detailsArray && detailsArray.length > 0) {
+            errorMessage += `. Detalhes: ${detailsArray.join(', ')}`;
+        }
+
         console.error("API Error:", errorMessage, "Status:", response.status, "Full Error Data:", errorData);
         throw new Error(errorMessage);
     }
-    // Se for um 204 No Content, não há corpo para fazer .json()
     if (response.status === 204) {
-        return null as T; // Ou Promise.resolve(null) dependendo do que T pode ser
+        return null as T;
     }
-    return await response.json() as T;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        return await response.json() as T;
+    } else {
+        // Se não for JSON, mas a resposta foi OK (ex: 200 sem corpo, o que não deveria acontecer para GETs que esperam corpo)
+        // ou para DELETE que retorna 204 (já tratado)
+        // Para outros casos, pode retornar o texto ou tratar como erro se JSON era esperado.
+        // Aqui, vamos assumir que se não for 204 e não for JSON, algo está inesperado para GETs que esperam JSON.
+        // Para chamadas que não esperam corpo JSON (além de 204), esta lógica pode precisar de ajuste.
+        console.warn("Resposta não JSON recebida:", response);
+        return null as T; // Ou lançar um erro se um corpo JSON era estritamente esperado.
+    }
 }
 
 // --- Cliente API ---
@@ -43,6 +61,12 @@ export async function buscarClientePorId(id: number): Promise<ClienteResponseDTO
     return handleResponse<ClienteResponseDTO>(response);
 }
 
+export async function buscarClientePorDocumento(documento: string): Promise<ClienteResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/clientes/documento/${documento}`);
+    return handleResponse<ClienteResponseDTO>(response);
+}
+
+// criarCliente e atualizarCliente agora esperam ClienteRequestDTO com contatosIds e enderecosIds
 export async function criarCliente(data: ClienteRequestDTO): Promise<ClienteResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/clientes`, {
         method: 'POST',
@@ -63,87 +87,61 @@ export async function atualizarCliente(id: number, data: ClienteRequestDTO): Pro
 
 export async function deletarCliente(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/clientes/${id}`, { method: 'DELETE' });
-    await handleResponse<void>(response); // Espera 204 No Content
+    await handleResponse<void>(response);
 }
 
-// --- Contato API ---
-export async function listarContatos(page: number = 0, size: number = 10): Promise<Page<ContatoResponseDTO>> {
-    const response = await fetch(`${API_BASE_URL}/contatos?page=${page}&size=${size}&sort=email,asc`);
-    return handleResponse<Page<ContatoResponseDTO>>(response);
-}
-
-export async function buscarContatoPorId(id: number): Promise<ContatoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/contatos/${id}`);
-    return handleResponse<ContatoResponseDTO>(response);
-}
-
-export async function buscarContatoPorEmail(email: string): Promise<ContatoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/contatos/email/${email}`);
-    return handleResponse<ContatoResponseDTO>(response);
-}
-
-export async function criarContato(data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/contatos`, {
+// --- Contato API (Endpoints para criar/gerenciar contatos independentemente) ---
+export async function criarContatoSozinho(data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos`, { // Supondo que /api/contatos existe
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     });
     return handleResponse<ContatoResponseDTO>(response);
 }
-
-export async function atualizarContato(id: number, data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/contatos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    return handleResponse<ContatoResponseDTO>(response);
-}
-
-export async function deletarContato(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/contatos/${id}`, { method: 'DELETE' });
-    await handleResponse<void>(response);
-}
+// Adicionar listarContatos, buscarContatoPorId, atualizarContatoSozinho, deletarContatoSozinho se necessário
 
 // --- Endereco API ---
-export async function buscarEnderecoGeocodificado(cep: string, numero: string, complemento?: string): Promise<EnderecoResponseDTO> {
-    let url = `${API_BASE_URL}/enderecos/geocodificar/cep/${cep.replace(/\D/g, '')}?numero=${encodeURIComponent(numero)}`;
-    if (complemento) {
-        url += `&complemento=${encodeURIComponent(complemento)}`;
-    }
-    const response = await fetch(url);
-    return handleResponse<EnderecoResponseDTO>(response);
+export async function consultarCepPelaApi(cep: string): Promise<ViaCepResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/consultar-cep/${cep.replace(/\D/g, '')}`);
+    return handleResponse<ViaCepResponseDTO>(response);
 }
 
-export async function listarEnderecos(page: number = 0, size: number = 10): Promise<Page<EnderecoResponseDTO>> {
-    const response = await fetch(`${API_BASE_URL}/enderecos?page=${page}&size=${size}&sort=logradouro,asc`);
-    return handleResponse<Page<EnderecoResponseDTO>>(response);
+export async function calcularCoordenadasPelaApi(data: EnderecoGeoRequestDTO): Promise<GeoCoordinatesDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/calcular-coordenadas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return handleResponse<GeoCoordinatesDTO>(response);
 }
 
-export async function buscarEnderecoPorId(id: number): Promise<EnderecoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`);
-    return handleResponse<EnderecoResponseDTO>(response);
-}
-
-export async function criarEndereco(data: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/enderecos`, {
+// Endpoints para criar/gerenciar endereços independentemente
+export async function criarEnderecoSozinho(data: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos`, { // Supondo que /api/enderecos (POST) existe
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     });
     return handleResponse<EnderecoResponseDTO>(response);
 }
+// Adicionar listarEnderecos, buscarEnderecoPorId, atualizarEnderecoSozinho, deletarEnderecoSozinho se necessário
 
-export async function atualizarEndereco(id: number, data: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
-    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    });
-    return handleResponse<EnderecoResponseDTO>(response);
+// --- Eonet API (para dados locais) ---
+export async function listarEventosEonet(page: number = 0, size: number = 10): Promise<Page<EonetResponseDTO>> {
+    const response = await fetch(`${API_BASE_URL}/eonet?page=${page}&size=${size}&sort=data,desc`);
+    return handleResponse<Page<EonetResponseDTO>>(response);
 }
 
-export async function deletarEndereco(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`, { method: 'DELETE' });
-    await handleResponse<void>(response);
+export async function sincronizarNasaEonet(limit?: number, days?: number, status?: string, source?: string): Promise<EonetResponseDTO[]> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', String(limit));
+    if (days) params.append('days', String(days));
+    if (status) params.append('status', status);
+    if (source) params.append('source', source);
+
+    const response = await fetch(`${API_BASE_URL}/eonet/nasa/sincronizar?${params.toString()}`, {
+        method: 'POST',
+    });
+    return handleResponse<EonetResponseDTO[]>(response);
 }

@@ -4,6 +4,9 @@ import br.com.fiap.gs.gsapi.dto.request.ClienteRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.ClienteResponseDTO;
 import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
 import br.com.fiap.gs.gsapi.mapper.ClienteMapper;
+// Não precisamos mais de ContatoMapper e EnderecoMapper injetados aqui para lógica de aninhados
+// import br.com.fiap.gs.gsapi.mapper.ContatoMapper;
+// import br.com.fiap.gs.gsapi.mapper.EnderecoMapper;
 import br.com.fiap.gs.gsapi.model.Cliente;
 import br.com.fiap.gs.gsapi.model.Contato;
 import br.com.fiap.gs.gsapi.model.Endereco;
@@ -30,13 +33,13 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final ContatoRepository contatoRepository;
     private final EnderecoRepository enderecoRepository;
-    private final ClienteMapper clienteMapper; // Mapper injetado
+    private final ClienteMapper clienteMapper;
 
     @Autowired
     public ClienteService(ClienteRepository clienteRepository,
                           ContatoRepository contatoRepository,
                           EnderecoRepository enderecoRepository,
-                          ClienteMapper clienteMapper) { // Construtor com todas as dependências
+                          ClienteMapper clienteMapper) {
         this.clienteRepository = clienteRepository;
         this.contatoRepository = contatoRepository;
         this.enderecoRepository = enderecoRepository;
@@ -47,7 +50,7 @@ public class ClienteService {
     @Cacheable(value = "clientes", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<ClienteResponseDTO> listarTodos(Pageable pageable) {
         Page<Cliente> clientesPage = clienteRepository.findAll(pageable);
-        return clientesPage.map(clienteMapper::toResponseDTO); // Usando o mapper
+        return clientesPage.map(clienteMapper::toResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -55,7 +58,7 @@ public class ClienteService {
     public ClienteResponseDTO buscarPorId(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + id));
-        return clienteMapper.toResponseDTO(cliente); // Usando o mapper
+        return clienteMapper.toResponseDTO(cliente);
     }
 
     @Transactional(readOnly = true)
@@ -63,7 +66,7 @@ public class ClienteService {
     public ClienteResponseDTO buscarPorDocumento(String documento) {
         Cliente cliente = clienteRepository.findByDocumento(documento)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o documento: " + documento));
-        return clienteMapper.toResponseDTO(cliente); // Usando o mapper
+        return clienteMapper.toResponseDTO(cliente);
     }
 
     @Transactional
@@ -73,13 +76,11 @@ public class ClienteService {
             throw new IllegalArgumentException("Já existe um cliente cadastrado com o documento: " + clienteRequestDTO.getDocumento());
         }
 
-        Cliente cliente = clienteMapper.toEntity(clienteRequestDTO); // Usando o mapper para campos básicos
+        Cliente cliente = clienteMapper.toEntity(clienteRequestDTO);
 
-        // Associar contatos existentes (lógica mantida no serviço)
         if (clienteRequestDTO.getContatosIds() != null && !clienteRequestDTO.getContatosIds().isEmpty()) {
             Set<Contato> contatos = new HashSet<>(contatoRepository.findAllById(clienteRequestDTO.getContatosIds()));
             if (contatos.size() != clienteRequestDTO.getContatosIds().size()) {
-                // Coleta os IDs não encontrados para uma mensagem de erro mais detalhada
                 Set<Long> foundIds = contatos.stream().map(Contato::getIdContato).collect(Collectors.toSet());
                 Set<Long> notFoundIds = clienteRequestDTO.getContatosIds().stream()
                         .filter(id -> !foundIds.contains(id))
@@ -88,10 +89,9 @@ public class ClienteService {
             }
             cliente.setContatos(contatos);
         } else {
-            cliente.setContatos(new HashSet<>()); // Garante que a coleção não seja nula
+            cliente.setContatos(new HashSet<>());
         }
 
-        // Associar endereços existentes (lógica mantida no serviço)
         if (clienteRequestDTO.getEnderecosIds() != null && !clienteRequestDTO.getEnderecosIds().isEmpty()) {
             Set<Endereco> enderecos = new HashSet<>(enderecoRepository.findAllById(clienteRequestDTO.getEnderecosIds()));
             if (enderecos.size() != clienteRequestDTO.getEnderecosIds().size()) {
@@ -103,34 +103,27 @@ public class ClienteService {
             }
             cliente.setEnderecos(enderecos);
         } else {
-            cliente.setEnderecos(new HashSet<>()); // Garante que a coleção não seja nula
+            cliente.setEnderecos(new HashSet<>());
         }
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
-        return clienteMapper.toResponseDTO(clienteSalvo); // Usando o mapper
+        return clienteMapper.toResponseDTO(clienteSalvo);
     }
 
     @Transactional
-    @CachePut(value = "clienteById", key = "#id") // Atualiza o cache para este ID
-    @CacheEvict(value = {"clientes", "clienteByDocumento", "clientesSearch"}, allEntries = true) // Invalida outros caches relacionados
+    @CachePut(value = "clienteById", key = "#id")
+    @CacheEvict(value = {"clientes", "clienteByDocumento", "clientesSearch"}, allEntries = true)
     public ClienteResponseDTO atualizarCliente(Long id, ClienteRequestDTO clienteRequestDTO) {
         Cliente clienteExistente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + id));
 
         if (!clienteExistente.getDocumento().equals(clienteRequestDTO.getDocumento()) &&
-                clienteRepository.findByDocumento(clienteRequestDTO.getDocumento()).isPresent()) {
+                clienteRepository.findByDocumento(clienteRequestDTO.getDocumento()).filter(c -> !c.getIdCliente().equals(id)).isPresent()) {
             throw new IllegalArgumentException("Já existe outro cliente cadastrado com o documento: " + clienteRequestDTO.getDocumento());
         }
 
-        // Atualiza os campos básicos usando o mapper ou manualmente se preferir controle fino
-        // MapStruct pode atualizar uma entidade existente também com @MappingTarget
-        // Por simplicidade aqui, faremos manualmente para os campos da entidade principal:
-        clienteExistente.setNome(clienteRequestDTO.getNome());
-        clienteExistente.setSobrenome(clienteRequestDTO.getSobrenome());
-        clienteExistente.setDataNascimento(clienteRequestDTO.getDataNascimento());
-        clienteExistente.setDocumento(clienteRequestDTO.getDocumento());
+        clienteMapper.updateClienteFromDto(clienteRequestDTO, clienteExistente);
 
-        // Atualizar associações de contatos (lógica mantida no serviço)
         if (clienteRequestDTO.getContatosIds() != null) {
             if (clienteRequestDTO.getContatosIds().isEmpty()){
                 clienteExistente.getContatos().clear();
@@ -145,9 +138,11 @@ public class ClienteService {
                 }
                 clienteExistente.setContatos(contatos);
             }
+        } else { // Se contatosIds for nulo, não altera os contatos existentes (ou pode optar por limpar, dependendo da regra)
+            // clienteExistente.getContatos().clear(); // Descomente se nulo deve limpar
         }
 
-        // Atualizar associações de endereços (lógica mantida no serviço)
+
         if (clienteRequestDTO.getEnderecosIds() != null) {
             if (clienteRequestDTO.getEnderecosIds().isEmpty()){
                 clienteExistente.getEnderecos().clear();
@@ -162,10 +157,12 @@ public class ClienteService {
                 }
                 clienteExistente.setEnderecos(enderecos);
             }
+        } else { // Se enderecosIds for nulo, não altera os endereços existentes
+            // clienteExistente.getEnderecos().clear(); // Descomente se nulo deve limpar
         }
 
         Cliente clienteAtualizado = clienteRepository.save(clienteExistente);
-        return clienteMapper.toResponseDTO(clienteAtualizado); // Usando o mapper
+        return clienteMapper.toResponseDTO(clienteAtualizado);
     }
 
     @Transactional
@@ -181,6 +178,6 @@ public class ClienteService {
     @Cacheable(value = "clientesSearch", key = "#termo + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<ClienteResponseDTO> pesquisarClientes(String termo, Pageable pageable) {
         Page<Cliente> clientesPage = clienteRepository.searchByNomeOrSobrenome(termo, pageable);
-        return clientesPage.map(clienteMapper::toResponseDTO); // Usando o mapper
+        return clientesPage.map(clienteMapper::toResponseDTO);
     }
 }

@@ -1,6 +1,6 @@
 // src/lib/types.ts
 
-// Base para paginação (pode ser expandido)
+// Base para paginação (Page<T>) - MANTÉM COMO ESTÁ
 export interface Page<T> {
     content: T[];
     pageable: {
@@ -19,7 +19,7 @@ export interface Page<T> {
     totalPages: number;
     totalElements: number;
     size: number;
-    number: number;
+    number: number; // current page number
     sort: {
         sorted: boolean;
         unsorted: boolean;
@@ -31,7 +31,7 @@ export interface Page<T> {
 }
 
 
-// DTOs de Contato
+// DTOs de Contato (MANTÊM COMO ESTÃO)
 export interface ContatoRequestDTO {
     ddd: string;
     telefone: string;
@@ -45,7 +45,7 @@ export interface ContatoResponseDTO extends ContatoRequestDTO {
     idContato: number;
 }
 
-// DTOs de Endereco
+// DTOs de Endereco (MANTÊM COMO ESTÃO)
 export interface EnderecoRequestDTO {
     cep: string;
     numero: number;
@@ -54,26 +54,22 @@ export interface EnderecoRequestDTO {
     localidade: string; // Cidade
     uf: string; // Estado
     complemento?: string;
-    latitude: number; // No Java é BigDecimal, mas JSON transporta como number ou string
-    longitude: number; // No Java é BigDecimal
+    latitude: number;
+    longitude: number;
 }
 
 export interface EnderecoResponseDTO extends EnderecoRequestDTO {
     idEndereco: number;
-    // eonetEventos?: EonetEventoResponseDTO[]; // Se for usar
 }
 
-// DTOs de Cliente
+// DTOs de Cliente (AJUSTADO PARA USAR IDs)
 export interface ClienteRequestDTO {
     nome: string;
     sobrenome: string;
-    dataNascimento: string; // Formato YYYY-MM-DD
+    dataNascimento: string; // Formato YYYY-MM-DD (do input date) ou dd/MM/yyyy (se o backend aceitar ambos)
     documento: string;
-    contato?: ContatoRequestDTO; // Para criar/atualizar contato principal junto
-    endereco?: EnderecoRequestDTO; // Para criar/atualizar endereço principal junto
-    // Se a API for atualizada para aceitar IDs:
-    // contatoIds?: number[];
-    // enderecoIds?: number[];
+    contatosIds?: number[];  // <--- MUDANÇA
+    enderecosIds?: number[]; // <--- MUDANÇA
 }
 
 export interface ClienteResponseDTO {
@@ -82,11 +78,11 @@ export interface ClienteResponseDTO {
     sobrenome: string;
     dataNascimento: string;
     documento: string;
-    contatos?: ContatoResponseDTO[];
-    enderecos?: EnderecoResponseDTO[];
+    contatos?: ContatoResponseDTO[];  // Resposta pode continuar com DTOs completos
+    enderecos?: EnderecoResponseDTO[];// Resposta pode continuar com DTOs completos
 }
 
-// ViaCep
+// ViaCep (MANTÉM COMO ESTÁ)
 export interface ViaCepResponseDTO {
     cep: string;
     logradouro: string;
@@ -101,18 +97,40 @@ export interface ViaCepResponseDTO {
     erro?: boolean;
 }
 
-// Nominatim (simplificado)
-export interface NominatimResponseDTO {
-    place_id: string;
+// Nominatim (MANTÉM COMO ESTÁ, mas ajuste o nome se necessário)
+export interface NominatimResultDTO { // Renomeado para clareza, já que é um item da lista
+    place_id: string; // Nominatim usa string para place_id em alguns casos
     lat: string;
     lon: string;
     display_name: string;
+    // Adicione outros campos se precisar, ex: type, importance
 }
 
-// Para erros da API
+
+// Para erros da API (MANTÉM COMO ESTÁ)
 export interface ApiErrorResponse {
     timestamp: string;
     status: number;
-    message: string; // Mensagem principal do erro
-    details?: string[] | string; // Detalhes da validação ou outras infos
+    error?: string; // Adicionado para o formato do GlobalExceptionHandler
+    message: string;
+    messages?: string[]; // Para MethodArgumentNotValidException
+    path?: string; // Adicionado para o formato do GlobalExceptionHandler
+    details?: string[] | string; // Mantido para compatibilidade, mas 'messages' é mais específico para validação
+}
+
+// DTO para requisição de geocodificação (MANTÉM COMO ESTÁ)
+export interface EnderecoGeoRequestDTO {
+    logradouro: string;
+    numero?: string;
+    cidade: string;
+    uf: string;
+    bairro?: string;
+    cep?: string;
+}
+
+// DTO para resposta da nossa API de geocodificação (MANTÉM COMO ESTÁ)
+export interface GeoCoordinatesDTO {
+    latitude: number;
+    longitude: number;
+    matchedAddress?: string;
 }

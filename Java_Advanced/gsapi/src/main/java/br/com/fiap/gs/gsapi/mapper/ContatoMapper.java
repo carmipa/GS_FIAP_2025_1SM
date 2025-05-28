@@ -1,47 +1,27 @@
-// Pacote: br.com.fiap.gs.gsapi.mapper
 package br.com.fiap.gs.gsapi.mapper;
 
 import br.com.fiap.gs.gsapi.dto.request.ContatoRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.ContatoResponseDTO;
 import br.com.fiap.gs.gsapi.model.Contato;
-import org.mapstruct.BeanMapping; // Importar
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.Set;
 
-@Mapper(
-        componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
-)
+@Mapper(componentModel = "spring")
 public interface ContatoMapper {
 
-    // --- Mapeamentos PARA DTO de Resposta ---
-    ContatoResponseDTO toContatoResponseDTO(Contato contato);
-    List<ContatoResponseDTO> toContatoResponseDTOList(List<Contato> contatos);
-    Set<ContatoResponseDTO> toContatoResponseDTOSet(Set<Contato> contatos);
+    ContatoMapper INSTANCE = Mappers.getMapper(ContatoMapper.class);
 
-    // --- Mapeamentos PARA Entidade ---
-    @BeanMapping(ignoreByDefault = true) // IGNORA TODOS OS CAMPOS POR PADRÃO
-    @Mapping(source = "ddd", target = "ddd")
-    @Mapping(source = "telefone", target = "telefone")
-    @Mapping(source = "celular", target = "celular")
-    @Mapping(source = "whatsapp", target = "whatsapp")
-    @Mapping(source = "email", target = "email")
-    @Mapping(source = "tipoContato", target = "tipoContato")
-    // idContato e clientes serão ignorados por padrão e não precisam de @Mapping(target="...", ignore=true)
-    Contato toContato(ContatoRequestDTO contatoRequestDTO);
+    ContatoResponseDTO toResponseDTO(Contato contato);
 
-    @BeanMapping(ignoreByDefault = true) // IGNORA TODOS OS CAMPOS POR PADRÃO
-    @Mapping(source = "ddd", target = "ddd")
-    @Mapping(source = "telefone", target = "telefone")
-    @Mapping(source = "celular", target = "celular")
-    @Mapping(source = "whatsapp", target = "whatsapp")
-    @Mapping(source = "email", target = "email")
-    @Mapping(source = "tipoContato", target = "tipoContato")
-        // idContato e clientes serão ignorados por padrão
-    void updateContatoFromDto(ContatoRequestDTO contatoRequestDTO, @MappingTarget Contato contato);
+    Set<ContatoResponseDTO> toResponseDTOSet(Set<Contato> contatos); // Para coleções
+
+    List<ContatoResponseDTO> toResponseDTOList(List<Contato> contatos); // Para coleções
+
+    @Mapping(target = "idContato", ignore = true) // ID é gerado pelo banco
+    @Mapping(target = "clientes", ignore = true) // Lado inverso, gerenciado pelo Cliente
+    Contato toEntity(ContatoRequestDTO contatoRequestDTO);
 }

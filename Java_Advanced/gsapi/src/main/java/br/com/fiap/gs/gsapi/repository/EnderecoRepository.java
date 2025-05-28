@@ -1,27 +1,37 @@
-// Pacote: br.com.fiap.gs.gsapi.repository
 package br.com.fiap.gs.gsapi.repository;
 
 import br.com.fiap.gs.gsapi.model.Endereco;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor; // Adicionar se precisar de buscas dinâmicas para Endereco
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EnderecoRepository extends JpaRepository<Endereco, Long>, JpaSpecificationExecutor<Endereco> { // Adicionado JpaSpecificationExecutor
+public interface EnderecoRepository extends JpaRepository<Endereco, Long> {
 
-    // Método para buscar um endereço pelo CEP
+    /**
+     * Busca endereços por CEP.
+     * @param cep O CEP a ser buscado.
+     * @return Uma lista de endereços que correspondem ao CEP.
+     */
     List<Endereco> findByCep(String cep);
 
-    // Método para buscar um endereço pelo CEP e número (NECESSÁRIO PARA EnderecoGeocodingService)
-    Optional<Endereco> findByCepAndNumero(String cep, int numero);
+    /**
+     * Busca um endereço específico pela combinação de logradouro e número.
+     * @param logradouro O logradouro do endereço.
+     * @param numero O número do endereço.
+     * @return Um Optional contendo o endereço se encontrado.
+     */
+    Optional<Endereco> findByLogradouroAndNumero(String logradouro, Integer numero);
 
-    // Adicione outros métodos de busca customizados se necessário
-    // Exemplo: buscar endereços por UF
-    // List<Endereco> findByUf(String uf);
-
-    // Exemplo: buscar endereços por localidade (cidade)
-    // List<Endereco> findByLocalidadeIgnoreCase(String localidade);
+    /**
+     * Busca endereços por UF (Estado), com suporte a paginação.
+     * @param uf A sigla do Estado (UF).
+     * @param pageable Objeto de paginação.
+     * @return Uma página de endereços que correspondem à UF.
+     */
+    Page<Endereco> findByUfIgnoreCase(String uf, Pageable pageable);
 }

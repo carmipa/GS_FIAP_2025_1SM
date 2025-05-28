@@ -1,25 +1,59 @@
 package br.com.fiap.gs.gsapi.dto.response;
 
+import br.com.fiap.gs.gsapi.model.Cliente;
+import br.com.fiap.gs.gsapi.dto.response.ContatoResponseDTO;
+import br.com.fiap.gs.gsapi.dto.response.EnderecoResponseDTO;
+
 import java.util.Set;
-// Supondo que você também crie ContatoResponseDTO e EnderecoResponseDTO
-// import br.com.fiap.gs.gsapi.dto.ContatoResponseDTO;
-// import br.com.fiap.gs.gsapi.dto.EnderecoResponseDTO;
+import java.util.stream.Collectors;
 
 public class ClienteResponseDTO {
-    private long idCliente;
+
+    private Long idCliente;
     private String nome;
     private String sobrenome;
     private String dataNascimento;
     private String documento;
-    private Set<ContatoResponseDTO> contatos;   // Usar DTOs para objetos aninhados
-    private Set<EnderecoResponseDTO> enderecos; // Usar DTOs para objetos aninhados
+    private Set<ContatoResponseDTO> contatos;
+    private Set<EnderecoResponseDTO> enderecos;
 
+    // Construtor Padrão
     public ClienteResponseDTO() {
     }
 
-    // Construtor, Getters e Setters
-    public long getIdCliente() { return idCliente; }
-    public void setIdCliente(long idCliente) { this.idCliente = idCliente; }
+    // Construtor para facilitar a conversão da Entidade para DTO
+    public ClienteResponseDTO(Cliente cliente) {
+        this.idCliente = cliente.getIdCliente();
+        this.nome = cliente.getNome();
+        this.sobrenome = cliente.getSobrenome();
+        this.dataNascimento = cliente.getDataNascimento();
+        this.documento = cliente.getDocumento();
+        if (cliente.getContatos() != null) {
+            this.contatos = cliente.getContatos().stream()
+                    .map(ContatoResponseDTO::new)
+                    .collect(Collectors.toSet());
+        }
+        if (cliente.getEnderecos() != null) {
+            this.enderecos = cliente.getEnderecos().stream()
+                    .map(EnderecoResponseDTO::new)
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    // Construtor com todos os campos (mantido para consistência, se usado em outros lugares)
+    public ClienteResponseDTO(Long idCliente, String nome, String sobrenome, String dataNascimento, String documento, Set<ContatoResponseDTO> contatos, Set<EnderecoResponseDTO> enderecos) {
+        this.idCliente = idCliente;
+        this.nome = nome;
+        this.sobrenome = sobrenome;
+        this.dataNascimento = dataNascimento;
+        this.documento = documento;
+        this.contatos = contatos;
+        this.enderecos = enderecos;
+    }
+
+    // Getters e Setters (completos)
+    public Long getIdCliente() { return idCliente; }
+    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public String getSobrenome() { return sobrenome; }

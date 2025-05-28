@@ -1,7 +1,9 @@
 package br.com.fiap.gs.gsapi.dto.response;
 
+import br.com.fiap.gs.gsapi.model.Contato; // Import da entidade
+
 public class ContatoResponseDTO {
-    private long idContato;
+    private Long idContato;
     private String ddd;
     private String telefone;
     private String celular;
@@ -9,11 +11,35 @@ public class ContatoResponseDTO {
     private String email;
     private String tipoContato;
 
-    public ContatoResponseDTO() {
+    public ContatoResponseDTO() {}
+
+    // CONSTRUTOR ADICIONADO que aceita a entidade Contato
+    public ContatoResponseDTO(Contato contato) {
+        if (contato != null) {
+            this.idContato = contato.getIdContato();
+            this.ddd = contato.getDdd();
+            this.telefone = contato.getTelefone();
+            this.celular = contato.getCelular();
+            this.whatsapp = contato.getWhatsapp();
+            this.email = contato.getEmail();
+            this.tipoContato = contato.getTipoContato();
+        }
     }
-    // Construtor, Getters e Setters
-    public long getIdContato() { return idContato; }
-    public void setIdContato(long idContato) { this.idContato = idContato; }
+
+    // Construtor com todos os campos (mantido se usado em outro lugar)
+    public ContatoResponseDTO(Long idContato, String ddd, String telefone, String celular, String whatsapp, String email, String tipoContato) {
+        this.idContato = idContato;
+        this.ddd = ddd;
+        this.telefone = telefone;
+        this.celular = celular;
+        this.whatsapp = whatsapp;
+        this.email = email;
+        this.tipoContato = tipoContato;
+    }
+
+    // Getters e Setters
+    public Long getIdContato() { return idContato; }
+    public void setIdContato(Long idContato) { this.idContato = idContato; }
     public String getDdd() { return ddd; }
     public void setDdd(String ddd) { this.ddd = ddd; }
     public String getTelefone() { return telefone; }

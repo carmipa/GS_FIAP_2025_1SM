@@ -1,5 +1,5 @@
 -- Gerado por Oracle SQL Developer Data Modeler 23.1.0.087.0806
---   em:        2025-05-27 08:28:08 BRT
+--   em:        2025-05-27 22:41:07 BRT
 --   site:      Oracle Database 21c
 --   tipo:      Oracle Database 21c
 
@@ -9,48 +9,48 @@
 
 -- predefined type, no DDL - XMLTYPE
 
-CREATE TABLE gs_cliente (
-    id_cliente      NUMBER NOT NULL,
-    nome            VARCHAR2(100) NOT NULL,
-    sobrenome       VARCHAR2(100) NOT NULL,
+CREATE TABLE tb_cliente3 (
     data_nascimento VARCHAR2(10) NOT NULL,
-    documento       VARCHAR2(18) NOT NULL
+    sobrenome       VARCHAR2(100) NOT NULL,
+    documento       VARCHAR2(18) NOT NULL,
+    id_cliente      NUMBER NOT NULL,
+    nome            VARCHAR2(100) NOT NULL
 )
 ORGANIZATION HEAP NOCOMPRESS
     NOCACHE
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_cliente
-    ADD CONSTRAINT gs_cliente_pk PRIMARY KEY ( id_cliente ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_cliente3
+    ADD CONSTRAINT tb_cliente3_pk PRIMARY KEY ( id_cliente ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_clientecontato (
-    gs_cliente_id_cliente NUMBER NOT NULL,
-    gs_contato_id_contato NUMBER NOT NULL
+CREATE TABLE tb_clientecontato3 (
+    tb_cliente3_id_cliente NUMBER NOT NULL,
+    tb_contato3_id_contato NUMBER NOT NULL
 )
 ORGANIZATION HEAP NOCOMPRESS
     NOCACHE
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_clientecontato
-    ADD CONSTRAINT gs_clientecontato_pk PRIMARY KEY ( gs_cliente_id_cliente,
-                                                      gs_contato_id_contato ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_clientecontato3
+    ADD CONSTRAINT tb_clientecontato3_pk PRIMARY KEY ( tb_cliente3_id_cliente,
+                                                       tb_contato3_id_contato ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_clienteendereco (
-    gs_cliente_id_cliente   NUMBER NOT NULL,
-    gs_endereco_id_endereco NUMBER NOT NULL
+CREATE TABLE tb_clienteendereco3 (
+    tb_cliente3_id_cliente   NUMBER NOT NULL,
+    tb_endereco3_id_endereco NUMBER NOT NULL
 )
 ORGANIZATION HEAP NOCOMPRESS
     NOCACHE
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_clienteendereco
-    ADD CONSTRAINT gs_clienteendereco_pk PRIMARY KEY ( gs_cliente_id_cliente,
-                                                       gs_endereco_id_endereco ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_clienteendereco3
+    ADD CONSTRAINT tb_clienteendereco3_pk PRIMARY KEY ( tb_cliente3_id_cliente,
+                                                        tb_endereco3_id_endereco ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_contato (
+CREATE TABLE tb_contato3 (
     id_contato   NUMBER NOT NULL,
     ddd          VARCHAR2(3) NOT NULL,
     telefone     VARCHAR2(15) NOT NULL,
@@ -64,10 +64,10 @@ ORGANIZATION HEAP NOCOMPRESS
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_contato
-    ADD CONSTRAINT gs_contato_pk PRIMARY KEY ( id_contato ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_contato3
+    ADD CONSTRAINT tb_contato3_pk PRIMARY KEY ( id_contato ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_endereco (
+CREATE TABLE tb_endereco3 (
     id_endereco NUMBER NOT NULL,
     cep         VARCHAR2(9) NOT NULL,
     numero      NUMBER(5) NOT NULL,
@@ -84,23 +84,23 @@ ORGANIZATION HEAP NOCOMPRESS
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_endereco
-    ADD CONSTRAINT gs_endereco_pk PRIMARY KEY ( id_endereco ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_endereco3
+    ADD CONSTRAINT tb_endereco3_pk PRIMARY KEY ( id_endereco ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_enderecoeventos (
-    gs_endereco_id_endereco NUMBER NOT NULL,
-    gs_eonet_id_eonet       NUMBER NOT NULL
+CREATE TABLE tb_enderecoeventos3 (
+    tb_endereco3_id_endereco NUMBER NOT NULL,
+    tb_eonet3_id_eonet       NUMBER NOT NULL
 )
 ORGANIZATION HEAP NOCOMPRESS
     NOCACHE
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_enderecoeventos
-    ADD CONSTRAINT gs_enderecoeventos_pk PRIMARY KEY ( gs_endereco_id_endereco,
-                                                       gs_eonet_id_eonet ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_enderecoeventos3
+    ADD CONSTRAINT tb_enderecoeventos3_pk PRIMARY KEY ( tb_endereco3_id_endereco,
+                                                        tb_eonet3_id_eonet ) NOT DEFERRABLE ENABLE VALIDATE;
 
-CREATE TABLE gs_eonet (
+CREATE TABLE tb_eonet3 (
     id_eonet NUMBER NOT NULL,
     json     CLOB NULL,
     data     TIMESTAMP WITH LOCAL TIME ZONE NULL,
@@ -111,32 +111,76 @@ ORGANIZATION HEAP NOCOMPRESS
         NOPARALLEL
     NOROWDEPENDENCIES DISABLE ROW MOVEMENT;
 
-ALTER TABLE gs_eonet
-    ADD CONSTRAINT gs_eonet_pk PRIMARY KEY ( id_eonet ) NOT DEFERRABLE ENABLE VALIDATE;
+ALTER TABLE tb_eonet3
+    ADD CONSTRAINT tb_eonet3_pk PRIMARY KEY ( id_eonet ) NOT DEFERRABLE ENABLE VALIDATE;
 
-ALTER TABLE gs_clientecontato
-    ADD CONSTRAINT gs_clientecontato_gs_cliente_fk FOREIGN KEY ( gs_cliente_id_cliente )
-        REFERENCES gs_cliente ( id_cliente );
+ALTER TABLE tb_clientecontato3
+    ADD CONSTRAINT tb_clientecontato3_tb_cliente3_fk FOREIGN KEY ( tb_cliente3_id_cliente )
+        REFERENCES tb_cliente3 ( id_cliente );
 
-ALTER TABLE gs_clientecontato
-    ADD CONSTRAINT gs_clientecontato_gs_contato_fk FOREIGN KEY ( gs_contato_id_contato )
-        REFERENCES gs_contato ( id_contato );
+ALTER TABLE tb_clientecontato3
+    ADD CONSTRAINT tb_clientecontato3_tb_contato3_fk FOREIGN KEY ( tb_contato3_id_contato )
+        REFERENCES tb_contato3 ( id_contato );
 
-ALTER TABLE gs_clienteendereco
-    ADD CONSTRAINT gs_clienteendereco_gs_cliente_fk FOREIGN KEY ( gs_cliente_id_cliente )
-        REFERENCES gs_cliente ( id_cliente );
+ALTER TABLE tb_clienteendereco3
+    ADD CONSTRAINT tb_clienteendereco3_tb_cliente3_fk FOREIGN KEY ( tb_cliente3_id_cliente )
+        REFERENCES tb_cliente3 ( id_cliente );
 
-ALTER TABLE gs_clienteendereco
-    ADD CONSTRAINT gs_clienteendereco_gs_endereco_fk FOREIGN KEY ( gs_endereco_id_endereco )
-        REFERENCES gs_endereco ( id_endereco );
+ALTER TABLE tb_clienteendereco3
+    ADD CONSTRAINT tb_clienteendereco3_tb_endereco3_fk FOREIGN KEY ( tb_endereco3_id_endereco )
+        REFERENCES tb_endereco3 ( id_endereco );
 
-ALTER TABLE gs_enderecoeventos
-    ADD CONSTRAINT gs_enderecoeventos_gs_endereco_fk FOREIGN KEY ( gs_endereco_id_endereco )
-        REFERENCES gs_endereco ( id_endereco );
+ALTER TABLE tb_enderecoeventos3
+    ADD CONSTRAINT tb_enderecoeventos3_tb_endereco3_fk FOREIGN KEY ( tb_endereco3_id_endereco )
+        REFERENCES tb_endereco3 ( id_endereco );
 
-ALTER TABLE gs_enderecoeventos
-    ADD CONSTRAINT gs_enderecoeventos_gs_eonet_fk FOREIGN KEY ( gs_eonet_id_eonet )
-        REFERENCES gs_eonet ( id_eonet );
+ALTER TABLE tb_enderecoeventos3
+    ADD CONSTRAINT tb_enderecoeventos3_tb_eonet3_fk FOREIGN KEY ( tb_eonet3_id_eonet )
+        REFERENCES tb_eonet3 ( id_eonet );
+
+CREATE SEQUENCE tb_cliente3_id_cliente_seq START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE NOCYCLE NOCACHE ORDER;
+
+CREATE OR REPLACE TRIGGER tb_cliente3_id_cliente_trg BEFORE
+    INSERT ON tb_cliente3
+    FOR EACH ROW
+    WHEN ( new.id_cliente IS NULL )
+BEGIN
+    :new.id_cliente := tb_cliente3_id_cliente_seq.nextval;
+END;
+/
+
+CREATE SEQUENCE tb_contato3_id_contato_seq START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE NOCYCLE NOCACHE ORDER;
+
+CREATE OR REPLACE TRIGGER tb_contato3_id_contato_trg BEFORE
+    INSERT ON tb_contato3
+    FOR EACH ROW
+    WHEN ( new.id_contato IS NULL )
+BEGIN
+    :new.id_contato := tb_contato3_id_contato_seq.nextval;
+END;
+/
+
+CREATE SEQUENCE tb_endereco3_id_endereco_seq START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE NOCYCLE NOCACHE ORDER;
+
+CREATE OR REPLACE TRIGGER tb_endereco3_id_endereco_trg BEFORE
+    INSERT ON tb_endereco3
+    FOR EACH ROW
+    WHEN ( new.id_endereco IS NULL )
+BEGIN
+    :new.id_endereco := tb_endereco3_id_endereco_seq.nextval;
+END;
+/
+
+CREATE SEQUENCE tb_eonet3_id_eonet_seq START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE NOCYCLE NOCACHE ORDER;
+
+CREATE OR REPLACE TRIGGER tb_eonet3_id_eonet_trg BEFORE
+    INSERT ON tb_eonet3
+    FOR EACH ROW
+    WHEN ( new.id_eonet IS NULL )
+BEGIN
+    :new.id_eonet := tb_eonet3_id_eonet_seq.nextval;
+END;
+/
 
 
 
@@ -151,7 +195,7 @@ ALTER TABLE gs_enderecoeventos
 -- CREATE PACKAGE BODY                      0
 -- CREATE PROCEDURE                         0
 -- CREATE FUNCTION                          0
--- CREATE TRIGGER                           0
+-- CREATE TRIGGER                           4
 -- ALTER TRIGGER                            0
 -- CREATE COLLECTION TYPE                   0
 -- CREATE STRUCTURED TYPE                   0
@@ -164,7 +208,7 @@ ALTER TABLE gs_enderecoeventos
 -- CREATE DISK GROUP                        0
 -- CREATE ROLE                              0
 -- CREATE ROLLBACK SEGMENT                  0
--- CREATE SEQUENCE                          0
+-- CREATE SEQUENCE                          4
 -- CREATE MATERIALIZED VIEW                 0
 -- CREATE MATERIALIZED VIEW LOG             0
 -- CREATE SYNONYM                           0

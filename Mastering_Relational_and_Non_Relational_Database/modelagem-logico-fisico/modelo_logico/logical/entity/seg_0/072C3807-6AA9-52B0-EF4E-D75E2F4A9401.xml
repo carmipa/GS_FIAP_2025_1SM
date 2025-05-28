@@ -1,10 +1,10 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="072C3807-6AA9-52B0-EF4E-D75E2F4A9401" name="GS_CLIENTEENDERECO">
+<Entity class="oracle.dbtools.crest.model.design.logical.Entity" directorySegmentName="seg_0" id="072C3807-6AA9-52B0-EF4E-D75E2F4A9401" name="TB_CLIENTEENDERECO3">
 <createdBy>paulo</createdBy>
 <createdTime>2025-05-26 23:17:30 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
+<item key="7FF4A964-0E0C-396C-99F4-378719821223" value="true"/>
 </engineerTo>
 <adequatelyNormalized>NO</adequatelyNormalized>
 <expectedVolumes>0</expectedVolumes>
@@ -21,7 +21,7 @@
 <generatorID>C93FFDA1-D668-2BB1-6577-B055DBCD7834</generatorID>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
+<item key="7FF4A964-0E0C-396C-99F4-378719821223" value="true"/>
 </engineerTo>
 <referedAttribute>355BFB94-ECFE-F8DB-69D2-03E842D8EC6C</referedAttribute>
 <useDomainConstraints>false</useDomainConstraints>
@@ -35,7 +35,7 @@
 <generatorID>3A964503-56EF-D18F-1CF9-1FBDF773BD00</generatorID>
 <ownerDesignName>modelo_logico</ownerDesignName>
 <engineerTo>
-<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="true"/>
+<item key="7FF4A964-0E0C-396C-99F4-378719821223" value="true"/>
 </engineerTo>
 <referedAttribute>C2F329C6-D1D4-F42A-5C7B-712513E4E45F</referedAttribute>
 <useDomainConstraints>false</useDomainConstraints>
@@ -49,9 +49,8 @@
 <createdBy>paulo</createdBy>
 <createdTime>2025-05-26 23:18:47 UTC</createdTime>
 <ownerDesignName>modelo_logico</ownerDesignName>
-<shouldEngineer>false</shouldEngineer>
 <engineerTo>
-<item key="C94CEFDC-58A2-AD5D-4A8F-C5CCB4903C1C" value="false"/>
+<item key="7FF4A964-0E0C-396C-99F4-378719821223" value="true"/>
 </engineerTo>
 <pk>true</pk>
 <usedAttributes>

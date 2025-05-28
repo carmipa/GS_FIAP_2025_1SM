@@ -1,78 +1,59 @@
 package br.com.fiap.gs.gsapi.dto.request;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal; // IMPORTAR
+import jakarta.validation.constraints.Digits;
+
 
 public class EnderecoRequestDTO {
 
-    @NotBlank(message = "O CEP não pode estar em branco")
-    @Size(min = 8, max = 9, message = "O CEP deve ter entre 8 e 9 caracteres (ex: 00000-000 ou 00000000)")
+    @NotBlank(message = "O CEP não pode estar em branco.")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "O CEP deve estar no formato XXXXX-XXX ou XXXXXXXX.")
     private String cep;
 
-    @NotNull(message = "O número não pode ser nulo")
-    @Min(value = 1, message = "O número deve ser no mínimo 1")
-    @Max(value = 99999, message = "O número deve ser no máximo 99999")
-    private int numero;
+    @NotNull(message = "O número não pode ser nulo.")
+    // @Digits(integer = 5, fraction = 0, message = "O número deve ser um inteiro de até 5 dígitos.") // Se fosse string
+    private Integer numero; // NUMBER(5)
 
-    @NotBlank(message = "O logradouro não pode estar em branco")
-    @Size(max = 255, message = "O logradouro deve ter no máximo 255 caracteres")
+    @NotBlank(message = "O logradouro não pode estar em branco.")
+    @Size(max = 255, message = "O logradouro não pode exceder 255 caracteres.")
     private String logradouro;
 
-    @NotBlank(message = "O bairro não pode estar em branco")
-    @Size(max = 255, message = "O bairro deve ter no máximo 255 caracteres")
+    @NotBlank(message = "O bairro não pode estar em branco.")
+    @Size(max = 255, message = "O bairro não pode exceder 255 caracteres.")
     private String bairro;
 
-    @NotBlank(message = "A localidade não pode estar em branco")
-    @Size(max = 100, message = "A localidade deve ter no máximo 100 caracteres")
+    @NotBlank(message = "A localidade (cidade) não pode estar em branco.")
+    @Size(max = 100, message = "A localidade não pode exceder 100 caracteres.")
     private String localidade;
 
-    @NotBlank(message = "A UF não pode estar em branco")
-    @Size(min = 2, max = 2, message = "A UF deve ter 2 caracteres")
+    @NotBlank(message = "A UF não pode estar em branco.")
+    @Size(min = 2, max = 2, message = "A UF deve ter 2 caracteres.")
     private String uf;
 
-    @Size(max = 255, message = "O complemento deve ter no máximo 255 caracteres")
-    private String complemento; // Complemento é opcional, mas o DDL tinha NOT NULL. Ajuste conforme necessidade.
+    @NotBlank(message = "O complemento não pode estar em branco.") // DDL diz NOT NULL
+    @Size(max = 255, message = "O complemento não pode exceder 255 caracteres.")
+    private String complemento;
 
-    @NotNull(message = "A latitude não pode ser nula")
-    @DecimalMin(value = "-90.0000000", inclusive = true, message = "Latitude mínima é -90.0")
-    @DecimalMax(value = "90.0000000", inclusive = true, message = "Latitude máxima é 90.0")
-    @Digits(integer = 3, fraction = 7, message = "Latitude deve ter até 3 dígitos inteiros e 7 fracionários")
-    private BigDecimal latitude; // ALTERADO para BigDecimal
+    // Latitude e Longitude serão preenchidas pelo ViaCEP/outra API,
+    // então não são obrigatórias na requisição inicial do usuário,
+    // mas podem ser enviadas se já conhecidas.
+    @NotNull(message = "Latitude não pode ser nula.")
+    @Digits(integer = 3, fraction = 7, message = "Latitude inválida.") // ex: -90.1234567
+    private Double latitude;
 
-    @NotNull(message = "A longitude não pode ser nula")
-    @DecimalMin(value = "-180.0000000", inclusive = true, message = "Longitude mínima é -180.0")
-    @DecimalMax(value = "180.0000000", inclusive = true, message = "Longitude máxima é 180.0")
-    @Digits(integer = 3, fraction = 7, message = "Longitude deve ter até 3 dígitos inteiros e 7 fracionários")
-    private BigDecimal longitude; // ALTERADO para BigDecimal
+    @NotNull(message = "Longitude não pode ser nula.")
+    @Digits(integer = 4, fraction = 7, message = "Longitude inválida.") // ex: -180.1234567
+    private Double longitude;
 
-    public EnderecoRequestDTO() {
-    }
-
-    // Construtor atualizado
-    public EnderecoRequestDTO(String cep, int numero, String logradouro, String bairro, String localidade, String uf, String complemento, BigDecimal latitude, BigDecimal longitude) {
-        this.cep = cep;
-        this.numero = numero;
-        this.logradouro = logradouro;
-        this.bairro = bairro;
-        this.localidade = localidade;
-        this.uf = uf;
-        this.complemento = complemento;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
 
     // Getters e Setters
     public String getCep() { return cep; }
     public void setCep(String cep) { this.cep = cep; }
-    public int getNumero() { return numero; }
-    public void setNumero(int numero) { this.numero = numero; }
+    public Integer getNumero() { return numero; }
+    public void setNumero(Integer numero) { this.numero = numero; }
     public String getLogradouro() { return logradouro; }
     public void setLogradouro(String logradouro) { this.logradouro = logradouro; }
     public String getBairro() { return bairro; }
@@ -83,8 +64,8 @@ public class EnderecoRequestDTO {
     public void setUf(String uf) { this.uf = uf; }
     public String getComplemento() { return complemento; }
     public void setComplemento(String complemento) { this.complemento = complemento; }
-    public BigDecimal getLatitude() { return latitude; } // Tipo de retorno atualizado
-    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; } // Tipo do parâmetro atualizado
-    public BigDecimal getLongitude() { return longitude; } // Tipo de retorno atualizado
-    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; } // Tipo do parâmetro atualizado
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

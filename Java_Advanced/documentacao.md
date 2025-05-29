@@ -31,8 +31,9 @@
     - [7.2. Layouts e Navegação Principal](#72-layouts-e-navegação-principal)
     - [7.3. Principais Seções da UI e Como Navegar](#73-principais-seções-da-ui-e-como-navegar)
   - [8. 📂 Estrutura Simplificada do Projeto](#8--estrutura-simplificada-do-projeto)
-    - [8.1. Backend (`gsapi` ou similar)](#81-backend-gsapi-ou-similar)
-    - [8.2. Frontend (raiz do projeto Next.js)](#82-frontend-raiz-do-projeto-nextjs)
+  - [8. 📂 Estrutura Simplificada do Projeto](#8--estrutura-simplificada-do-projeto-1)
+    - [8.1. Backend (`gsapi/` ou nome similar)](#81-backend-gsapi-ou-nome-similar)
+    - [8.2. Frontend (Raiz do projeto Next.js)](#82-frontend-raiz-do-projeto-nextjs)
   - [9. 🧑‍💻 Equipe MetaMind](#9--equipe-metamind)
   - [10. 🌐 Links Úteis](#10--links-úteis)
   - [11. 🤝 Como Contribuir](#11--como-contribuir)
@@ -310,55 +311,70 @@ O App Router do Next.js define as rotas com base na estrutura de pastas dentro d
 
 Uma visão geral das principais pastas para facilitar a localização dos artefatos:
 
-### 8.1. Backend (`gsapi` ou similar)
+---
 
-gsapi/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── br/com/fiap/gs/gsapi/
-│   │   │       ├── GsapiApplication.java  # Ponto de entrada Spring Boot
-│   │   │       ├── client/                # Clientes HTTP para APIs externas
-│   │   │       ├── config/                # Configurações (App, CORS, OpenAPI)
-│   │   │       ├── controller/            # API Endpoints (REST Controllers)
-│   │   │       ├── dto/                   # Data Transfer Objects
-│   │   │       ├── exception/             # Handlers de exceção
-│   │   │       ├── mapper/                # Mappers (MapStruct)
-│   │   │       ├── model/                 # Entidades JPA
-│   │   │       ├── repository/            # Repositórios Spring Data JPA
-│   │   │       └── service/               # Lógica de negócios
-│   │   └── resources/
-│   │       ├── application.properties     # Configurações da aplicação
-│   │       └── Oracle_DDL_GS_AlertaDesastres_SCRIPT.sql # Script DDL do banco (deve estar aqui ou em local de fácil acesso)
-├── pom.xml                            # (Se Maven) ou build.gradle (Se Gradle)
+## 8. 📂 Estrutura Simplificada do Projeto
 
-### 8.2. Frontend (raiz do projeto Next.js)
+Uma visão geral das principais pastas para facilitar a localização dos artefatos:
 
-frontend-gs-alerta-desastres/ # Exemplo de nome da pasta raiz do frontend
-├── public/                      # Arquivos estáticos (imagens, favicon)
-├── src/
-│   ├── app/                     # App Router: Define rotas e páginas
-│   │   ├── layout.tsx           # Layout Raiz Global
-│   │   ├── page.tsx             # Página Inicial (Home)
-│   │   ├── globals.css          # Estilos Globais
-│   │   ├── clientes/            # Seção de Usuários
-│   │   │   ├── layout.tsx       # Layout da seção Usuários
-│   │   │   ├── listar/
-│   │   │   │   └── page.tsx     # Página de listagem
-│   │   │   └── ...              # Outras páginas (cadastrar, [id], etc.)
-│   │   ├── desastres/           # Seção de Desastres
-│   │   │   ├── layout.tsx       # Layout da seção Desastres
-│   │   │   └── ...
-│   │   └── contato/             # Seção de Contato
-│   │       └── page.tsx
-│   ├── components/              # Componentes React reutilizáveis (ex: Mapas)
-│   └── lib/                     # Funções utilitárias, API service, tipos
-│       ├── apiService.ts        # Lógica para chamadas à API backend
-│       └── types.ts             # Definições de tipos TypeScript
-├── package.json                 # Dependências e scripts do projeto Node.js
-├── next.config.js               # Configurações do Next.js (se houver customizações)
-└── tsconfig.json                # Configurações do TypeScript
+### 8.1. Backend (`gsapi/` ou nome similar)
 
+-   `gsapi/` (Diretório raiz do módulo backend)
+    -   `src/`
+        -   `main/`
+            -   `java/`
+                -   `br/com/fiap/gs/gsapi/` # Pacote principal da aplicação Java
+                    -   `GsapiApplication.java` # Classe principal, ponto de entrada da aplicação Spring Boot.
+                    -   `client/` # Contém os clientes HTTP para consumir APIs externas (NASA EONET, ViaCEP, Google Geocoding).
+                    -   `config/` # Classes de configuração do Spring (ex: AppConfig para Beans, CorsConfig para CORS, OpenApiConfig para Swagger).
+                    -   `controller/` # Controladores REST que definem os endpoints da API e lidam com as requisições HTTP.
+                    -   `dto/` # Data Transfer Objects, usados para modelar os dados nas requisições e respostas da API.
+                        -   `external/` # DTOs específicos para mapear respostas de APIs externas.
+                        -   `request/` # DTOs para dados de entrada (corpos de requisição).
+                        -   `response/` # DTOs para dados de saída (corpos de resposta).
+                        -   `stats/` # DTOs para dados de estatísticas.
+                    -   `exception/` # Classes para tratamento customizado de exceções e handlers globais.
+                    -   `mapper/` # Interfaces MapStruct para conversão automática entre Entidades e DTOs.
+                    -   `model/` # Entidades JPA que representam as tabelas do banco de dados.
+                    -   `repository/` # Interfaces Spring Data JPA para acesso e manipulação de dados no banco.
+                    -   `service/` # Classes que contêm a lógica de negócios da aplicação.
+            -   `resources/`
+                -   `application.properties` # Arquivo principal de configuração da aplicação Spring Boot (banco de dados, servidor, etc.).
+                -   `Oracle_DDL_GS_AlertaDesastres_SCRIPT.sql` # (Local sugerido) Script SQL para criação da estrutura do banco de dados.
+    -   `pom.xml` # (Se estiver usando Maven) Arquivo de configuração do projeto Maven, define dependências e build.
+    -   `build.gradle` # (Se estiver usando Gradle) Arquivo de configuração do projeto Gradle.
+
+### 8.2. Frontend (Raiz do projeto Next.js)
+
+-   `frontend-gs-alerta-desastres/` # (Exemplo de nome para a pasta raiz do frontend)
+    -   `public/` # Contém arquivos estáticos servidos diretamente (imagens, favicon.ico, fontes locais, etc.).
+    -   `src/`
+        -   `app/` # Diretório principal do App Router do Next.js, onde as rotas e páginas são definidas.
+            -   `layout.tsx` # Layout Raiz Global, aplicado a todas as páginas. Contém a navbar principal e o footer.
+            -   `page.tsx` # Componente da Página Inicial (Home - rota `/`).
+            -   `globals.css` # Arquivo para estilos CSS globais aplicados em toda a aplicação.
+            -   `clientes/` # Define a rota base `/clientes` (ou `/usuarios` após renomeação de rótulos).
+                -   `layout.tsx` # Layout específico para a seção de usuários, incluindo a sub-navegação.
+                -   `listar/page.tsx` # Página para listar usuários (rota `/clientes/listar`).
+                -   `cadastrar/page.tsx` # Página para cadastrar novos usuários.
+                -   `[id]/page.tsx` # Página dinâmica para exibir detalhes de um usuário específico.
+                -   `...` # Outras sub-rotas como `alterar/[id]`, `buscar`, `deletar/[id]`.
+            -   `desastres/` # Define a rota base `/desastres`.
+                -   `layout.tsx` # Layout específico para a seção de desastres, com sua sub-navegação.
+                -   `page.tsx` # Painel principal da seção de desastres.
+                -   `mapa/page.tsx` # Página do mapa de eventos locais.
+                -   `mapa-atuais/page.tsx` # Página do mapa de eventos da API da NASA.
+                -   `estatisticas/page.tsx` # Página de estatísticas.
+            -   `contato/` # Define a rota `/contato`.
+                -   `layout.tsx` # Layout específico para a página de contato (se necessário).
+                -   `page.tsx` # Componente da página "Fale Conosco".
+        -   `components/` # Contém componentes React reutilizáveis em várias partes da aplicação (ex: `LeafletMap.tsx`, `EonetEventMap.tsx`).
+        -   `lib/` # Funções utilitárias, serviços e definições de tipos.
+            -   `apiService.ts` # Módulo centralizado para realizar chamadas à API backend.
+            -   `types.ts` # Definições de interfaces e tipos TypeScript usados em todo o frontend.
+    -   `package.json` # Define as dependências do projeto Node.js (React, Next.js, etc.) e os scripts (dev, build, start).
+    -   `next.config.js` # Arquivo de configuração do Next.js (pode estar como `.mjs` ou `.ts`).
+    -   `tsconfig.json` # Arquivo de configuração do compilador TypeScript.
 
 ---
 

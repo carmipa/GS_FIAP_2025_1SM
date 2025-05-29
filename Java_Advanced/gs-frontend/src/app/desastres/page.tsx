@@ -17,22 +17,15 @@ const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | n
 type TabKey = 'sincronizar' | 'buscarProximos' | 'listarLocais';
 
 export default function DesastresPage() {
-    // Estado para a aba ativa
     const [activeTab, setActiveTab] = useState<TabKey>('listarLocais');
-
-    // Estados para listagem local
     const [eventosLocaisPage, setEventosLocaisPage] = useState<Page<EonetResponseDTO> | null>(null);
     const [erroListagemLocal, setErroListagemLocal] = useState<string | null>(null);
     const [loadingListagemLocal, setLoadingListagemLocal] = useState<boolean>(true);
     const [currentLocalPage, setCurrentLocalPage] = useState<number>(0);
-
-    // Estados para sincronização
     const [syncParams, setSyncParams] = useState({ limit: '', days: '', status: 'open', source: '' });
     const [loadingSync, setLoadingSync] = useState<boolean>(false);
     const [syncMensagem, setSyncMensagem] = useState<string | null>(null);
     const [syncErro, setSyncErro] = useState<string | null>(null);
-
-    // Estados para busca por proximidade
     const [proximidadeParams, setProximidadeParams] = useState({
         clienteId: '',
         latitude: '',
@@ -43,7 +36,6 @@ export default function DesastresPage() {
     const [eventosProximos, setEventosProximos] = useState<NasaEonetEventDTO[]>([]);
     const [loadingProximidade, setLoadingProximidade] = useState<boolean>(false);
     const [erroProximidade, setErroProximidade] = useState<string | null>(null);
-
     const clienteIdRef = useRef<HTMLInputElement>(null);
     const latitudeRef = useRef<HTMLInputElement>(null);
     const longitudeRef = useRef<HTMLInputElement>(null);
@@ -67,7 +59,7 @@ export default function DesastresPage() {
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    }, [currentLocalPage, activeTab]); // Adicionado activeTab como dependência
+    }, [currentLocalPage, activeTab]);
 
     const handleSyncParamChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setSyncParams(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -83,10 +75,6 @@ export default function DesastresPage() {
         try {
             const eventosSincronizados = await sincronizarNasaEonet(limitNum, daysNum, syncParams.status || undefined, syncParams.source || undefined);
             setSyncMensagem(`${eventosSincronizados.length} evento(s) processado(s) / sincronizado(s) com sucesso! A lista de eventos locais será atualizada.`);
-            // Opcional: Mudar para a aba de listagem local após sincronizar
-            // setActiveTab('listarLocais');
-            // fetchEventosLocais(0); // Recarrega a lista da primeira página
-            // setCurrentLocalPage(0); // Reseta para a primeira página
         } catch (error: any) {
             setSyncErro(`Falha na sincronização: ${error.message || 'Erro desconhecido'}`);
             setSyncMensagem(null);
@@ -161,10 +149,13 @@ export default function DesastresPage() {
                 proximidadeParams.status || undefined,
                 proximidadeParams.source || undefined
             );
-            setEventosProximos(eventos);
-            if(eventos.length === 0){
+            const eventosRecebidos = eventos || [];
+            setEventosProximos(eventosRecebidos);
+
+            if (eventosRecebidos.length === 0) {
                 setErroProximidade("Nenhum evento encontrado na API da NASA para os critérios fornecidos.");
             }
+
         } catch (error: any) {
             setErroProximidade(`Falha ao buscar eventos próximos: ${error.message}`);
         } finally {
@@ -185,7 +176,7 @@ export default function DesastresPage() {
     const renderEventoItem = (evento: NasaEonetEventDTO | Partial<NasaEonetEventDTO>, keyPrefix: string = "prox") => {
         const dataEvento = evento?.geometry?.[0]?.date;
         return (
-            <div className="client-info-section"> {/* Reutilizando classe para consistência */}
+            <div className="client-info-section">
                 <strong>{evento?.title || 'Título não disponível'}</strong>
                 {evento?.id && <p><span className="label">ID NASA:</span> {evento.id}</p>}
                 <p><span className="label">Data do Evento:</span> {formatDate(dataEvento?.toString())}</p>
@@ -204,7 +195,6 @@ export default function DesastresPage() {
         );
     };
 
-    // Estilos para as abas
     const tabButtonStyle = (tabKey: TabKey): React.CSSProperties => ({
         padding: '10px 20px',
         cursor: 'pointer',
@@ -219,27 +209,28 @@ export default function DesastresPage() {
         alignItems: 'center',
         gap: '6px',
         color: activeTab === tabKey ? '#007bff' : '#333',
-        borderBottomColor: activeTab === tabKey ? '#fff' : '#ddd', // Para "conectar" com o conteúdo
+        borderBottomColor: activeTab === tabKey ? '#fff' : '#ddd',
         position: 'relative',
-        bottom: activeTab === tabKey ? '-1px' : '0', // Para "levantar" a aba ativa
+        bottom: activeTab === tabKey ? '-1px' : '0',
     });
 
     const tabContentStyle: React.CSSProperties = {
         border: '1px solid #ddd',
         padding: '20px',
-        borderRadius: '0 6px 6px 6px', // Arredondar cantos exceto o superior esquerdo da primeira aba
+        borderRadius: '0 6px 6px 6px',
         backgroundColor: '#fff',
     };
 
-
+    // ***** INÍCIO DA CORREÇÃO DO ERRO DE COMPILAÇÃO *****
+    // Removido o comentário inline após o 'return ('
     return (
+        // ***** FIM DA CORREÇÃO DO ERRO DE COMPILAÇÃO *****
         <div className="container">
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>public</span>
                 Gerenciamento de Eventos de Desastres (EONET)
             </h1>
 
-            {/* Navegação por Abas */}
             <div style={{ marginBottom: '0px', borderBottom: '1px solid #ddd' }}>
                 <button style={tabButtonStyle('listarLocais')} onClick={() => setActiveTab('listarLocais')}>
                     <span className="material-icons-outlined">storage</span> Eventos Locais
@@ -252,7 +243,6 @@ export default function DesastresPage() {
                 </button>
             </div>
 
-            {/* Conteúdo da Aba Ativa */}
             <div style={tabContentStyle}>
                 {activeTab === 'listarLocais' && (
                     <section>

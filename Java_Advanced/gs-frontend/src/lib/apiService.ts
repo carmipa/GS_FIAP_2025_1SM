@@ -5,12 +5,14 @@ import type {
     EnderecoRequestDTO, EnderecoResponseDTO,
     EnderecoGeoRequestDTO, GeoCoordinatesDTO,
     ViaCepResponseDTO, ApiErrorResponse, Page,
-    EonetResponseDTO, NasaEonetEventDTO // Adicionado NasaEonetEventDTO
+    EonetResponseDTO, NasaEonetEventDTO,
+    CategoryCountDTO // <<< Adicionar importação do novo tipo
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
+    // ... (código da função handleResponse - sem alterações)
     if (!response.ok) {
         let errorData: Partial<ApiErrorResponse> = {
             message: `Erro ${response.status}: ${response.statusText || "Falha na requisição à API."}`,
@@ -59,7 +61,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
 }
 
-// --- Cliente API --- (Existente, sem alterações aqui)
+// --- Cliente API ---
+// ... (código das funções de Cliente API - sem alterações)
 export async function listarClientes(page: number = 0, size: number = 10): Promise<Page<ClienteResponseDTO>> {
     const response = await fetch(`${API_BASE_URL}/clientes?page=${page}&size=${size}&sort=nome,asc`);
     return handleResponse<Page<ClienteResponseDTO>>(response);
@@ -91,7 +94,8 @@ export async function deletarCliente(id: number): Promise<void> {
     await handleResponse<void>(response);
 }
 
-// --- Contato API --- (Existente, sem alterações aqui)
+// --- Contato API ---
+// ... (código da função criarContatoSozinho - sem alterações)
 export async function criarContatoSozinho(data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/contatos`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
@@ -99,7 +103,8 @@ export async function criarContatoSozinho(data: ContatoRequestDTO): Promise<Cont
     return handleResponse<ContatoResponseDTO>(response);
 }
 
-// --- Endereco API --- (Existente, sem alterações aqui)
+// --- Endereco API ---
+// ... (código das funções de Endereco API - sem alterações)
 export async function consultarCepPelaApi(cep: string): Promise<ViaCepResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/enderecos/consultar-cep/${cep.replace(/\D/g, '')}`);
     return handleResponse<ViaCepResponseDTO>(response);
@@ -117,39 +122,79 @@ export async function criarEnderecoSozinho(data: EnderecoRequestDTO): Promise<En
     return handleResponse<EnderecoResponseDTO>(response);
 }
 
+
 // --- Eonet API ---
+// ... (código das funções listarEventosEonet e sincronizarNasaEonet - sem alterações)
 export async function listarEventosEonet(page: number = 0, size: number = 10): Promise<Page<EonetResponseDTO>> {
     const response = await fetch(`${API_BASE_URL}/eonet?page=${page}&size=${size}&sort=data,desc`);
     return handleResponse<Page<EonetResponseDTO>>(response);
 }
 
 export async function sincronizarNasaEonet(limit?: number, days?: number, status?: string, source?: string): Promise<EonetResponseDTO[]> {
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', String(limit));
-    if (days) params.append('days', String(days));
-    if (status) params.append('status', status);
-    if (source) params.append('source', source);
-    const response = await fetch(`${API_BASE_URL}/eonet/nasa/sincronizar?${params.toString()}`, {
+    const queryParamsCollector: Record<string, string> = {};
+    if (limit !== undefined) queryParamsCollector.limit = String(limit);
+    if (days !== undefined) queryParamsCollector.days = String(days);
+    if (status) queryParamsCollector.status = status;
+    if (source) queryParamsCollector.source = source;
+
+    const params = new URLSearchParams(queryParamsCollector);
+    const queryString = params.toString();
+
+    const response = await fetch(`${API_BASE_URL}/eonet/nasa/sincronizar${queryString ? '?' + queryString : ''}`, {
         method: 'POST',
     });
-    return handleResponse<EonetResponseDTO[]>(response); // Retorna os eventos que foram salvos/atualizados localmente
+    return handleResponse<EonetResponseDTO[]>(response);
 }
 
-// NOVA FUNÇÃO para buscar eventos próximos da API da NASA
 export async function buscarEventosNasaProximos(
-    latitude: number, longitude: number, raioKm: number,
-    limit?: number, days?: number, status?: string, source?: string
-): Promise<NasaEonetEventDTO[]> { // Retorna diretamente os eventos da NASA
-    const params = new URLSearchParams({
-        latitude: String(latitude),
-        longitude: String(longitude),
-        raioKm: String(raioKm),
-    });
-    if (limit) params.append('limit', String(limit));
-    if (days) params.append('days', String(days));
-    if (status) params.append('status', status);
-    if (source) params.append('source', source);
+    latitude?: number,
+    longitude?: number,
+    raioKm?: number,
+    limit?: number,
+    days?: number,
+    status?: string,
+    source?: string,
+    startDate?: string,
+    endDate?: string
+): Promise<NasaEonetEventDTO[]> {
+    const queryParamsCollector: Record<string, string> = {};
 
-    const response = await fetch(`${API_BASE_URL}/eonet/nasa/proximos?${params.toString()}`);
+    if (latitude !== undefined) queryParamsCollector.latitude = String(latitude);
+    if (longitude !== undefined) queryParamsCollector.longitude = String(longitude);
+    if (raioKm !== undefined) queryParamsCollector.raioKm = String(raioKm);
+    if (limit !== undefined) queryParamsCollector.limit = String(limit);
+
+    if (startDate) queryParamsCollector.start = startDate;
+    if (endDate) queryParamsCollector.end = endDate;
+
+    if (!startDate && !endDate && days !== undefined) {
+        queryParamsCollector.days = String(days);
+    }
+
+    if (status !== undefined && status !== null) {
+        queryParamsCollector.status = status;
+    }
+    if (source !== undefined && source !== null && source.trim() !== '') {
+        queryParamsCollector.source = source;
+    }
+
+    const params = new URLSearchParams(queryParamsCollector);
+    const queryString = params.toString();
+
+    console.log(`Frontend: Chamando /api/eonet/nasa/proximos com query: ${queryString}`);
+
+    const response = await fetch(`${API_BASE_URL}/eonet/nasa/proximos${queryString ? '?' + queryString : ''}`);
     return handleResponse<NasaEonetEventDTO[]>(response);
 }
+
+// ***** NOVA FUNÇÃO PARA BUSCAR ESTATÍSTICAS DE CATEGORIA *****
+export async function getEonetCategoryStats(days: number): Promise<CategoryCountDTO[]> {
+    if (days <= 0) {
+        // Pode-se optar por lançar um erro ou retornar array vazio se 'days' for inválido
+        console.warn("getEonetCategoryStats: 'days' deve ser um número positivo.");
+        return []; // Ou throw new Error("'days' must be a positive number.");
+    }
+    const response = await fetch(`${API_BASE_URL}/stats/eonet/count-by-category?days=${days}`);
+    return handleResponse<CategoryCountDTO[]>(response);
+}
+// ***** FIM DA NOVA FUNÇÃO *****

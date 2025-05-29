@@ -3,17 +3,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-// A importação de './globals.css' foi REMOVIDA daqui,
-// pois já é importado no root layout (src/app/layout.tsx).
 
 export default function DesastresLayout({
                                             children,
                                         }: {
     children: React.ReactNode;
 }) {
-    // Estilos para a sub-navegação, similar ao ClientesLayout
     const subNavStyle: React.CSSProperties = {
-        backgroundColor: '#f8f9fa', // Cor de fundo suave
+        backgroundColor: '#f8f9fa',
         padding: '12px 20px',
         marginBottom: '25px',
         borderRadius: '8px',
@@ -26,21 +23,21 @@ export default function DesastresLayout({
 
     const subNavLinkStyle: React.CSSProperties = {
         textDecoration: 'none',
-        color: '#0056b3', // Azul escuro para links
+        color: '#0056b3',
         fontWeight: '500',
         padding: '8px 12px',
         borderRadius: '5px',
         transition: 'background-color 0.2s ease, color 0.2s ease',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '6px', // Espaço entre ícone e texto
+        gap: '6px',
     };
 
-    // Efeito hover para os links da sub-navegação
     const handleLinkMouseOver = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.currentTarget.style.backgroundColor = '#e9ecef'; // Um cinza claro para hover
-        e.currentTarget.style.color = '#003f80'; // Azul mais escuro no hover
+        e.currentTarget.style.backgroundColor = '#e9ecef';
+        e.currentTarget.style.color = '#003f80';
     };
+
     const handleLinkMouseOut = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.currentTarget.style.backgroundColor = 'transparent';
         e.currentTarget.style.color = '#0056b3';
@@ -48,7 +45,6 @@ export default function DesastresLayout({
 
     return (
         <section>
-            {/* Sub-navegação para a seção de Desastres */}
             <nav style={subNavStyle}>
                 <Link
                     href="/desastres"
@@ -59,23 +55,31 @@ export default function DesastresLayout({
                     <span className="material-icons-outlined">dashboard</span> Painel EONET
                 </Link>
                 <Link
-                    href="/desastres/mapa" // Rota para uma futura página de mapa
+                    href="/desastres/mapa"
                     style={subNavLinkStyle}
                     onMouseOver={handleLinkMouseOver}
                     onMouseOut={handleLinkMouseOut}
                 >
-                    <span className="material-icons-outlined">map</span> Mapa de Eventos
+                    <span className="material-icons-outlined">map</span> Mapa de Eventos (Locais)
                 </Link>
-                {/* Você pode adicionar mais links aqui conforme a seção evolui, ex: Alertas */}
-                {/* <Link
-                    href="/desastres/alertas"
+                <Link
+                    href="/desastres/mapa-atuais"
                     style={subNavLinkStyle}
                     onMouseOver={handleLinkMouseOver}
                     onMouseOut={handleLinkMouseOut}
                 >
-                    <span className="material-icons-outlined">notification_important</span> Meus Alertas
+                    <span className="material-icons-outlined">public</span> Mapa Atuais (NASA)
                 </Link>
-                */}
+                {/* ***** INÍCIO DO NOVO LINK ADICIONADO ***** */}
+                <Link
+                    href="/desastres/estatisticas"
+                    style={subNavLinkStyle}
+                    onMouseOver={handleLinkMouseOver}
+                    onMouseOut={handleLinkMouseOut}
+                >
+                    <span className="material-icons-outlined">leaderboard</span> Estatísticas
+                </Link>
+                {/* ***** FIM DO NOVO LINK ADICIONADO ***** */}
             </nav>
 
             <div className="container">

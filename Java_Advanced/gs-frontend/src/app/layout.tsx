@@ -44,7 +44,7 @@ export default function RootLayout({
             </Link>
             <Link href="/clientes/listar">
                 <span className="material-icons-outlined">group</span>
-                Clientes
+                Usuários
             </Link>
             <Link href="/desastres">
                 <span className="material-icons-outlined">volcano</span>

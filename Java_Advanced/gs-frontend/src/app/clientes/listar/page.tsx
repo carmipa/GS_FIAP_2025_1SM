@@ -73,7 +73,7 @@ export default function ListarClientesPage() {
     return (
         <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <h1 className="page-title" style={{ margin: 0 }}>Lista de Clientes</h1>
+                <h1 className="page-title" style={{ margin: 0 }}>Lista de Usuários</h1>
                 <Link href="/clientes/cadastrar" className="button button-success">
                     <span className="material-icons-outlined">add_circle_outline</span>
                     Cadastrar Novo

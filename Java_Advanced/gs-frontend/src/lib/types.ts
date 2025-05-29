@@ -121,12 +121,12 @@ export interface GeoCoordinatesDTO {
 // --- Tipos para EONET (Backend Local - Existente) ---
 export interface EonetResponseDTO {
     idEonet: number;
-    json: string; // String JSON do evento original da NASA
-    data?: string | Date; // Data principal do evento ou data de registro
-    eonetIdApi: string; // ID do evento na API da NASA
+    json: string;
+    data?: string | Date;
+    eonetIdApi: string;
 }
 
-// --- NOVOS TIPOS: Estrutura para NASA EONET Events (para parsear o EonetResponseDTO.json e para a resposta de /nasa/proximos) ---
+// --- Tipos para NASA EONET Events (Existente) ---
 export interface NasaEonetCategoryDTO {
     id: string;
     title: string;
@@ -137,34 +137,28 @@ export interface NasaEonetSourceDTO {
     url: string;
 }
 
-// As coordenadas podem ser um array de números para um Ponto [lon, lat],
-// ou um array de arrays para Polígonos e Linhas. Usamos 'any' para flexibilidade,
-// mas você pode refinar isso se souber os tipos de geometria exatos que irá encontrar.
 export interface NasaEonetGeometryDTO {
-    magnitudeValue?: number; // Alguns eventos podem ter magnitude
+    magnitudeValue?: number;
     magnitudeUnit?: string;
-    date: string | Date; // A API retorna como string ISO 8601
-    type: "Point" | "Polygon" | string; // Pode haver outros tipos
-    coordinates: any; // Ex: [lon, lat] para Point, [[[lon,lat],...]] para Polygon
-    // Para polígonos, a estrutura pode ser mais aninhada. Ex: number[][][]
+    date: string | Date;
+    type: "Point" | "Polygon" | string;
+    coordinates: any;
 }
 
 export interface NasaEonetEventDTO {
     id: string;
     title: string;
-    description?: string; // Pode ser nulo ou ausente
-    link: string; // Link para o evento na fonte
+    description?: string;
+    link: string;
     categories: NasaEonetCategoryDTO[];
     sources: NasaEonetSourceDTO[];
     geometry: NasaEonetGeometryDTO[];
-    closed?: string | Date | null; // Data de fechamento do evento, se aplicável
+    closed?: string | Date | null;
 }
 
-// (Opcional) Se a API /nasa/proximos retornar a estrutura completa da NasaEonetApiResponseDTO
-// export interface NasaEonetApiResponseDTO {
-//   title: string;
-//   description: string;
-//   link: string;
-//   events: NasaEonetEventDTO[];
-// }
-
+// ***** NOVA INTERFACE PARA DADOS DE ESTATÍSTICAS *****
+export interface CategoryCountDTO {
+    categoryTitle: string;
+    count: number;
+}
+// ***** FIM DA NOVA INTERFACE *****

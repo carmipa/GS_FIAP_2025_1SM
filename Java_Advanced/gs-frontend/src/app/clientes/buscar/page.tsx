@@ -39,7 +39,7 @@ export default function BuscarClientePage() {
         <div className="container">
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>person_search</span>
-                Buscar Cliente
+                Buscar Usuário
             </h1>
             <form onSubmit={handleBuscar} className="form-container" style={{maxWidth: '500px', margin: '0 auto'}}>
                 <div className="form-group">
@@ -53,14 +53,14 @@ export default function BuscarClientePage() {
                         onChange={(e) => setTipoBusca(e.target.value as any)}
                         style={{padding: '10px', fontSize: '1em', borderRadius:'5px', border:'1px solid #ccc', width:'100%'}}
                     >
-                        <option value="id">ID do Cliente</option>
+                        <option value="id">ID do Usuário</option>
                         <option value="documento">Documento (CPF/CNPJ)</option>
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="termoBusca" style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
                         <span className="material-icons-outlined">input</span>
-                        {tipoBusca === 'id' ? 'ID do Cliente:' : 'Número do Documento:'}
+                        {tipoBusca === 'id' ? 'ID do Usuário:' : 'Número do Documento:'}
                     </label>
                     <input
                         id="termoBusca"
@@ -80,7 +80,7 @@ export default function BuscarClientePage() {
                 </button>
             </form>
             <p style={{marginTop: '25px', textAlign: 'center'}}>
-                Para ver todos os clientes, acesse a <Link href="/clientes/listar" style={{color: '#007bff', textDecoration: 'underline'}}>Lista de Clientes</Link>.
+                Para ver todos os Usuários, acesse a <Link href="/clientes/listar" style={{color: '#007bff', textDecoration: 'underline'}}>Lista de Clientes</Link>.
             </p>
         </div>
     );

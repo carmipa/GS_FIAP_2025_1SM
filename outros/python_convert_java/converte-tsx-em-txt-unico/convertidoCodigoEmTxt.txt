@@ -1,7 +1,7 @@
 // Script: converte-codigo-em-txt-unico (v10)
-// Gerado em: 2025-05-29 16:36:10
+// Gerado em: 2025-05-29 19:50:57
 
-// Diretórios (inline): app > app\clientes > app\clientes\[id] > app\clientes\alterar > app\clientes\alterar\[id] > app\clientes\buscar > app\clientes\cadastrar > app\clientes\deletar > app\clientes\deletar\[id] > app\clientes\listar > app\contato > app\desastres > app\desastres\mapa > components > lib > src
+// Diretórios (inline): app > app\clientes > app\clientes\[id] > app\clientes\alterar > app\clientes\alterar\[id] > app\clientes\buscar > app\clientes\cadastrar > app\clientes\deletar > app\clientes\deletar\[id] > app\clientes\listar > app\contato > app\desastres > app\desastres\estatisticas > app\desastres\mapa > app\desastres\mapa-atuais > components > lib > src
 
 // Diretórios (multi-line):
 src/
@@ -17,7 +17,9 @@ src/
             [id]/
         contato/
         desastres/
+            estatisticas/
             mapa/
+            mapa-atuais/
     components/
     lib/
 
@@ -31,11 +33,14 @@ src/
 // tsx => app\clientes\listar\page.tsx
 // tsx => app\contato\layout.tsx
 // tsx => app\contato\page.tsx
+// tsx => app\desastres\estatisticas\page.tsx
 // tsx => app\desastres\layout.tsx
+// tsx => app\desastres\mapa-atuais\page.tsx
 // tsx => app\desastres\mapa\page.tsx
 // tsx => app\desastres\page.tsx
 // tsx => app\layout.tsx
 // tsx => app\page.tsx
+// tsx => components\EonetEventMap.tsx
 // tsx => components\LeafletMap.tsx
 // ts => lib\apiService.ts
 // ts => lib\types.ts
@@ -1813,6 +1818,239 @@ const ContactsPage: React.FC = () => {
 export default ContactsPage;
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\desastres\estatisticas\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/desastres/estatisticas/page.tsx
+'use client';
+
+import React, { useEffect, useState, useMemo } from 'react'; // Adicionado useMemo
+import { Bar, Pie } from 'react-chartjs-2'; // Adicionado Pie
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement, // Adicionado para o gráfico de Pizza
+} from 'chart.js';
+import { getEonetCategoryStats } from '@/lib/apiService';
+import type { CategoryCountDTO } from '@/lib/types';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement // Registra o elemento para Pizza
+);
+
+interface ChartDataset {
+    label: string;
+    data: number[];
+    backgroundColor: string | string[];
+    borderColor: string | string[];
+    borderWidth: number;
+}
+
+interface ChartDataState {
+    labels: string[];
+    datasets: ChartDataset[];
+}
+
+const periodOptions = [
+    { label: 'Últimos 30 dias', value: 30 },
+    { label: 'Últimos 90 dias', value: 90 },
+    { label: 'Último Ano (365 dias)', value: 365 },
+    { label: 'Últimos 2 Anos', value: 365 * 2 },
+    { label: 'Últimos 5 Anos', value: 365 * 5 },
+];
+
+const ثابتColors = [ // Usar um conjunto fixo de cores para consistência entre gráficos
+    'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)',
+    'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+    'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+    'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 89, 0.7)',
+    'rgba(140, 160, 175, 0.7)', 'rgba(220, 130, 80, 0.7)'
+];
+
+const generateChartColors = (numColors: number): string[] => {
+    const colors: string[] = [];
+    for (let i = 0; i < numColors; i++) {
+        colors.push(ثابتColors[i % ثابتColors.length]);
+    }
+    return colors;
+};
+
+type ActiveGraphTab = 'barras' | 'pizza'; // | 'linhas' no futuro
+
+export default function EstatisticasDesastresPage() {
+    const [rawStatsData, setRawStatsData] = useState<CategoryCountDTO[]>([]); // Armazena os dados brutos
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedPeriodDays, setSelectedPeriodDays] = useState<number>(365);
+    const [activeGraphTab, setActiveGraphTab] = useState<ActiveGraphTab>('barras'); // Aba inicial
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!selectedPeriodDays) return;
+
+            setLoading(true);
+            setError(null);
+            setRawStatsData([]); // Limpar dados brutos
+            try {
+                const data: CategoryCountDTO[] = await getEonetCategoryStats(selectedPeriodDays);
+
+                if (data && data.length > 0) {
+                    setRawStatsData(data);
+                } else {
+                    setError(`Nenhuma estatística de categoria encontrada para o período selecionado (Últimos ${selectedPeriodDays} dias). Verifique se há eventos locais sincronizados nesse período.`);
+                }
+            } catch (err: any) {
+                console.error("Erro ao buscar estatísticas:", err);
+                setError(`Falha ao carregar estatísticas: ${err.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, [selectedPeriodDays]);
+
+    // Memoizar dados formatados para os gráficos para evitar recálculos desnecessários
+    const chartData = useMemo((): ChartDataState | null => {
+        if (!rawStatsData || rawStatsData.length === 0) return null;
+
+        const labels = rawStatsData.map(item => item.categoryTitle);
+        const counts = rawStatsData.map(item => item.count);
+        const backgroundColors = generateChartColors(labels.length);
+        const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+        return {
+            labels,
+            datasets: [
+                {
+                    label: `Nº de Eventos por Categoria`,
+                    data: counts,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                },
+            ],
+        };
+    }, [rawStatsData]);
+
+    const barChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: true, position: 'top' as const },
+            title: { display: true, text: `Eventos por Categoria (Últimos ${periodOptions.find(p=>p.value === selectedPeriodDays)?.label || selectedPeriodDays + ' dias'})`, font: { size: 16 }},
+            tooltip: { callbacks: { label: (context: any) => `${context.dataset.label || ''}: ${context.parsed.y}` }}
+        },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, title: { display: true, text: 'Número de Eventos' }}, x: { title: { display: true, text: 'Categorias de Eventos' }}}
+    };
+
+    const pieChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: true, position: 'top' as const },
+            title: { display: true, text: `Distribuição de Eventos por Categoria (Últimos ${periodOptions.find(p=>p.value === selectedPeriodDays)?.label || selectedPeriodDays + ' dias'})`, font: { size: 16 }},
+            tooltip: { callbacks: { label: (context: any) => `${context.label}: ${context.parsed}` }}
+        }
+    };
+
+    // Estilos para as abas, similar ao DesastresLayout
+    const tabButtonStyle = (tabKey: ActiveGraphTab): React.CSSProperties => ({
+        padding: '10px 15px',
+        cursor: 'pointer',
+        border: '1px solid #ccc',
+        borderBottom: '1px solid ' + (activeGraphTab === tabKey ? '#fff' : '#ccc'), // Conecta com o conteúdo
+        backgroundColor: activeGraphTab === tabKey ? '#fff' : '#f0f0f0',
+        fontWeight: activeGraphTab === tabKey ? '600' : 'normal',
+        marginRight: '5px',
+        borderTopLeftRadius: '5px',
+        borderTopRightRadius: '5px',
+        position: 'relative',
+        bottom: activeGraphTab === tabKey ? '-1px' : '0', // Levanta a aba ativa
+        color: activeGraphTab === tabKey ? '#0056b3' : '#333',
+    });
+
+    return (
+        <div className="container estatisticas-page" style={{ paddingBottom: '20px' }}>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+                <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>leaderboard</span>
+                Estatísticas de Desastres EONET (Locais)
+            </h1>
+
+            <div className="form-container" style={{ maxWidth: '400px', margin: '0 auto 30px auto' }}>
+                <div className="form-group">
+                    <label htmlFor="periodSelect" style={{ fontWeight: '500', display: 'block', marginBottom: '5px' }}>Selecione o Período:</label>
+                    <select
+                        id="periodSelect"
+                        value={selectedPeriodDays}
+                        onChange={(e) => setSelectedPeriodDays(Number(e.target.value))}
+                        disabled={loading}
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                    >
+                        {periodOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Navegação por Abas para os Gráficos */}
+            <div style={{ marginBottom: '0px', borderBottom: '1px solid #ccc' }}>
+                <button style={tabButtonStyle('barras')} onClick={() => setActiveGraphTab('barras')}>
+                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>bar_chart</span>Gráfico de Barras
+                </button>
+                <button style={tabButtonStyle('pizza')} onClick={() => setActiveGraphTab('pizza')}>
+                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>pie_chart</span>Gráfico de Pizza
+                </button>
+                {/* Futuramente:
+                <button style={tabButtonStyle('linhas')} onClick={() => setActiveGraphTab('linhas')}>
+                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>show_chart</span>Gráfico de Linhas
+                </button>
+                */}
+            </div>
+
+            <div style={{ border: '1px solid #ccc', borderTop: 'none', padding: '20px', borderRadius: '0 0 6px 6px', backgroundColor: '#fff', minHeight: '450px' }}>
+                {loading && (
+                    <div className="flex items-center justify-center" style={{minHeight: '400px'}}>
+                        <p className="text-lg text-slate-600">Carregando estatísticas...</p>
+                    </div>
+                )}
+                {error && !loading && (
+                    <div className="message error" style={{textAlign: 'center', padding: '20px'}}>
+                        <p>{error}</p>
+                    </div>
+                )}
+                {!loading && !error && chartData && (
+                    <div style={{ height: '60vh', minHeight: '400px' }}>
+                        {activeGraphTab === 'barras' && <Bar options={barChartOptions as any} data={chartData} />}
+                        {activeGraphTab === 'pizza' && <Pie options={pieChartOptions as any} data={chartData} />}
+                        {/* Adicionar outros gráficos aqui condicionalmente */}
+                    </div>
+                )}
+                {!loading && !error && !chartData && (
+                    <div className="message info" style={{textAlign: 'center', padding: '20px'}}>
+                        <p>Selecione um período para visualizar as estatísticas ou aguarde o carregamento inicial.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 // app\desastres\layout.tsx | arquivo layout.tsx
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
@@ -1821,17 +2059,19 @@ export default ContactsPage;
 
 import React from 'react';
 import Link from 'next/link';
+
 // A importação de './globals.css' foi REMOVIDA daqui,
-// pois já é importado no root layout (src/app/layout.tsx).
+// pois já é importado no root layout (src/app/layout.tsx) se estiver em src/app/globals.css.
+// Se você tinha um CSS específico para este layout, o caminho precisaria estar correto
+// ou os estilos poderiam ser definidos como CSS Modules ou de outra forma.
 
 export default function DesastresLayout({
                                             children,
                                         }: {
     children: React.ReactNode;
 }) {
-    // Estilos para a sub-navegação, similar ao ClientesLayout
     const subNavStyle: React.CSSProperties = {
-        backgroundColor: '#f8f9fa', // Cor de fundo suave
+        backgroundColor: '#f8f9fa',
         padding: '12px 20px',
         marginBottom: '25px',
         borderRadius: '8px',
@@ -1844,21 +2084,21 @@ export default function DesastresLayout({
 
     const subNavLinkStyle: React.CSSProperties = {
         textDecoration: 'none',
-        color: '#0056b3', // Azul escuro para links
+        color: '#0056b3',
         fontWeight: '500',
         padding: '8px 12px',
         borderRadius: '5px',
         transition: 'background-color 0.2s ease, color 0.2s ease',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '6px', // Espaço entre ícone e texto
+        gap: '6px',
     };
 
-    // Efeito hover para os links da sub-navegação
     const handleLinkMouseOver = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.currentTarget.style.backgroundColor = '#e9ecef'; // Um cinza claro para hover
-        e.currentTarget.style.color = '#003f80'; // Azul mais escuro no hover
+        e.currentTarget.style.backgroundColor = '#e9ecef';
+        e.currentTarget.style.color = '#003f80';
     };
+
     const handleLinkMouseOut = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.currentTarget.style.backgroundColor = 'transparent';
         e.currentTarget.style.color = '#0056b3';
@@ -1866,7 +2106,6 @@ export default function DesastresLayout({
 
     return (
         <section>
-            {/* Sub-navegação para a seção de Desastres */}
             <nav style={subNavStyle}>
                 <Link
                     href="/desastres"
@@ -1877,29 +2116,323 @@ export default function DesastresLayout({
                     <span className="material-icons-outlined">dashboard</span> Painel EONET
                 </Link>
                 <Link
-                    href="/desastres/mapa" // Rota para uma futura página de mapa
+                    href="/desastres/mapa"
                     style={subNavLinkStyle}
                     onMouseOver={handleLinkMouseOver}
                     onMouseOut={handleLinkMouseOut}
                 >
-                    <span className="material-icons-outlined">map</span> Mapa de Eventos
+                    <span className="material-icons-outlined">map</span> Mapa de Eventos (Locais)
                 </Link>
-                {/* Você pode adicionar mais links aqui conforme a seção evolui, ex: Alertas */}
-                {/* <Link
-                    href="/desastres/alertas"
+                <Link
+                    href="/desastres/mapa-atuais"
                     style={subNavLinkStyle}
                     onMouseOver={handleLinkMouseOver}
                     onMouseOut={handleLinkMouseOut}
                 >
-                    <span className="material-icons-outlined">notification_important</span> Meus Alertas
+                    <span className="material-icons-outlined">public</span> Mapa Atuais (NASA)
                 </Link>
-                */}
+                <Link
+                    href="/desastres/estatisticas"
+                    style={subNavLinkStyle}
+                    onMouseOver={handleLinkMouseOver}
+                    onMouseOut={handleLinkMouseOut}
+                >
+                    <span className="material-icons-outlined">leaderboard</span> Estatísticas
+                </Link>
             </nav>
 
-            <div className="container">
+            <div className="container"> {/* Mantendo a classe container para o conteúdo dos filhos */}
                 {children}
             </div>
         </section>
+    );
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\desastres\mapa-atuais\page.tsx | arquivo page.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/app/desastres/mapa-atuais/page.tsx
+'use client';
+
+import React, { useEffect, useState, FormEvent } from 'react';
+import dynamic from 'next/dynamic';
+import { buscarEventosNasaProximos } from '@/lib/apiService';
+import type { NasaEonetEventDTO, NasaEonetGeometryDTO } from '@/lib/types';
+import type { EventMapMarkerData } from '@/components/EonetEventMap'; // Assumindo que esta interface está em EonetEventMap
+
+const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{minHeight: '400px'}}>
+            <p className="text-center text-slate-600 py-4 text-lg">Carregando mapa...</p>
+        </div>
+    ),
+});
+
+const getCoordinatesFromEvent = (geometries: NasaEonetGeometryDTO[] | undefined): [number, number] | null => {
+    if (!geometries || geometries.length === 0) return null;
+    const pointGeometry = geometries.find(geom => geom.type === "Point");
+    if (pointGeometry && Array.isArray(pointGeometry.coordinates) && pointGeometry.coordinates.length === 2) {
+        return [pointGeometry.coordinates[1] as number, pointGeometry.coordinates[0] as number];
+    }
+    const firstGeom = geometries[0];
+    if (firstGeom && Array.isArray(firstGeom.coordinates)) {
+        if (firstGeom.type === "Polygon" && Array.isArray(firstGeom.coordinates[0]) && Array.isArray(firstGeom.coordinates[0][0])) {
+            return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
+        }
+    }
+    return null;
+};
+
+// Função para formatar data de forma mais legível
+const formatEventDate = (dateString: string | Date | undefined): string => {
+    if (!dateString) return 'Data não disponível';
+    try {
+        return new Date(dateString).toLocaleDateString('pt-BR', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+        });
+    } catch (e) { return 'Data inválida'; }
+};
+
+
+export default function MapaEventosAtuaisNasaPage() {
+    const [markers, setMarkers] = useState<EventMapMarkerData[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [infoMessage, setInfoMessage] = useState<string>('Use os filtros de data para buscar eventos ou veja o evento mais recente global abaixo (se disponível).');
+    const [displayedEventDetails, setDisplayedEventDetails] = useState<NasaEonetEventDTO | null>(null);
+
+
+    const fetchLimitGlobalRecente = 1;
+    const fetchDaysGlobalRecente = 60;
+    const fetchStatusGlobalRecente = '';
+
+    // Busca inicial do evento mais recente global
+    useEffect(() => {
+        const fetchInitialMostRecentEvent = async () => {
+            setLoading(true);
+            setError(null);
+            setInfoMessage(`Buscando o evento global mais recente (últimos ${fetchDaysGlobalRecente} dias, status: ${fetchStatusGlobalRecente || 'todos'})...`);
+            setMarkers([]);
+            setDisplayedEventDetails(null);
+            try {
+                const eventosDaNasa: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
+                    undefined, undefined, undefined,
+                    fetchLimitGlobalRecente, fetchDaysGlobalRecente, fetchStatusGlobalRecente, undefined
+                );
+
+                if (eventosDaNasa && eventosDaNasa.length > 0) {
+                    const eventoNasa = eventosDaNasa[0];
+                    setDisplayedEventDetails(eventoNasa); // Armazena o evento completo
+
+                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
+                        const coords = getCoordinatesFromEvent(eventoNasa.geometry);
+                        if (coords) {
+                            setMarkers([{
+                                id: eventoNasa.id,
+                                position: coords,
+                                popupText: `<strong>${eventoNasa.title || 'Evento EONET'}</strong><br/>Data: ${formatEventDate(eventoNasa.geometry[0].date)}<br/>Categorias: ${eventoNasa.categories?.map(c => c.title).join(', ') || 'N/A'}`,
+                            }]);
+                            setInfoMessage(`Exibindo o evento global mais recente encontrado com coordenadas válidas.`);
+                            setError(null);
+                        } else {
+                            setInfoMessage('');
+                            setError(`Evento global mais recente (ID: ${eventoNasa.id}) encontrado, mas não possui coordenadas válidas para o mapa.`);
+                        }
+                    } else {
+                        setInfoMessage('');
+                        setError(`Evento global mais recente (ID: ${eventoNasa.id}) encontrado, mas não possui informações de geometria.`);
+                    }
+                } else {
+                    setInfoMessage('');
+                    setError(`Nenhum evento global encontrado na API da NASA para os últimos ${fetchDaysGlobalRecente} dias com os status selecionados.`);
+                }
+            } catch (err: any) {
+                console.error("Erro ao buscar o evento mais recente da NASA:", err);
+                setInfoMessage('');
+                setError(`Falha ao buscar evento da NASA: ${err.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInitialMostRecentEvent();
+    }, []); // Executa apenas uma vez ao montar o componente
+
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
+
+    const queryLimitDateRange = 50;
+    const queryStatusDateRange = '';
+
+    const handleSearchByDateRange = async (e?: FormEvent) => {
+        if (e) e.preventDefault();
+        if (!startDate || !endDate) {
+            setError("Por favor, selecione uma data de início e uma data de fim para a busca por período.");
+            return;
+        }
+        if (new Date(startDate) > new Date(endDate)) {
+            setError("A data de início não pode ser posterior à data de fim.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        setInfoMessage(`Buscando eventos da NASA entre ${startDate} e ${endDate}...`);
+        setMarkers([]);
+        setDisplayedEventDetails(null);
+        try {
+            const eventosDaNasa: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
+                undefined, undefined, undefined,
+                queryLimitDateRange,
+                undefined,
+                queryStatusDateRange,
+                undefined,
+                startDate,
+                endDate
+            );
+
+            const newMarkers: EventMapMarkerData[] = [];
+            if (eventosDaNasa && eventosDaNasa.length > 0) {
+                setDisplayedEventDetails(null); // Limpa detalhes de evento único se múltiplos são retornados
+                for (const eventoNasa of eventosDaNasa) {
+                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
+                        const coords = getCoordinatesFromEvent(eventoNasa.geometry);
+                        if (coords) {
+                            newMarkers.push({
+                                id: eventoNasa.id,
+                                position: coords,
+                                popupText: `<strong>${eventoNasa.title || 'Evento EONET'}</strong><br/>Data: ${formatEventDate(eventoNasa.geometry[0].date)}<br/>Categorias: ${eventoNasa.categories?.map(c => c.title).join(', ') || 'N/A'}`,
+                            });
+                        }
+                    }
+                }
+                // Se apenas um evento for retornado da busca por data, define-o para exibição de detalhes
+                if (newMarkers.length === 1 && eventosDaNasa.length === 1) {
+                    setDisplayedEventDetails(eventosDaNasa[0]);
+                }
+            }
+
+            setMarkers(newMarkers);
+
+            if (newMarkers.length === 0) {
+                setInfoMessage('');
+                setError(`Nenhum evento encontrado na API da NASA para o período de ${startDate} a ${endDate} com os filtros aplicados (ou eventos encontrados não possuem coordenadas válidas).`);
+            } else {
+                setInfoMessage(`Exibindo ${newMarkers.length} evento(s) encontrado(s) entre ${startDate} e ${endDate}.`);
+            }
+
+        } catch (err: any) {
+            console.error("MAPA ATUAIS (BUSCA POR DATA) - Erro:", err);
+            setInfoMessage('');
+            setError(`Falha ao buscar eventos da NASA por data: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const initialMapCenter: [number, number] = [0, 0];
+    const initialMapZoom: number = 2;
+
+    return (
+        <div className="container_mapa_eventos_atuais_page" style={{paddingBottom: '20px'}}>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>public</span>
+                Mapa de Eventos Atuais/Por Data (NASA EONET)
+            </h1>
+
+            <p style={{textAlign: 'center', marginBottom: '20px', fontSize: '0.9em', color: '#555'}}>
+                Busca o evento global mais recente (últimos {fetchDaysGlobalRecente} dias, status: {fetchStatusGlobalRecente || 'todos'}) ao carregar, ou use os filtros de data abaixo.
+            </p>
+
+            <form onSubmit={handleSearchByDateRange} className="form-container" style={{ maxWidth: '700px', margin: '0 auto 20px auto', padding: '15px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+                <div className="form-row" style={{alignItems: 'flex-end', gap: '15px'}}>
+                    <div className="form-group flex-item">
+                        <label htmlFor="startDate">Data de Início:</label>
+                        <input type="date" id="startDate" name="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    </div>
+                    <div className="form-group flex-item">
+                        <label htmlFor="endDate">Data de Fim:</label>
+                        <input type="date" id="endDate" name="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <button type="submit" className="button button-primary" disabled={loading || !startDate || !endDate} style={{padding: '10px 15px'}}>
+                            <span className="material-icons-outlined" style={{fontSize: '1.2em'}}>search</span> Buscar por Data
+                        </button>
+                    </div>
+                </div>
+                {(!startDate || !endDate) && <p style={{fontSize: '0.8em', textAlign: 'center', color: '#777', marginTop: '5px'}}>Selecione um intervalo de datas para habilitar a busca.</p>}
+            </form>
+
+            {/* Seção de Detalhes do Evento (se um único evento estiver em foco) */}
+            {displayedEventDetails && markers.length === 1 && !loading && (
+                <div className="event-details-box" style={{
+                    margin: '20px auto',
+                    padding: '15px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    maxWidth: '700px'
+                }}>
+                    <h3 style={{ marginTop: '0', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px', fontSize: '1.2em' }}>
+                        <span className="material-icons-outlined" style={{verticalAlign: 'bottom', marginRight: '5px'}}>event_note</span>
+                        Detalhes do Evento Exibido
+                    </h3>
+                    <p><strong>Título:</strong> {displayedEventDetails.title}</p>
+                    <p><strong>Data:</strong> {formatEventDate(displayedEventDetails.geometry?.[0]?.date)}</p>
+                    <p><strong>ID EONET:</strong> {displayedEventDetails.id}</p>
+                    {displayedEventDetails.categories && displayedEventDetails.categories.length > 0 && (
+                        <p><strong>Categorias:</strong> {displayedEventDetails.categories.map(c => c.title).join(', ')}</p>
+                    )}
+                    {markers[0]?.position && (
+                        <p><strong>Coordenadas:</strong> Latitude: {markers[0].position[0].toFixed(5)}, Longitude: {markers[0].position[1].toFixed(5)}</p>
+                    )}
+                    <p><strong>Status:</strong> {displayedEventDetails.closed ? `Fechado em ${formatEventDate(displayedEventDetails.closed)}` : 'Aberto'}</p>
+                    <p><a href={displayedEventDetails.link} target="_blank" rel="noopener noreferrer" className="link-external">
+                        Ver na fonte (EONET) <span className="material-icons-outlined" style={{fontSize: '1em', verticalAlign: 'middle'}}>open_in_new</span>
+                    </a></p>
+                </div>
+            )}
+
+            {infoMessage && !loading && !error && (!displayedEventDetails || markers.length !== 1) &&
+                <p className="message info" style={{textAlign: 'center', marginBottom: '15px'}}>{infoMessage}</p>
+            }
+            {loading && (
+                <div className="flex items-center justify-center" style={{minHeight: '400px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9'}}>
+                    <p className="text-lg text-slate-600">Buscando eventos da NASA...</p>
+                </div>
+            )}
+            {error && !loading && (
+                <div className="message error" style={{textAlign: 'center', padding: '20px', border: '1px solid #f5c6cb', borderRadius: '8px', marginTop: '15px'}}>
+                    <p>{error}</p>
+                </div>
+            )}
+
+            {(!loading) && (
+                <div style={{ height: '60vh', minHeight: '450px', width: '100%', marginTop: '10px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
+                    <DynamicEonetEventMap
+                        initialCenter={initialMapCenter}
+                        initialZoom={initialMapZoom}
+                        markersData={markers}
+                    />
+                    {markers.length === 0 && !loading && !error && (
+                        <div style={{
+                            position: 'absolute', top: '50%', left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            padding: '20px 30px', borderRadius: '8px',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                            textAlign: 'center', zIndex: 1000
+                        }}
+                             className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
+                        >
+                            {startDate && endDate ? 'Nenhum evento com coordenadas válidas para o período.' : 'Mapa pronto. Use os filtros de data ou aguarde a busca inicial.'}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -1914,25 +2447,19 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { listarEventosEonet } from '@/lib/apiService';
 import type { EonetResponseDTO, NasaEonetEventDTO, NasaEonetGeometryDTO, Page } from '@/lib/types';
+// Importar a interface de marcador do novo componente
+import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
-// Carregamento Dinâmico do Componente do Mapa
-const DynamicLeafletMap = dynamic(() => import('@/components/LeafletMap'), {
+// Carregar dinamicamente o NOVO componente de mapa
+const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
     ssr: false,
     loading: () => (
-        <div className="flex items-center justify-center w-full h-full bg-slate-700/50 rounded-md">
-            <p className="text-center text-slate-300 py-4">Carregando mapa de eventos...</p>
+        <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{minHeight: '400px'}}>
+            <p className="text-center text-slate-600 py-4 text-lg">Carregando mapa de eventos...</p>
         </div>
     ),
 });
 
-// Interface para os marcadores do mapa
-interface MapMarker {
-    position: [number, number]; // [latitude, longitude]
-    popupText: string;
-    id: string; // Usar eonetIdApi ou idEonet como chave
-}
-
-// Função auxiliar para parsear o JSON do evento de forma segura
 const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | null => {
     try {
         return JSON.parse(jsonString) as Partial<NasaEonetEventDTO>;
@@ -1942,50 +2469,39 @@ const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | n
     }
 };
 
-// Função para extrair coordenadas da geometria
-// Prioriza o primeiro ponto da primeira geometria
 const getCoordinatesFromEvent = (geometries: NasaEonetGeometryDTO[] | undefined): [number, number] | null => {
     if (!geometries || geometries.length === 0) {
         return null;
     }
-    // Tenta encontrar a primeira geometria do tipo 'Point'
     const pointGeometry = geometries.find(geom => geom.type === "Point");
     if (pointGeometry && Array.isArray(pointGeometry.coordinates) && pointGeometry.coordinates.length === 2) {
-        // EONET geralmente armazena como [longitude, latitude] para Points
         return [pointGeometry.coordinates[1] as number, pointGeometry.coordinates[0] as number];
     }
-    // Se não houver Point, tenta pegar as coordenadas da primeira geometria (pode ser o centro de um polígono, etc.)
-    // Isso é uma simplificação e pode precisar de ajustes dependendo dos tipos de geometria
     const firstGeom = geometries[0];
     if (firstGeom && Array.isArray(firstGeom.coordinates)) {
         if (firstGeom.type === "Polygon" && Array.isArray(firstGeom.coordinates[0]) && Array.isArray(firstGeom.coordinates[0][0])) {
-            // Para polígono, pega o primeiro ponto do primeiro anel
-            // EONET geralmente armazena como [longitude, latitude]
             return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
         }
-        // Adicione mais lógicas para outros tipos de geometria se necessário
     }
     return null;
 };
 
-
 export default function MapaDeEventosPage() {
-    const [markers, setMarkers] = useState<MapMarker[]>([]);
+    const [markers, setMarkers] = useState<EventMapMarkerData[]>([]); // Usar EventMapMarkerData
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Posição central inicial do mapa (ex: Brasil) e zoom
-    const initialMapPosition: [number, number] = [-14.235004, -51.92528]; // Centro do Brasil
+    const initialMapCenter: [number, number] = [-14.235004, -51.92528];
     const initialMapZoom: number = 4;
 
     useEffect(() => {
         const fetchEventsAndCreateMarkers = async () => {
             setLoading(true);
             setError(null);
+            setMarkers([]);
             try {
-                // Buscar um número maior de eventos para o mapa, ex: 50 eventos mais recentes
                 const eventosPage: Page<EonetResponseDTO> = await listarEventosEonet(0, 50);
-                const newMarkers: MapMarker[] = [];
+                const newMarkers: EventMapMarkerData[] = [];
 
                 if (eventosPage && eventosPage.content) {
                     for (const eventoResp of eventosPage.content) {
@@ -2004,7 +2520,7 @@ export default function MapaDeEventosPage() {
                 }
                 setMarkers(newMarkers);
                 if (newMarkers.length === 0) {
-                    setError("Nenhum evento com coordenadas válidas encontrado para exibir no mapa.");
+                    console.log("Nenhum evento com coordenadas válidas encontrado para exibir no mapa.");
                 }
             } catch (err: any) {
                 console.error("Erro ao buscar ou processar eventos para o mapa:", err);
@@ -2018,51 +2534,52 @@ export default function MapaDeEventosPage() {
     }, []);
 
     return (
-        <div className="container_mapa_eventos_page" style={{paddingBottom: '20px'}}> {/* Adicionado padding inferior */}
+        <div className="container_mapa_eventos_page" style={{paddingBottom: '20px'}}>
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>public</span>
                 Mapa Interativo de Eventos EONET
             </h1>
 
             {loading && (
-                <div className="flex items-center justify-center" style={{minHeight: '400px'}}>
-                    <p className="text-lg">Carregando eventos no mapa...</p>
+                <div className="flex items-center justify-center" style={{minHeight: '400px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9'}}>
+                    <p className="text-lg text-slate-600">Carregando eventos no mapa...</p>
                 </div>
             )}
-            {error && !loading && <p className="message error" style={{textAlign: 'center'}}>{error}</p>}
+            {error && !loading && (
+                <div className="message error" style={{textAlign: 'center', padding: '20px', border: '1px solid #f5c6cb', borderRadius: '8px'}}>
+                    <p>{error}</p>
+                    <p style={{marginTop: '10px'}}>Tente sincronizar novos eventos no Painel EONET ou verifique os logs para mais detalhes.</p>
+                </div>
+            )}
 
             {!loading && !error && (
                 <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '10px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                    <DynamicLeafletMap
-                        position={initialMapPosition}
-                        zoom={initialMapZoom}
-                        // A prop 'markers' não existe no seu componente LeafletMap atual.
-                        // Você precisará modificar LeafletMap.tsx para aceitar e renderizar uma lista de marcadores.
-                        // Por agora, o mapa será centralizado, mas sem os marcadores de evento.
-                        // markersData={markers} // Exemplo de como você passaria os dados
+                    <DynamicEonetEventMap // Usar o novo componente dinamicamente
+                        initialCenter={initialMapCenter}
+                        initialZoom={initialMapZoom}
+                        markersData={markers}
                     />
-                    {markers.length === 0 && !loading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-                            <p className="text-slate-600 text-lg p-4 rounded-md bg-slate-100 shadow">Nenhum marcador de evento para exibir no mapa.</p>
+                    {markers.length === 0 && !loading && !error && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            padding: '20px',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                            textAlign: 'center',
+                            zIndex: 1000
+                        }}
+                             className="text-slate-600 text-lg p-4 rounded-md bg-slate-100 shadow"
+                        >
+                            Nenhum evento com coordenadas válidas encontrado para exibir no mapa no momento.
+                            <br />Tente sincronizar eventos no "Painel EONET".
                         </div>
                     )}
                 </div>
             )}
-            {/* Renderização dos marcadores precisa ser feita dentro do DynamicLeafletMap */}
-            {/* A lógica abaixo é um exemplo de como você poderia passar os marcadores,
-           MAS o componente DynamicLeafletMap precisa ser modificado para aceitar e renderizar 'markersData' */}
-            {/* {!loading && !error && markers.length > 0 && (
-        <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '10px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <DynamicLeafletMap
-                // O componente LeafletMap precisa ser atualizado para aceitar uma lista de marcadores
-                // Exemplo: markersData={markers}
-                // E dentro de LeafletMap, iterar sobre markersData para criar <Marker>
-                position={markers[0]?.position || initialMapPosition} // Centraliza no primeiro marcador ou na posição inicial
-                zoom={markers.length > 0 ? 6 : initialMapZoom}
-            />
-        </div>
-      )}
-      */}
         </div>
     );
 }
@@ -2090,22 +2607,15 @@ const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | n
 type TabKey = 'sincronizar' | 'buscarProximos' | 'listarLocais';
 
 export default function DesastresPage() {
-    // Estado para a aba ativa
     const [activeTab, setActiveTab] = useState<TabKey>('listarLocais');
-
-    // Estados para listagem local
     const [eventosLocaisPage, setEventosLocaisPage] = useState<Page<EonetResponseDTO> | null>(null);
     const [erroListagemLocal, setErroListagemLocal] = useState<string | null>(null);
     const [loadingListagemLocal, setLoadingListagemLocal] = useState<boolean>(true);
     const [currentLocalPage, setCurrentLocalPage] = useState<number>(0);
-
-    // Estados para sincronização
     const [syncParams, setSyncParams] = useState({ limit: '', days: '', status: 'open', source: '' });
     const [loadingSync, setLoadingSync] = useState<boolean>(false);
     const [syncMensagem, setSyncMensagem] = useState<string | null>(null);
     const [syncErro, setSyncErro] = useState<string | null>(null);
-
-    // Estados para busca por proximidade
     const [proximidadeParams, setProximidadeParams] = useState({
         clienteId: '',
         latitude: '',
@@ -2116,7 +2626,6 @@ export default function DesastresPage() {
     const [eventosProximos, setEventosProximos] = useState<NasaEonetEventDTO[]>([]);
     const [loadingProximidade, setLoadingProximidade] = useState<boolean>(false);
     const [erroProximidade, setErroProximidade] = useState<string | null>(null);
-
     const clienteIdRef = useRef<HTMLInputElement>(null);
     const latitudeRef = useRef<HTMLInputElement>(null);
     const longitudeRef = useRef<HTMLInputElement>(null);
@@ -2140,7 +2649,7 @@ export default function DesastresPage() {
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    }, [currentLocalPage, activeTab]); // Adicionado activeTab como dependência
+    }, [currentLocalPage, activeTab]);
 
     const handleSyncParamChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setSyncParams(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -2156,10 +2665,6 @@ export default function DesastresPage() {
         try {
             const eventosSincronizados = await sincronizarNasaEonet(limitNum, daysNum, syncParams.status || undefined, syncParams.source || undefined);
             setSyncMensagem(`${eventosSincronizados.length} evento(s) processado(s) / sincronizado(s) com sucesso! A lista de eventos locais será atualizada.`);
-            // Opcional: Mudar para a aba de listagem local após sincronizar
-            // setActiveTab('listarLocais');
-            // fetchEventosLocais(0); // Recarrega a lista da primeira página
-            // setCurrentLocalPage(0); // Reseta para a primeira página
         } catch (error: any) {
             setSyncErro(`Falha na sincronização: ${error.message || 'Erro desconhecido'}`);
             setSyncMensagem(null);
@@ -2234,10 +2739,13 @@ export default function DesastresPage() {
                 proximidadeParams.status || undefined,
                 proximidadeParams.source || undefined
             );
-            setEventosProximos(eventos);
-            if(eventos.length === 0){
+            const eventosRecebidos = eventos || [];
+            setEventosProximos(eventosRecebidos);
+
+            if (eventosRecebidos.length === 0) {
                 setErroProximidade("Nenhum evento encontrado na API da NASA para os critérios fornecidos.");
             }
+
         } catch (error: any) {
             setErroProximidade(`Falha ao buscar eventos próximos: ${error.message}`);
         } finally {
@@ -2258,7 +2766,7 @@ export default function DesastresPage() {
     const renderEventoItem = (evento: NasaEonetEventDTO | Partial<NasaEonetEventDTO>, keyPrefix: string = "prox") => {
         const dataEvento = evento?.geometry?.[0]?.date;
         return (
-            <div className="client-info-section"> {/* Reutilizando classe para consistência */}
+            <div className="client-info-section">
                 <strong>{evento?.title || 'Título não disponível'}</strong>
                 {evento?.id && <p><span className="label">ID NASA:</span> {evento.id}</p>}
                 <p><span className="label">Data do Evento:</span> {formatDate(dataEvento?.toString())}</p>
@@ -2277,7 +2785,6 @@ export default function DesastresPage() {
         );
     };
 
-    // Estilos para as abas
     const tabButtonStyle = (tabKey: TabKey): React.CSSProperties => ({
         padding: '10px 20px',
         cursor: 'pointer',
@@ -2292,27 +2799,28 @@ export default function DesastresPage() {
         alignItems: 'center',
         gap: '6px',
         color: activeTab === tabKey ? '#007bff' : '#333',
-        borderBottomColor: activeTab === tabKey ? '#fff' : '#ddd', // Para "conectar" com o conteúdo
+        borderBottomColor: activeTab === tabKey ? '#fff' : '#ddd',
         position: 'relative',
-        bottom: activeTab === tabKey ? '-1px' : '0', // Para "levantar" a aba ativa
+        bottom: activeTab === tabKey ? '-1px' : '0',
     });
 
     const tabContentStyle: React.CSSProperties = {
         border: '1px solid #ddd',
         padding: '20px',
-        borderRadius: '0 6px 6px 6px', // Arredondar cantos exceto o superior esquerdo da primeira aba
+        borderRadius: '0 6px 6px 6px',
         backgroundColor: '#fff',
     };
 
-
+    // ***** INÍCIO DA CORREÇÃO DO ERRO DE COMPILAÇÃO *****
+    // Removido o comentário inline após o 'return ('
     return (
+        // ***** FIM DA CORREÇÃO DO ERRO DE COMPILAÇÃO *****
         <div className="container">
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>public</span>
                 Gerenciamento de Eventos de Desastres (EONET)
             </h1>
 
-            {/* Navegação por Abas */}
             <div style={{ marginBottom: '0px', borderBottom: '1px solid #ddd' }}>
                 <button style={tabButtonStyle('listarLocais')} onClick={() => setActiveTab('listarLocais')}>
                     <span className="material-icons-outlined">storage</span> Eventos Locais
@@ -2325,7 +2833,6 @@ export default function DesastresPage() {
                 </button>
             </div>
 
-            {/* Conteúdo da Aba Ativa */}
             <div style={tabContentStyle}>
                 {activeTab === 'listarLocais' && (
                     <section>
@@ -2636,6 +3143,108 @@ export default function HomePage() {
 }
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// components\EonetEventMap.tsx | arquivo EonetEventMap.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// src/components/EonetEventMap.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Ícone padrão do Leaflet
+const defaultIcon = new L.Icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
+// Interface para os dados de cada marcador
+export interface EventMapMarkerData {
+    id: string; // ID único para a key do React
+    position: [number, number]; // [latitude, longitude]
+    popupText: string; // Conteúdo HTML para o popup
+}
+
+interface EonetEventMapProps {
+    initialCenter?: [number, number]; // Centro inicial se não houver marcadores
+    initialZoom?: number; // Zoom inicial se não houver marcadores
+    markersData?: EventMapMarkerData[]; // Array de dados dos marcadores
+    style?: React.CSSProperties;
+    className?: string;
+}
+
+// Subcomponente para ajustar os limites do mapa aos marcadores
+const FitBoundsToMarkers: React.FC<{ markers: EventMapMarkerData[] }> = ({ markers }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (markers && markers.length > 0) {
+            const markerPositions = markers.map(marker => marker.position as L.LatLngExpression);
+            if (markerPositions.length > 0) {
+                const bounds = L.latLngBounds(markerPositions);
+                map.fitBounds(bounds, { padding: [50, 50] }); // Adiciona um padding
+            }
+        }
+    }, [map, markers]);
+    return null;
+};
+
+const EonetEventMap: React.FC<EonetEventMapProps> = ({
+                                                         initialCenter = [-14.235004, -51.92528], // Padrão: Centro do Brasil
+                                                         initialZoom = 4,
+                                                         markersData = [],
+                                                         style,
+                                                         className
+                                                     }) => {
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(typeof window !== 'undefined');
+    }, []);
+
+    if (!isClient) {
+        return (
+            <div style={style || { height: '500px', width: '100%', backgroundColor: '#e0e0e0' }} className={`${className || ''} flex items-center justify-center`}>
+                <p>Carregando mapa de eventos...</p>
+            </div>
+        );
+    }
+
+    return (
+        <MapContainer
+            center={initialCenter} // Usado se FitBoundsToMarkers não for ativado
+            zoom={initialZoom}     // Usado se FitBoundsToMarkers não for ativado
+            style={style || { height: '100%', width: '100%' }}
+            className={className}
+            scrollWheelZoom={true}
+            attributionControl={true}
+        >
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {markersData.map((marker) => (
+                <Marker key={marker.id} position={marker.position} icon={defaultIcon}>
+                    <Popup>
+                        {/* Permitir HTML simples no popupText */}
+                        <div dangerouslySetInnerHTML={{ __html: marker.popupText }} />
+                    </Popup>
+                </Marker>
+            ))}
+            {markersData.length > 0 && <FitBoundsToMarkers markers={markersData} />}
+        </MapContainer>
+    );
+};
+
+export default EonetEventMap;
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 // components\LeafletMap.tsx | arquivo LeafletMap.tsx
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
@@ -2739,12 +3348,14 @@ import type {
     EnderecoRequestDTO, EnderecoResponseDTO,
     EnderecoGeoRequestDTO, GeoCoordinatesDTO,
     ViaCepResponseDTO, ApiErrorResponse, Page,
-    EonetResponseDTO, NasaEonetEventDTO // Adicionado NasaEonetEventDTO
+    EonetResponseDTO, NasaEonetEventDTO,
+    CategoryCountDTO // <<< Adicionar importação do novo tipo
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
+    // ... (código da função handleResponse - sem alterações)
     if (!response.ok) {
         let errorData: Partial<ApiErrorResponse> = {
             message: `Erro ${response.status}: ${response.statusText || "Falha na requisição à API."}`,
@@ -2793,7 +3404,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
 }
 
-// --- Cliente API --- (Existente, sem alterações aqui)
+// --- Cliente API ---
+// ... (código das funções de Cliente API - sem alterações)
 export async function listarClientes(page: number = 0, size: number = 10): Promise<Page<ClienteResponseDTO>> {
     const response = await fetch(`${API_BASE_URL}/clientes?page=${page}&size=${size}&sort=nome,asc`);
     return handleResponse<Page<ClienteResponseDTO>>(response);
@@ -2825,7 +3437,8 @@ export async function deletarCliente(id: number): Promise<void> {
     await handleResponse<void>(response);
 }
 
-// --- Contato API --- (Existente, sem alterações aqui)
+// --- Contato API ---
+// ... (código da função criarContatoSozinho - sem alterações)
 export async function criarContatoSozinho(data: ContatoRequestDTO): Promise<ContatoResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/contatos`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
@@ -2833,7 +3446,8 @@ export async function criarContatoSozinho(data: ContatoRequestDTO): Promise<Cont
     return handleResponse<ContatoResponseDTO>(response);
 }
 
-// --- Endereco API --- (Existente, sem alterações aqui)
+// --- Endereco API ---
+// ... (código das funções de Endereco API - sem alterações)
 export async function consultarCepPelaApi(cep: string): Promise<ViaCepResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/enderecos/consultar-cep/${cep.replace(/\D/g, '')}`);
     return handleResponse<ViaCepResponseDTO>(response);
@@ -2851,42 +3465,82 @@ export async function criarEnderecoSozinho(data: EnderecoRequestDTO): Promise<En
     return handleResponse<EnderecoResponseDTO>(response);
 }
 
+
 // --- Eonet API ---
+// ... (código das funções listarEventosEonet e sincronizarNasaEonet - sem alterações)
 export async function listarEventosEonet(page: number = 0, size: number = 10): Promise<Page<EonetResponseDTO>> {
     const response = await fetch(`${API_BASE_URL}/eonet?page=${page}&size=${size}&sort=data,desc`);
     return handleResponse<Page<EonetResponseDTO>>(response);
 }
 
 export async function sincronizarNasaEonet(limit?: number, days?: number, status?: string, source?: string): Promise<EonetResponseDTO[]> {
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', String(limit));
-    if (days) params.append('days', String(days));
-    if (status) params.append('status', status);
-    if (source) params.append('source', source);
-    const response = await fetch(`${API_BASE_URL}/eonet/nasa/sincronizar?${params.toString()}`, {
+    const queryParamsCollector: Record<string, string> = {};
+    if (limit !== undefined) queryParamsCollector.limit = String(limit);
+    if (days !== undefined) queryParamsCollector.days = String(days);
+    if (status) queryParamsCollector.status = status;
+    if (source) queryParamsCollector.source = source;
+
+    const params = new URLSearchParams(queryParamsCollector);
+    const queryString = params.toString();
+
+    const response = await fetch(`${API_BASE_URL}/eonet/nasa/sincronizar${queryString ? '?' + queryString : ''}`, {
         method: 'POST',
     });
-    return handleResponse<EonetResponseDTO[]>(response); // Retorna os eventos que foram salvos/atualizados localmente
+    return handleResponse<EonetResponseDTO[]>(response);
 }
 
-// NOVA FUNÇÃO para buscar eventos próximos da API da NASA
 export async function buscarEventosNasaProximos(
-    latitude: number, longitude: number, raioKm: number,
-    limit?: number, days?: number, status?: string, source?: string
-): Promise<NasaEonetEventDTO[]> { // Retorna diretamente os eventos da NASA
-    const params = new URLSearchParams({
-        latitude: String(latitude),
-        longitude: String(longitude),
-        raioKm: String(raioKm),
-    });
-    if (limit) params.append('limit', String(limit));
-    if (days) params.append('days', String(days));
-    if (status) params.append('status', status);
-    if (source) params.append('source', source);
+    latitude?: number,
+    longitude?: number,
+    raioKm?: number,
+    limit?: number,
+    days?: number,
+    status?: string,
+    source?: string,
+    startDate?: string,
+    endDate?: string
+): Promise<NasaEonetEventDTO[]> {
+    const queryParamsCollector: Record<string, string> = {};
 
-    const response = await fetch(`${API_BASE_URL}/eonet/nasa/proximos?${params.toString()}`);
+    if (latitude !== undefined) queryParamsCollector.latitude = String(latitude);
+    if (longitude !== undefined) queryParamsCollector.longitude = String(longitude);
+    if (raioKm !== undefined) queryParamsCollector.raioKm = String(raioKm);
+    if (limit !== undefined) queryParamsCollector.limit = String(limit);
+
+    if (startDate) queryParamsCollector.start = startDate;
+    if (endDate) queryParamsCollector.end = endDate;
+
+    if (!startDate && !endDate && days !== undefined) {
+        queryParamsCollector.days = String(days);
+    }
+
+    if (status !== undefined && status !== null) {
+        queryParamsCollector.status = status;
+    }
+    if (source !== undefined && source !== null && source.trim() !== '') {
+        queryParamsCollector.source = source;
+    }
+
+    const params = new URLSearchParams(queryParamsCollector);
+    const queryString = params.toString();
+
+    console.log(`Frontend: Chamando /api/eonet/nasa/proximos com query: ${queryString}`);
+
+    const response = await fetch(`${API_BASE_URL}/eonet/nasa/proximos${queryString ? '?' + queryString : ''}`);
     return handleResponse<NasaEonetEventDTO[]>(response);
 }
+
+// ***** NOVA FUNÇÃO PARA BUSCAR ESTATÍSTICAS DE CATEGORIA *****
+export async function getEonetCategoryStats(days: number): Promise<CategoryCountDTO[]> {
+    if (days <= 0) {
+        // Pode-se optar por lançar um erro ou retornar array vazio se 'days' for inválido
+        console.warn("getEonetCategoryStats: 'days' deve ser um número positivo.");
+        return []; // Ou throw new Error("'days' must be a positive number.");
+    }
+    const response = await fetch(`${API_BASE_URL}/stats/eonet/count-by-category?days=${days}`);
+    return handleResponse<CategoryCountDTO[]>(response);
+}
+// ***** FIM DA NOVA FUNÇÃO *****
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 // lib\types.ts | arquivo types.ts
@@ -3015,12 +3669,12 @@ export interface GeoCoordinatesDTO {
 // --- Tipos para EONET (Backend Local - Existente) ---
 export interface EonetResponseDTO {
     idEonet: number;
-    json: string; // String JSON do evento original da NASA
-    data?: string | Date; // Data principal do evento ou data de registro
-    eonetIdApi: string; // ID do evento na API da NASA
+    json: string;
+    data?: string | Date;
+    eonetIdApi: string;
 }
 
-// --- NOVOS TIPOS: Estrutura para NASA EONET Events (para parsear o EonetResponseDTO.json e para a resposta de /nasa/proximos) ---
+// --- Tipos para NASA EONET Events (Existente) ---
 export interface NasaEonetCategoryDTO {
     id: string;
     title: string;
@@ -3031,34 +3685,29 @@ export interface NasaEonetSourceDTO {
     url: string;
 }
 
-// As coordenadas podem ser um array de números para um Ponto [lon, lat],
-// ou um array de arrays para Polígonos e Linhas. Usamos 'any' para flexibilidade,
-// mas você pode refinar isso se souber os tipos de geometria exatos que irá encontrar.
 export interface NasaEonetGeometryDTO {
-    magnitudeValue?: number; // Alguns eventos podem ter magnitude
+    magnitudeValue?: number;
     magnitudeUnit?: string;
-    date: string | Date; // A API retorna como string ISO 8601
-    type: "Point" | "Polygon" | string; // Pode haver outros tipos
-    coordinates: any; // Ex: [lon, lat] para Point, [[[lon,lat],...]] para Polygon
-    // Para polígonos, a estrutura pode ser mais aninhada. Ex: number[][][]
+    date: string | Date;
+    type: "Point" | "Polygon" | string;
+    coordinates: any;
 }
 
 export interface NasaEonetEventDTO {
     id: string;
     title: string;
-    description?: string; // Pode ser nulo ou ausente
-    link: string; // Link para o evento na fonte
+    description?: string;
+    link: string;
     categories: NasaEonetCategoryDTO[];
     sources: NasaEonetSourceDTO[];
     geometry: NasaEonetGeometryDTO[];
-    closed?: string | Date | null; // Data de fechamento do evento, se aplicável
+    closed?: string | Date | null;
 }
 
-// (Opcional) Se a API /nasa/proximos retornar a estrutura completa da NasaEonetApiResponseDTO
-// export interface NasaEonetApiResponseDTO {
-//   title: string;
-//   description: string;
-//   link: string;
-//   events: NasaEonetEventDTO[];
-// }
+// ***** NOVA INTERFACE PARA DADOS DE ESTATÍSTICAS *****
+export interface CategoryCountDTO {
+    categoryTitle: string;
+    count: number;
+}
+// ***** FIM DA NOVA INTERFACE *****
 

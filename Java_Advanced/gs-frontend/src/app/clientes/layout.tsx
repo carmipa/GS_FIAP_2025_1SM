@@ -51,17 +51,17 @@ export default function ClientesLayout({
                 <Link href="/clientes/listar" style={subNavLinkStyle}
                       onMouseOver={handleLinkMouseOver}
                       onMouseOut={handleLinkMouseOut}>
-                    <span className="material-icons-outlined">list_alt</span>Listar Clientes
+                    <span className="material-icons-outlined">list_alt</span>Listar Usuários
                 </Link>
                 <Link href="/clientes/cadastrar" style={subNavLinkStyle}
                       onMouseOver={handleLinkMouseOver}
                       onMouseOut={handleLinkMouseOut}>
-                    <span className="material-icons-outlined">person_add</span>Cadastrar Cliente
+                    <span className="material-icons-outlined">person_add</span>Cadastrar Usuários
                 </Link>
                 <Link href="/clientes/buscar" style={subNavLinkStyle}
                       onMouseOver={handleLinkMouseOver}
                       onMouseOut={handleLinkMouseOut}>
-                    <span className="material-icons-outlined">search</span>Buscar Cliente
+                    <span className="material-icons-outlined">search</span>Buscar Usuário
                 </Link>
             </nav>
             <div className="container">

@@ -5,25 +5,19 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { listarEventosEonet } from '@/lib/apiService';
 import type { EonetResponseDTO, NasaEonetEventDTO, NasaEonetGeometryDTO, Page } from '@/lib/types';
+// Importar a interface de marcador do novo componente
+import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
-// Carregamento Dinâmico do Componente do Mapa
-const DynamicLeafletMap = dynamic(() => import('@/components/LeafletMap'), {
+// Carregar dinamicamente o NOVO componente de mapa
+const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
     ssr: false,
     loading: () => (
-        <div className="flex items-center justify-center w-full h-full bg-slate-700/50 rounded-md">
-            <p className="text-center text-slate-300 py-4">Carregando mapa de eventos...</p>
+        <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{minHeight: '400px'}}>
+            <p className="text-center text-slate-600 py-4 text-lg">Carregando mapa de eventos...</p>
         </div>
     ),
 });
 
-// Interface para os marcadores do mapa
-interface MapMarker {
-    position: [number, number]; // [latitude, longitude]
-    popupText: string;
-    id: string; // Usar eonetIdApi ou idEonet como chave
-}
-
-// Função auxiliar para parsear o JSON do evento de forma segura
 const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | null => {
     try {
         return JSON.parse(jsonString) as Partial<NasaEonetEventDTO>;
@@ -33,50 +27,39 @@ const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | n
     }
 };
 
-// Função para extrair coordenadas da geometria
-// Prioriza o primeiro ponto da primeira geometria
 const getCoordinatesFromEvent = (geometries: NasaEonetGeometryDTO[] | undefined): [number, number] | null => {
     if (!geometries || geometries.length === 0) {
         return null;
     }
-    // Tenta encontrar a primeira geometria do tipo 'Point'
     const pointGeometry = geometries.find(geom => geom.type === "Point");
     if (pointGeometry && Array.isArray(pointGeometry.coordinates) && pointGeometry.coordinates.length === 2) {
-        // EONET geralmente armazena como [longitude, latitude] para Points
         return [pointGeometry.coordinates[1] as number, pointGeometry.coordinates[0] as number];
     }
-    // Se não houver Point, tenta pegar as coordenadas da primeira geometria (pode ser o centro de um polígono, etc.)
-    // Isso é uma simplificação e pode precisar de ajustes dependendo dos tipos de geometria
     const firstGeom = geometries[0];
     if (firstGeom && Array.isArray(firstGeom.coordinates)) {
         if (firstGeom.type === "Polygon" && Array.isArray(firstGeom.coordinates[0]) && Array.isArray(firstGeom.coordinates[0][0])) {
-            // Para polígono, pega o primeiro ponto do primeiro anel
-            // EONET geralmente armazena como [longitude, latitude]
             return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
         }
-        // Adicione mais lógicas para outros tipos de geometria se necessário
     }
     return null;
 };
 
-
 export default function MapaDeEventosPage() {
-    const [markers, setMarkers] = useState<MapMarker[]>([]);
+    const [markers, setMarkers] = useState<EventMapMarkerData[]>([]); // Usar EventMapMarkerData
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Posição central inicial do mapa (ex: Brasil) e zoom
-    const initialMapPosition: [number, number] = [-14.235004, -51.92528]; // Centro do Brasil
+    const initialMapCenter: [number, number] = [-14.235004, -51.92528];
     const initialMapZoom: number = 4;
 
     useEffect(() => {
         const fetchEventsAndCreateMarkers = async () => {
             setLoading(true);
             setError(null);
+            setMarkers([]);
             try {
-                // Buscar um número maior de eventos para o mapa, ex: 50 eventos mais recentes
                 const eventosPage: Page<EonetResponseDTO> = await listarEventosEonet(0, 50);
-                const newMarkers: MapMarker[] = [];
+                const newMarkers: EventMapMarkerData[] = [];
 
                 if (eventosPage && eventosPage.content) {
                     for (const eventoResp of eventosPage.content) {
@@ -95,7 +78,7 @@ export default function MapaDeEventosPage() {
                 }
                 setMarkers(newMarkers);
                 if (newMarkers.length === 0) {
-                    setError("Nenhum evento com coordenadas válidas encontrado para exibir no mapa.");
+                    console.log("Nenhum evento com coordenadas válidas encontrado para exibir no mapa.");
                 }
             } catch (err: any) {
                 console.error("Erro ao buscar ou processar eventos para o mapa:", err);
@@ -109,51 +92,52 @@ export default function MapaDeEventosPage() {
     }, []);
 
     return (
-        <div className="container_mapa_eventos_page" style={{paddingBottom: '20px'}}> {/* Adicionado padding inferior */}
+        <div className="container_mapa_eventos_page" style={{paddingBottom: '20px'}}>
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>public</span>
                 Mapa Interativo de Eventos EONET
             </h1>
 
             {loading && (
-                <div className="flex items-center justify-center" style={{minHeight: '400px'}}>
-                    <p className="text-lg">Carregando eventos no mapa...</p>
+                <div className="flex items-center justify-center" style={{minHeight: '400px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9'}}>
+                    <p className="text-lg text-slate-600">Carregando eventos no mapa...</p>
                 </div>
             )}
-            {error && !loading && <p className="message error" style={{textAlign: 'center'}}>{error}</p>}
+            {error && !loading && (
+                <div className="message error" style={{textAlign: 'center', padding: '20px', border: '1px solid #f5c6cb', borderRadius: '8px'}}>
+                    <p>{error}</p>
+                    <p style={{marginTop: '10px'}}>Tente sincronizar novos eventos no Painel EONET ou verifique os logs para mais detalhes.</p>
+                </div>
+            )}
 
             {!loading && !error && (
                 <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '10px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                    <DynamicLeafletMap
-                        position={initialMapPosition}
-                        zoom={initialMapZoom}
-                        // A prop 'markers' não existe no seu componente LeafletMap atual.
-                        // Você precisará modificar LeafletMap.tsx para aceitar e renderizar uma lista de marcadores.
-                        // Por agora, o mapa será centralizado, mas sem os marcadores de evento.
-                        // markersData={markers} // Exemplo de como você passaria os dados
+                    <DynamicEonetEventMap // Usar o novo componente dinamicamente
+                        initialCenter={initialMapCenter}
+                        initialZoom={initialMapZoom}
+                        markersData={markers}
                     />
-                    {markers.length === 0 && !loading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-                            <p className="text-slate-600 text-lg p-4 rounded-md bg-slate-100 shadow">Nenhum marcador de evento para exibir no mapa.</p>
+                    {markers.length === 0 && !loading && !error && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            padding: '20px',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                            textAlign: 'center',
+                            zIndex: 1000
+                        }}
+                             className="text-slate-600 text-lg p-4 rounded-md bg-slate-100 shadow"
+                        >
+                            Nenhum evento com coordenadas válidas encontrado para exibir no mapa no momento.
+                            <br />Tente sincronizar eventos no "Painel EONET".
                         </div>
                     )}
                 </div>
             )}
-            {/* Renderização dos marcadores precisa ser feita dentro do DynamicLeafletMap */}
-            {/* A lógica abaixo é um exemplo de como você poderia passar os marcadores,
-           MAS o componente DynamicLeafletMap precisa ser modificado para aceitar e renderizar 'markersData' */}
-            {/* {!loading && !error && markers.length > 0 && (
-        <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '10px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-            <DynamicLeafletMap
-                // O componente LeafletMap precisa ser atualizado para aceitar uma lista de marcadores
-                // Exemplo: markersData={markers}
-                // E dentro de LeafletMap, iterar sobre markersData para criar <Marker>
-                position={markers[0]?.position || initialMapPosition} // Centraliza no primeiro marcador ou na posição inicial
-                zoom={markers.length > 0 ? 6 : initialMapZoom}
-            />
-        </div>
-      )}
-      */}
         </div>
     );
 }

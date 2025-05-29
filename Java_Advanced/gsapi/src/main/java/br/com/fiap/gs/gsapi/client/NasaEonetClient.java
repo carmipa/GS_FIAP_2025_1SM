@@ -1,3 +1,4 @@
+// Arquivo: src/main/java/br/com/fiap/gs/gsapi/client/NasaEonetClient.java
 package br.com.fiap.gs.gsapi.client;
 
 import br.com.fiap.gs.gsapi.dto.external.NasaEonetApiResponseDTO;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils; // Para StringUtils.hasText
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -33,10 +35,6 @@ public class NasaEonetClient {
     @Value("${nasa.eonet.api.url:https://eonet.gsfc.nasa.gov/api/v3/events}")
     private String eonetApiUrl;
 
-    // Se você tiver uma chave API da NASA e a EONET começar a suportá-la ou exigi-la:
-    // @Value("${nasa.api.key:#{null}}") // Lê de application.properties, null se não definida
-    // private String nasaApiKey;
-
     @Autowired
     public NasaEonetClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -45,29 +43,38 @@ public class NasaEonetClient {
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source, String bbox) {
+    // ***** MÉTODO MODIFICADO PARA INCLUIR startDate e endDate *****
+    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source, String bbox, String startDate, String endDate) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(eonetApiUrl);
 
         if (limit != null && limit > 0) {
             uriBuilder.queryParam("limit", limit);
         }
-        if (days != null && days > 0) {
+
+        // Se startDate e endDate forem fornecidos, 'days' geralmente não é usado pela EONET.
+        // A API EONET prioriza start/end se ambos 'days' e 'start'/'end' estiverem presentes.
+        if (StringUtils.hasText(startDate)) {
+            uriBuilder.queryParam("start", startDate);
+        }
+        if (StringUtils.hasText(endDate)) {
+            uriBuilder.queryParam("end", endDate);
+        }
+        // Se start/end não forem usados, então 'days' pode ser aplicado.
+        // Se start/end forem fornecidos, o parâmetro 'days' pode ser ignorado pela EONET ou causar comportamento inesperado.
+        // Para ser seguro, só adicionamos 'days' se start e end não estiverem definidos.
+        else if (days != null && days > 0) {
             uriBuilder.queryParam("days", days);
         }
-        if (status != null && !status.trim().isEmpty()) {
+
+        if (StringUtils.hasText(status)) {
             uriBuilder.queryParam("status", status);
         }
-        if (source != null && !source.trim().isEmpty()) {
+        if (StringUtils.hasText(source)) {
             uriBuilder.queryParam("source", source);
         }
-        if (bbox != null && !bbox.trim().isEmpty()) { // Adicionado parâmetro bbox
+        if (StringUtils.hasText(bbox)) {
             uriBuilder.queryParam("bbox", bbox);
         }
-        // Se você for usar uma chave API da NASA:
-        // if (nasaApiKey != null && !nasaApiKey.trim().isEmpty()) {
-        //     uriBuilder.queryParam("api_key", nasaApiKey);
-        // }
-
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -100,6 +107,7 @@ public class NasaEonetClient {
             throw new ServiceUnavailableException("Erro inesperado ao processar consulta à NASA EONET.", e);
         }
     }
+    // ***** FIM DA MODIFICAÇÃO *****
 
     public String convertEventDtoToJsonString(NasaEonetEventDTO eventDto) {
         try {

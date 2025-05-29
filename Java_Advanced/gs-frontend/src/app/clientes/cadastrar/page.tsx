@@ -281,7 +281,7 @@ export default function CadastrarClientePage() {
 
     return (
         <div className="container">
-            <h1 className="page-title">Cadastrar Novo Cliente</h1>
+            <h1 className="page-title">Cadastrar Novo Usuário</h1>
             <form onSubmit={handleSubmit} className="form-container" autoComplete="off">
 
                 <fieldset className="form-section">
@@ -436,7 +436,7 @@ export default function CadastrarClientePage() {
                     className="button-primary"
                     style={{marginTop: '20px', width: '100%', padding: '12px', fontSize: '1.1em'}}
                 >
-                    {loadingSubmit ? 'Salvando Cliente...' : (buscandoCep || buscandoCoords ? 'Aguarde...' : 'Salvar Cliente Completo')}
+                    {loadingSubmit ? 'Salvando Usuários...' : (buscandoCep || buscandoCoords ? 'Aguarde...' : 'Salvar Usuário Completo')}
                 </button>
             </form>
 
@@ -444,7 +444,7 @@ export default function CadastrarClientePage() {
             {erro && <p className="message error" style={{marginTop: '20px', textAlign: 'center'}}>{erro}</p>}
 
             <div style={{marginTop: '30px', marginBottom: '40px', textAlign: 'center'}}>
-                <Link href="/clientes/listar">Voltar para Lista de Clientes</Link>
+                <Link href="/clientes/listar">Voltar para Lista de Usuários</Link>
             </div>
         </div>
     );

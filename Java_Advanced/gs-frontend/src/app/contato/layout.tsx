@@ -2,16 +2,16 @@
 'use client';
 
 import React from 'react';
+import 'leaflet/dist/leaflet.css'; // <-- Import Leaflet's CSS HERE
 
 export default function ContatoLayout({
                                           children,
                                       }: {
     children: React.ReactNode;
 }) {
-    // Este layout envolve o conteúdo da página de contato.
-    // Ele não deve incluir elementos de navegação de outras seções.
+    // This layout wraps the contact page content.
     return (
-        <section className="contato-section"> {/* Adicionada uma classe opcional para estilização específica da seção, se necessário */}
+        <section className="contato-section"> {/* This class can be used for specific contact section styling if needed */}
             {children}
         </section>
     );

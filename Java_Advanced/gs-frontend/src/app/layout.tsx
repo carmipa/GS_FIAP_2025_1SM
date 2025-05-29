@@ -1,11 +1,16 @@
-// src/app/layout.tsx
-import './globals.css';
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// app\layout.tsx | arquivo layout.tsx
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+import './globals.css'; // Deve ser a primeira importação de CSS
 import Link from 'next/link';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "GS Alerta Desastres",
-    description: "Aplicação para monitoramento de desastres e alertas",
+    title: "GS Alerta Desastres | MetaMind", // Adicionando nome da equipe ao título
+    description: "Aplicação para monitoramento de desastres e alertas para a Global Solution FIAP, desenvolvida pela equipe MetaMind.",
+    keywords: "FIAP, Global Solution, Desastres, Alertas, EONET, Next.js, React, TypeScript, MetaMind",
+    authors: [{ name: "MetaMind Team" }], // Nome da equipe
 };
 
 export default function RootLayout({
@@ -16,18 +21,25 @@ export default function RootLayout({
     return (
         <html lang="pt-BR">
         <head>
+            {/* Google Fonts e Material Icons */}
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link
+                href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+                rel="stylesheet"
+            />
             <link
                 href="https://fonts.googleapis.com/css2?family=Material+Icons+Outlined"
                 rel="stylesheet"
             />
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            {/* Adicionar um favicon é uma boa prática. Crie um arquivo public/favicon.ico */}
+            <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
         <body>
         <nav>
             <Link href="/" className="logo">
-                <span className="material-icons-outlined" style={{ fontSize: '1.5em', marginRight: '8px' }}>api</span>
+                <span className="material-icons-outlined">emergency</span>
                 GS Alerta Desastres
             </Link>
             <Link href="/clientes/listar">
@@ -38,16 +50,23 @@ export default function RootLayout({
                 <span className="material-icons-outlined">volcano</span>
                 Desastres EONET
             </Link>
-            <Link href="/contato"> {/* NOVO LINK */}
+            <Link href="/contato">
                 <span className="material-icons-outlined">contact_support</span>
                 Fale Conosco
             </Link>
         </nav>
         <main>
+            {/* O container principal pode ser adicionado aqui ou em cada página/layout filho,
+                dependendo da necessidade de flexibilidade.
+                Se a maioria das páginas usa, adicionar aqui pode ser bom.
+                Ex: <div className="container">{children}</div>
+                Porém, a página de contato parece usar seu próprio container com classes de espaçamento.
+                Vou deixar children direto para manter a flexibilidade original.
+            */}
             {children}
         </main>
-        <footer style={{ textAlign: 'center', padding: '20px 0', marginTop: '30px', borderTop: '1px solid #eee', fontSize: '0.9em', color: '#777' }}>
-            Global Solution 2025 - FIAP &copy;
+        <footer>
+            Global Solution 2025 - FIAP &copy; MetaMind Team
         </footer>
         </body>
         </html>

@@ -32,6 +32,11 @@
     - [7.3. Principais Seções da UI e Como Navegar](#73-principais-seções-da-ui-e-como-navegar)
   - [8. 📂 Estrutura Simplificada do Projeto](#8--estrutura-simplificada-do-projeto)
     - [8.1. Backend (`gsapi` ou similar)](#81-backend-gsapi-ou-similar)
+    - [8.2. Frontend (raiz do projeto Next.js)](#82-frontend-raiz-do-projeto-nextjs)
+  - [9. 🧑‍💻 Equipe MetaMind](#9--equipe-metamind)
+  - [10. 🌐 Links Úteis](#10--links-úteis)
+  - [11. 🤝 Como Contribuir](#11--como-contribuir)
+  - [12. 📜 Licença](#12--licença)
 
 ---
 
@@ -306,3 +311,91 @@ O App Router do Next.js define as rotas com base na estrutura de pastas dentro d
 Uma visão geral das principais pastas para facilitar a localização dos artefatos:
 
 ### 8.1. Backend (`gsapi` ou similar)
+
+gsapi/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── br/com/fiap/gs/gsapi/
+│   │   │       ├── GsapiApplication.java  # Ponto de entrada Spring Boot
+│   │   │       ├── client/                # Clientes HTTP para APIs externas
+│   │   │       ├── config/                # Configurações (App, CORS, OpenAPI)
+│   │   │       ├── controller/            # API Endpoints (REST Controllers)
+│   │   │       ├── dto/                   # Data Transfer Objects
+│   │   │       ├── exception/             # Handlers de exceção
+│   │   │       ├── mapper/                # Mappers (MapStruct)
+│   │   │       ├── model/                 # Entidades JPA
+│   │   │       ├── repository/            # Repositórios Spring Data JPA
+│   │   │       └── service/               # Lógica de negócios
+│   │   └── resources/
+│   │       ├── application.properties     # Configurações da aplicação
+│   │       └── Oracle_DDL_GS_AlertaDesastres_SCRIPT.sql # Script DDL do banco (deve estar aqui ou em local de fácil acesso)
+├── pom.xml                            # (Se Maven) ou build.gradle (Se Gradle)
+
+### 8.2. Frontend (raiz do projeto Next.js)
+
+frontend-gs-alerta-desastres/ # Exemplo de nome da pasta raiz do frontend
+├── public/                      # Arquivos estáticos (imagens, favicon)
+├── src/
+│   ├── app/                     # App Router: Define rotas e páginas
+│   │   ├── layout.tsx           # Layout Raiz Global
+│   │   ├── page.tsx             # Página Inicial (Home)
+│   │   ├── globals.css          # Estilos Globais
+│   │   ├── clientes/            # Seção de Usuários
+│   │   │   ├── layout.tsx       # Layout da seção Usuários
+│   │   │   ├── listar/
+│   │   │   │   └── page.tsx     # Página de listagem
+│   │   │   └── ...              # Outras páginas (cadastrar, [id], etc.)
+│   │   ├── desastres/           # Seção de Desastres
+│   │   │   ├── layout.tsx       # Layout da seção Desastres
+│   │   │   └── ...
+│   │   └── contato/             # Seção de Contato
+│   │       └── page.tsx
+│   ├── components/              # Componentes React reutilizáveis (ex: Mapas)
+│   └── lib/                     # Funções utilitárias, API service, tipos
+│       ├── apiService.ts        # Lógica para chamadas à API backend
+│       └── types.ts             # Definições de tipos TypeScript
+├── package.json                 # Dependências e scripts do projeto Node.js
+├── next.config.js               # Configurações do Next.js (se houver customizações)
+└── tsconfig.json                # Configurações do TypeScript
+
+
+---
+
+## 9. 🧑‍💻 Equipe MetaMind
+
+Este projeto foi concebido e desenvolvido pela equipe MetaMind:
+
+* **Arthur Bispo de Lima** - RM: 557568
+    * 🐙 GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)
+* **João Paulo Moreira** - RM: 557808
+    * 🐙 GitHub: [joao1015](https://github.com/joao1015)
+* **Paulo André Carminati** - RM: 557881
+    * 🐙 GitHub: [carmipa](https://github.com/carmipa)
+
+---
+
+## 10. 🌐 Links Úteis
+
+* 🐙 **Repositório do Projeto GS Alerta Desastres:** [https://github.com/carmipa/GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM)
+* 🎓 **Página Oficial da Global Solution FIAP:** [https://www.fiap.com.br/graduacao/global-solution/](https://www.fiap.com.br/graduacao/global-solution/)
+
+---
+
+## 11. 🤝 Como Contribuir
+
+Contribuições para o projeto são bem-vindas! Se você tem sugestões, correções de bugs ou novas funcionalidades que gostaria de adicionar:
+
+1.  Faça um **Fork** deste repositório.
+2.  Crie uma nova **Branch** para sua feature (`git checkout -b feature/MinhaNovaFeature`).
+3.  Faça **Commit** das suas alterações (`git commit -m 'Adiciona MinhaNovaFeature'`).
+4.  Faça **Push** para a Branch (`git push origin feature/MinhaNovaFeature`).
+5.  Abra um **Pull Request**.
+
+Por favor, tente manter a consistência do código e adicione testes se aplicável.
+
+---
+
+## 12. 📜 Licença
+
+Este projeto está licenciado sob a **Licença MIT**. Veja o arquivo `LICENSE.md` na raiz do repositório para mais detalhes. (Você precisará criar um arquivo `LICENSE.md` se desejar incluir o texto completo da licença).

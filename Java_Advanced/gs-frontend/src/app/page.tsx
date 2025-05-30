@@ -154,7 +154,7 @@ export default function HomePage() {
           <div style={cardContainerStyle}>
             <Link href="/clientes/listar" style={cardStyle} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
               <span className="material-icons-outlined" style={cardIconStyle}>group</span>
-              <span style={cardTitleStyle}>Gerenciar Clientes</span>
+              <span style={cardTitleStyle}>Gerenciar Usuários</span>
               <span style={cardDescriptionStyle}>Cadastre, visualize, edite e delete informações de clientes.</span>
             </Link>
             <Link href="/desastres" style={cardStyle} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>

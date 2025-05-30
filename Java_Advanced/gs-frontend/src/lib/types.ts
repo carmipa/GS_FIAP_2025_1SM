@@ -161,4 +161,18 @@ export interface CategoryCountDTO {
     categoryTitle: string;
     count: number;
 }
+
+// Em src/lib/types.ts
+export interface AlertableEventDTO {
+    eventId?: string;
+    title?: string;
+    eventDate?: string;
+    link?: string;
+    description?: string;
+}
+
+export interface UserAlertRequestDTO {
+    userId: number;
+    eventDetails: AlertableEventDTO;
+}
 // ***** FIM DA NOVA INTERFACE *****

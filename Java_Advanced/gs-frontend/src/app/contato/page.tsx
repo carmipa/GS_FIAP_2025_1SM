@@ -3,6 +3,7 @@
 
 import React, { FormEvent, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from 'next/image'; // Importar o componente Image do Next.js
 import { FaGithub, FaWhatsapp } from "react-icons/fa";
 import {
     User,
@@ -20,6 +21,7 @@ const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
     loading: () => <div className="leaflet-container flex items-center justify-center bg-gray-200"><p>Carregando mapa...</p></div>
 });
 
+// Interface atualizada para incluir a URL da foto
 interface TeamMember {
     name: string;
     rm: string;
@@ -28,35 +30,25 @@ interface TeamMember {
     githubLink: string;
     turma: string;
     phone: string;
+    photoUrl: string; // Campo para a URL da foto
 }
 
+// Array de membros atualizado com os caminhos corretos das fotos
 const teamMembers: TeamMember[] = [
     {
-        name: "Paulo André Carminati",
-        rm: "557881",
-        email: "rm557881@fiap.com.br",
-        githubUser: "carmipa",
-        githubLink: "https://github.com/carmipa",
-        turma: "2-TDSPZ",
-        phone: "(11) 97669-2633",
+        name: "Paulo André Carminati", rm: "557881", email: "rm557881@fiap.com.br",
+        githubUser: "carmipa", githubLink: "https://github.com/carmipa", turma: "2-TDSPZ",
+        phone: "(11) 97669-2633", photoUrl: "/fotos-equipe/paulo.jpg",
     },
     {
-        name: "Arthur Bispo de Lima",
-        rm: "557568",
-        email: "rm557568@fiap.com.br",
-        githubUser: "ArthurBispo00",
-        githubLink: "https://github.com/ArthurBispo00",
-        turma: "2-TDSPV",
-        phone: "(11) 99145-6219",
+        name: "Arthur Bispo de Lima", rm: "557568", email: "rm557568@fiap.com.br",
+        githubUser: "ArthurBispo00", githubLink: "https://github.com/ArthurBispo00", turma: "2-TDSPV",
+        phone: "(11) 99145-6219", photoUrl: "/fotos-equipe/arthur.jpg",
     },
     {
-        name: "João Paulo Moreira",
-        rm: "557808",
-        email: "rm557808@fiap.com.br",
-        githubUser: "joao1015",
-        githubLink: "https://github.com/joao1015",
-        turma: "2-TDSPV",
-        phone: "(11) 98391-1385",
+        name: "João Paulo Moreira", rm: "557808", email: "rm557808@fiap.com.br",
+        githubUser: "joao1015", githubLink: "https://github.com/joao1015", turma: "2-TDSPV",
+        phone: "(11) 98391-1385", photoUrl: "/fotos-equipe/joao.jpg",
     },
 ];
 
@@ -80,48 +72,85 @@ const ContactsPage: React.FC = () => {
                 <MessageSquare className="w-8 h-8 md:w-10 md:h-10" /> Conheça a Equipe MetaMind 🧠
             </h1>
 
-            {/* Seção dos Membros da Equipe - AQUI ESTÁ O GRID */}
+            {/* Seção dos Membros da Equipe */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
                 {teamMembers.map((member) => (
-                    <div key={member.rm} className="team-member-card"> {/* Classe para estilização no globals.css */}
-                        <div className="card-content">
-                            <h3 className="member-name">
-                                <User /> {member.name}
-                            </h3>
-                            <p className="member-info">
-                                <Briefcase /> RM: {member.rm}
-                            </p>
-                            <p className="member-info">
-                                <Mail />
-                                <a href={`mailto:${member.email}`} title={`Enviar email para ${member.name}`}>
-                                    {member.email}
-                                </a>
-                            </p>
-                            <div className="member-info github-badge-container">
-                                <FaGithub /> GitHub:
-                                <a href={member.githubLink} target="_blank" rel="noopener noreferrer" className="ml-1" title={`Perfil de ${member.name} no GitHub`}>
-                                    <img src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`} alt={`GitHub ${member.githubUser} Shield`} />
-                                </a>
+                    <div key={member.rm} className="team-member-card">
+                        <div
+                            className="card-content"
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                            }}
+                        >
+                            <div style={{ marginBottom: '15px' }}>
+                                <Image
+                                    src={member.photoUrl}
+                                    alt={`Foto de ${member.name}`}
+                                    width={120}
+                                    height={120}
+                                    style={{
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                        border: '3px solid #007bff'
+                                    }}
+                                    className="mx-auto"
+                                    priority={true}
+                                />
                             </div>
-                            <p className="member-info">
-                                <Phone />
-                                <a
-                                    href={`https://wa.me/55${member.phone.replace(/\D/g, '')}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={`Contatar ${member.name} via WhatsApp`}
-                                    className="flex items-center"
-                                >
-                                    {member.phone} <FaWhatsapp className="ml-1 text-green-500" />
-                                </a>
-                            </p>
-                            <p className="member-info mb-0">
-                                <Briefcase /> Turma: {member.turma}
-                            </p>
+                            <h3
+                                className="member-name"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '1.25rem',
+                                    fontWeight: '600',
+                                    marginBottom: '10px',
+                                }}
+                            >
+                                <User size={20} /> {member.name}
+                            </h3>
+                            <div style={{ textAlign: 'left', width: '100%', maxWidth: '280px' }}>
+                                <p className="member-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Briefcase size={16} /> RM: {member.rm}
+                                </p>
+                                <p className="member-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Mail size={16} />
+                                    <a href={`mailto:${member.email}`} title={`Enviar email para ${member.name}`}>
+                                        {member.email}
+                                    </a>
+                                </p>
+                                <div className="member-info github-badge-container" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <FaGithub size={16} /> GitHub:
+                                    <a href={member.githubLink} target="_blank" rel="noopener noreferrer" className="ml-1" title={`Perfil de ${member.name} no GitHub`}>
+                                        <img src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`} alt={`GitHub ${member.githubUser} Shield`} />
+                                    </a>
+                                </div>
+                                <p className="member-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Phone size={16} />
+                                    <a
+                                        href={`https://wa.me/55${member.phone.replace(/\D/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title={`Contatar ${member.name} via WhatsApp`}
+                                        className="flex items-center"
+                                    >
+                                        {member.phone} <FaWhatsapp className="ml-1 text-green-500" />
+                                    </a>
+                                </p>
+                                <p className="member-info mb-0" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Briefcase size={16} /> Turma: {member.turma}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ))}
             </section>
+
+            {/* --- SEÇÕES RESTAURADAS ABAIXO --- */}
 
             {/* Seção do Formulário de Contato */}
             <section className="contact-form-section">
@@ -180,6 +209,7 @@ const ContactsPage: React.FC = () => {
                     </a>
                 </p>
             </section>
+            {/* --- FIM DAS SEÇÕES RESTAURADAS --- */}
         </div>
     );
 };

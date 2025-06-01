@@ -1,0 +1,2635 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "GS Alerta Desastres - API (.NET) - Desafio Eventos Extremos",
+    "description": "API RESTful desenvolvida como parte da Global Solution FIAP 2025/1 (2 Ano - Anlise e Desenvolvimento de Sistemas, Turmas de Fevereiro) para o desafio 'Eventos Extremos'. O projeto 'GS Alerta Desastres', da Equipe MetaMind, prope uma soluo tecnolgica para monitorar eventos de desastres naturais em tempo real (utilizando dados da API EONET da NASA), fornecer informaes cruciais e permitir o disparo de alertas para usurios cadastrados, visando ajudar pessoas e prevenir problemas maiores em cenrios impactados por eventos extremos da natureza. Esta API .NET, criada para a disciplina 'Advanced Business Development with .NET', tem como objetivo atender aos requisitos de uma API REST robusta para tratar de problemas crticos e auxiliar as pessoas em perodos de extrema urgncia, incluindo persistncia de dados, relacionamentos, documentao Swagger.\n\n**Equipe MetaMind:**\n- Paulo Andr Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)\n- Arthur Bispo de Lima (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)\n- Joo Paulo Moreira (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)",
+    "contact": {
+      "name": "Equipe MetaMind",
+      "url": "https://github.com/carmipa/GS_FIAP_2025_1SM",
+      "email": "equipe.metamind.fiap@example.com"
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://github.com/carmipa/GS_FIAP_2025_1SM/blob/main/LICENSE"
+    },
+    "version": "v1.0.0"
+  },
+  "paths": {
+    "/api/alerts/trigger-user-specific-alert": {
+      "post": {
+        "tags": [
+          "Alerts"
+        ],
+        "summary": "Dispara um alerta para um usuário específico sobre um evento.",
+        "description": "Este endpoint recebe o ID de um usuário e os detalhes de um evento. \r\nEle tentará encontrar o e-mail principal do usuário e, em uma implementação futura completa, \r\nenviaria uma notificação por e-mail.",
+        "requestBody": {
+          "description": "Objeto contendo o `UserId` e `EventDetails` para o alerta.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAlertRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solicitação de alerta processada com sucesso. A mensagem indicará se o e-mail seria enviado (simulação) ou se não foi encontrado um e-mail válido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos (ex: campos obrigatórios faltando no DTO).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o usuário com o ID especificado não for encontrado no sistema.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno inesperado no servidor durante o processamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clientes": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Lista todos os clientes de forma paginada e ordenada.",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número da página desejada (padrão: 1).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Quantidade de clientes por página (padrão: 10).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Campo pelo qual os clientes serão ordenados (padrão: \"nome\"). Outras opções: \"documento\", \"idCliente\".",
+            "schema": {
+              "type": "string",
+              "default": "nome"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna a lista paginada de clientes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDtoPaginatedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor durante a consulta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Cria um novo cliente.",
+        "requestBody": {
+          "description": "Os dados do cliente a ser criado. Contatos e Endereços podem ser associados via seus IDs.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Retorna o cliente recém-criado com a localização do recurso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos (ex: documento duplicado, IDs de contato/endereço inválidos).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/clientes/{id}": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Busca um cliente específico pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do cliente a ser buscado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna o cliente encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o cliente com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Atualiza um cliente existente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do cliente a ser atualizado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Os novos dados para o cliente. Contatos e Endereços podem ser associados/desassociados via seus IDs.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Retorna o cliente atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos (ex: documento duplicado para outro cliente, IDs de contato/endereço inválidos).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o cliente com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Deleta um cliente pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do cliente a ser deletado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Cliente deletado com sucesso."
+          },
+          "404": {
+            "description": "Se o cliente com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/clientes/{id}/coordenadas-principais": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Busca as coordenadas principais (latitude e longitude) de um cliente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do cliente.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna as coordenadas encontradas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoCoordinatesDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o cliente ou um endereço com coordenadas válidas não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/clientes/documento/{documento}": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Busca um cliente pelo seu Documento (CPF/CNPJ).",
+        "parameters": [
+          {
+            "name": "documento",
+            "in": "path",
+            "description": "O número do documento do cliente (CPF ou CNPJ).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna o cliente encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o cliente com o documento especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/clientes/pesquisar": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Pesquisa clientes por nome, sobrenome ou documento.",
+        "parameters": [
+          {
+            "name": "termo",
+            "in": "query",
+            "description": "Termo para buscar no nome, sobrenome ou documento do cliente.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número da página (padrão: 1).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Quantidade de clientes por página (padrão: 10).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Campo pelo qual os clientes serão ordenados (padrão: \"nome\").",
+            "schema": {
+              "type": "string",
+              "default": "nome"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna a lista paginada de clientes encontrados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponseDtoPaginatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se o termo de pesquisa for nulo ou vazio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/contatos": {
+      "get": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Lista todos os contatos de forma paginada e ordenada.",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número da página desejada (padrão: 1).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Quantidade de contatos por página (padrão: 10).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Campo pelo qual os contatos serão ordenados (padrão: \"email\"). Outra opção: \"idContato\".",
+            "schema": {
+              "type": "string",
+              "default": "email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna a lista paginada de contatos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContatoResponseDtoPaginatedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor durante a consulta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Cria um novo contato.",
+        "requestBody": {
+          "description": "Os dados do contato a ser criado.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContatoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Retorna o contato recém-criado com a localização do recurso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContatoResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos (ex: e-mail duplicado).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/contatos/{id}": {
+      "get": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Busca um contato específico pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do contato a ser buscado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna o contato encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContatoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o contato com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Atualiza um contato existente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do contato a ser atualizado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Os novos dados para o contato.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContatoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Retorna o contato atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContatoResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos (ex: novo e-mail já existe em outro contato).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o contato com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Deleta um contato pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do contato a ser deletado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Contato deletado com sucesso."
+          },
+          "404": {
+            "description": "Se o contato com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/contatos/email/{email}": {
+      "get": {
+        "tags": [
+          "Contatos"
+        ],
+        "summary": "Busca um contato pelo seu endereço de e-mail.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "O endereço de e-mail do contato a ser buscado.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna o contato encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContatoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o contato com o e-mail especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/enderecos": {
+      "get": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Lista todos os endereços cadastrados de forma paginada.",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Número da página (padrão: 1).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Quantidade de itens por página (padrão: 10).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Campo para ordenação (padrão: \"cep\"). Opções: \"localidade\", \"idEndereco\".",
+            "schema": {
+              "type": "string",
+              "default": "cep"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna a lista paginada de endereços.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnderecoResponseDtoPaginatedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Cria um novo endereço. Requer que latitude e longitude sejam fornecidas.",
+        "requestBody": {
+          "description": "Os dados do endereço a ser criado.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnderecoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Retorna o endereço recém-criado com a localização do recurso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnderecoResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      }
+    },
+    "/api/enderecos/{id}": {
+      "get": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Busca um endereço específico pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do endereço a ser buscado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna o endereço encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnderecoResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o endereço com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Atualiza um endereço existente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do endereço a ser atualizado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Os novos dados para o endereço.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnderecoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Retorna o endereço atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnderecoResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados da requisição forem inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o endereço com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Deleta um endereço pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "O ID do endereço a ser deletado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Endereço deletado com sucesso."
+          },
+          "404": {
+            "description": "Se o endereço com o ID especificado não for encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno no servidor (ex: violação de chave estrangeira se o endereço estiver em uso)."
+          }
+        }
+      }
+    },
+    "/api/enderecos/consultar-cep/{cep}": {
+      "get": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Consulta dados de um endereço a partir de um CEP utilizando o serviço ViaCEP.",
+        "parameters": [
+          {
+            "name": "cep",
+            "in": "path",
+            "description": "O CEP a ser consultado (deve estar no formato XXXXXXXX ou XXXXX-XXX).",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{5}-?\\d{3}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do CEP encontrados e retornados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ViaCepResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se o formato do CEP fornecido for inválido (conforme validação do [RegularExpression]).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se o CEP não for encontrado no serviço ViaCEP ou se for considerado inválido pelo serviço.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Se o serviço ViaCEP estiver indisponível ou ocorrer um erro na comunicação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enderecos/calcular-coordenadas": {
+      "post": {
+        "tags": [
+          "Enderecos"
+        ],
+        "summary": "Calcula as coordenadas geográficas (latitude e longitude) para um endereço.",
+        "requestBody": {
+          "description": "Dados do endereço para geocodificação (Logradouro, Cidade, UF são obrigatórios).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnderecoGeoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Coordenadas calculadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoCoordinatesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se os dados de entrada para geocodificação forem inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Se não for possível encontrar coordenadas para o endereço fornecido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro de configuração interna (ex: API Key do Google não configurada).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Se o serviço de geocodificação estiver indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet": {
+      "get": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Lista todos os eventos EONET armazenados localmente, de forma paginada.",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "data"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Salva manualmente um novo evento EONET no banco de dados local.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EonetRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EonetResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet/{idInterno}": {
+      "get": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Busca um evento EONET armazenado localmente pelo seu ID interno.",
+        "parameters": [
+          {
+            "name": "idInterno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EonetResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Atualiza manualmente um evento EONET existente no banco de dados local.",
+        "parameters": [
+          {
+            "name": "idInterno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EonetRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EonetResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Deleta um evento EONET do banco de dados local pelo seu ID interno.",
+        "parameters": [
+          {
+            "name": "idInterno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet/api-id/{eonetApiId}": {
+      "get": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Busca um evento EONET armazenado localmente pelo ID da API da NASA.",
+        "parameters": [
+          {
+            "name": "eonetApiId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EonetResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet/por-data": {
+      "get": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Busca eventos EONET armazenados localmente dentro de um intervalo de datas.",
+        "parameters": [
+          {
+            "name": "dataInicialOffset",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dataFinalOffset",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EonetResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet/nasa/sincronizar": {
+      "post": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Busca novos eventos da API da NASA EONET e os persiste/atualiza localmente.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "open"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EonetResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/eonet/nasa/proximos": {
+      "get": {
+        "tags": [
+          "Eonet"
+        ],
+        "summary": "Busca eventos diretamente da API EONET da NASA com base em vários filtros.",
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "raioKm",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NasaEonetEventDto"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stats/eonet/count-by-category": {
+      "get": {
+        "tags": [
+          "Stats"
+        ],
+        "summary": "Obtém a contagem de eventos EONET locais por categoria para um determinado período em dias.",
+        "description": "Calcula o número de eventos para cada categoria com base nos dados JSON armazenados \r\npara os eventos EONET dentro do período especificado.",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "description": "Número de dias no passado a serem considerados para a estatística (ex: 365 para o último ano). Deve ser um número positivo. Padrão é 365.",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 365
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retorna as estatísticas de contagem de eventos por categoria.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryCountDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Se o parâmetro 'days' for inválido (ex: não positivo).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Se ocorrer um erro interno inesperado no servidor durante o processamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/WeatherForecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "operationId": "GetWeatherForecast",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlertableEventDto": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "description": "ID do evento (ex: ID da EONET).",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Título do evento. Se for obrigatório para o alerta, marque como 'required'.",
+            "nullable": true
+          },
+          "eventDate": {
+            "type": "string",
+            "description": "Data do evento (formatada como string).",
+            "nullable": true
+          },
+          "link": {
+            "type": "string",
+            "description": "Link para mais informações sobre o evento.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição breve do evento.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO contendo detalhes de um evento para fins de alerta."
+      },
+      "CategoryCountDto": {
+        "type": "object",
+        "properties": {
+          "categoryTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClienteRequestDto": {
+        "required": [
+          "dataNascimento",
+          "documento",
+          "nome",
+          "sobrenome"
+        ],
+        "type": "object",
+        "properties": {
+          "nome": {
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string"
+          },
+          "sobrenome": {
+            "maxLength": 100,
+            "minLength": 2,
+            "type": "string"
+          },
+          "dataNascimento": {
+            "minLength": 1,
+            "pattern": "^(\\d{4}-\\d{2}-\\d{2}|\\d{2}/\\d{2}/\\d{4})$",
+            "type": "string"
+          },
+          "documento": {
+            "maxLength": 18,
+            "minLength": 11,
+            "type": "string"
+          },
+          "contatosIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "enderecosIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClienteResponseDto": {
+        "required": [
+          "dataNascimento",
+          "documento",
+          "nome",
+          "sobrenome"
+        ],
+        "type": "object",
+        "properties": {
+          "idCliente": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "sobrenome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "dataNascimento": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "documento": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "contatos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContatoResponseDto"
+            },
+            "nullable": true
+          },
+          "enderecos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoResponseDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClienteResponseDtoPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClienteResponseDto"
+            },
+            "nullable": true
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContatoRequestDto": {
+        "required": [
+          "celular",
+          "ddd",
+          "email",
+          "telefone",
+          "tipoContato",
+          "whatsapp"
+        ],
+        "type": "object",
+        "properties": {
+          "ddd": {
+            "maxLength": 3,
+            "minLength": 2,
+            "type": "string"
+          },
+          "telefone": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "celular": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "whatsapp": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "tipoContato": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO para criar/atualizar um contato via API."
+      },
+      "ContatoResponseDto": {
+        "required": [
+          "celular",
+          "ddd",
+          "email",
+          "telefone",
+          "tipoContato",
+          "whatsapp"
+        ],
+        "type": "object",
+        "properties": {
+          "idContato": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ddd": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "telefone": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "celular": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "whatsapp": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "tipoContato": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContatoResponseDtoPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContatoResponseDto"
+            },
+            "nullable": true
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnderecoGeoRequestDto": {
+        "required": [
+          "cidade",
+          "logradouro",
+          "uf"
+        ],
+        "type": "object",
+        "properties": {
+          "logradouro": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "numero": {
+            "maxLength": 10,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "cidade": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "uf": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "bairro": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "cep": {
+            "maxLength": 9,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnderecoRequestDto": {
+        "required": [
+          "bairro",
+          "cep",
+          "complemento",
+          "latitude",
+          "localidade",
+          "logradouro",
+          "longitude",
+          "numero",
+          "uf"
+        ],
+        "type": "object",
+        "properties": {
+          "cep": {
+            "minLength": 1,
+            "pattern": "^\\d{5}-?\\d{3}$",
+            "type": "string"
+          },
+          "numero": {
+            "maximum": 99999,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "logradouro": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "bairro": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "localidade": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "uf": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "complemento": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "latitude": {
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnderecoResponseDto": {
+        "required": [
+          "bairro",
+          "cep",
+          "localidade",
+          "logradouro",
+          "uf"
+        ],
+        "type": "object",
+        "properties": {
+          "idEndereco": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cep": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "numero": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "logradouro": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "bairro": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "localidade": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "uf": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "complemento": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnderecoResponseDtoPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnderecoResponseDto"
+            },
+            "nullable": true
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EonetRequestDto": {
+        "required": [
+          "data",
+          "eonetIdApi",
+          "json"
+        ],
+        "type": "object",
+        "properties": {
+          "json": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "data": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eonetIdApi": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EonetResponseDto": {
+        "required": [
+          "eonetIdApi"
+        ],
+        "type": "object",
+        "properties": {
+          "idEonet": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "json": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "eonetIdApi": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeoCoordinatesDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "matchedAddress": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NasaEonetCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NasaEonetEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "link": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NasaEonetCategoryDto"
+            },
+            "nullable": true
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NasaEonetSourceDto"
+            },
+            "nullable": true
+          },
+          "geometry": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NasaEonetGeometryDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NasaEonetGeometryDto": {
+        "type": "object",
+        "properties": {
+          "magnitudeValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "magnitudeUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "coordinates": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NasaEonetSourceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "UserAlertRequestDto": {
+        "required": [
+          "eventDetails",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "description": "ID do usuário a ser alertado.",
+            "format": "int64"
+          },
+          "eventDetails": {
+            "$ref": "#/components/schemas/AlertableEventDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO para solicitar o disparo de um alerta para um usuário específico."
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "ViaCepResponseDto": {
+        "type": "object",
+        "properties": {
+          "cep": {
+            "type": "string",
+            "nullable": true
+          },
+          "logradouro": {
+            "type": "string",
+            "nullable": true
+          },
+          "complemento": {
+            "type": "string",
+            "nullable": true
+          },
+          "bairro": {
+            "type": "string",
+            "nullable": true
+          },
+          "localidade": {
+            "type": "string",
+            "nullable": true
+          },
+          "uf": {
+            "type": "string",
+            "nullable": true
+          },
+          "ibge": {
+            "type": "string",
+            "nullable": true
+          },
+          "gia": {
+            "type": "string",
+            "nullable": true
+          },
+          "ddd": {
+            "type": "string",
+            "nullable": true
+          },
+          "siafi": {
+            "type": "string",
+            "nullable": true
+          },
+          "erro": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Saiba mais sobre a Global Solution FIAP",
+    "url": "https://www.fiap.com.br/graduacao/global-solution/"
+  }
+}

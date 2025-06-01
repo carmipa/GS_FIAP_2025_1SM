@@ -9,7 +9,7 @@ Descrição:
   caminho relativo, namespace e nome do tipo definido (classe, struct, etc.).
 
 Uso:
-  python converte_cs_em_txt.py [caminho/do/projeto]
+  python converte_cs_em_txt_unico.py [caminho/do/projeto]
 """
 
 import os
@@ -21,14 +21,30 @@ from typing import List, Optional
 
 
 def gerar_arvore_diretorios(startpath: str) -> str:
-    """Gera a árvore de diretórios a partir de startpath."""
+    """Gera a árvore de diretórios a partir de startpath, ignorando bin/obj."""
     linhas = []
     for root, dirs, _ in os.walk(startpath):
+        # Ignora diretórios de build e versionamento
+        dirs[:] = [d for d in dirs if d.lower() not in ('bin', 'obj', '.git')]
         level = root.replace(startpath, '').count(os.sep)
         indent = ' ' * 4 * level
         linhas.append(f"{indent}{os.path.basename(root)}/")
         dirs.sort()
     return "\n".join(linhas)
+
+
+def read_file(path: str) -> str:
+    """Tenta ler arquivo usando várias codificações para evitar UnicodeDecodeError."""
+    encodings = ('utf-8', 'utf-8-sig', 'latin-1', 'cp1252')
+    for enc in encodings:
+        try:
+            with open(path, encoding=enc) as f:
+                return f.read()
+        except UnicodeDecodeError:
+            continue
+    # fallback ignorando erros
+    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        return f.read()
 
 
 def extrair_namespace(txt: str) -> Optional[str]:
@@ -44,9 +60,10 @@ def extrair_nome_tipo(txt: str) -> Optional[str]:
 
 
 def listar_arquivos_cs(pasta: str) -> List[str]:
-    """Lista todos os arquivos .cs na pasta e subpastas."""
+    """Lista todos os arquivos .cs na pasta e subpastas, ignorando bin/obj/.git."""
     arquivos = []
-    for root, _, files in os.walk(pasta):
+    for root, dirs, files in os.walk(pasta):
+        dirs[:] = [d for d in dirs if d.lower() not in ('bin', 'obj', '.git')]
         for f in files:
             if f.endswith('.cs'):
                 arquivos.append(os.path.join(root, f))
@@ -87,8 +104,7 @@ def main() -> None:
         out.write('// Arquivos encontrados (Namespace.Tipo => caminho relativo):\n')
         for arq in arquivos_cs:
             rel = os.path.relpath(arq, projeto)
-            with open(arq, encoding='utf-8') as f:
-                txt = f.read()
+            txt = read_file(arq)
             nome_tipo = extrair_nome_tipo(txt) or os.path.splitext(os.path.basename(arq))[0]
             namespace = extrair_namespace(txt)
             fqn = f"{namespace}.{nome_tipo}" if namespace else nome_tipo
@@ -98,8 +114,7 @@ def main() -> None:
         # Conteúdo de cada arquivo
         for arq in arquivos_cs:
             rel = os.path.relpath(arq, projeto)
-            with open(arq, encoding='utf-8') as f:
-                conteudo = f.read()
+            conteudo = read_file(arq)
 
             nome_tipo = extrair_nome_tipo(conteudo) or os.path.splitext(os.path.basename(arq))[0]
             namespace = extrair_namespace(conteudo) or '(namespace padrão)'

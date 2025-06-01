@@ -1,5 +1,5 @@
 // Script: converte-classes-java-em-txt-unico (v3)
-// Data de criação do arquivo de saída: 2025-05-29 19:50:31
+// Data de criação do arquivo de saída: 2025-05-30 10:24:49
 
 // Estrutura de diretórios do projeto:
 main/
@@ -12,7 +12,9 @@ main/
                             client/
                             config/
                             controller/
+                                alert/
                             dto/
+                                alert/
                                 external/
                                 geo/
                                 request/
@@ -23,6 +25,8 @@ main/
                             model/
                             repository/
                             service/
+                                alert/
+                                notification/
                             specification/
                             utils/
     resources/
@@ -43,6 +47,9 @@ main/
 // br.com.fiap.gs.gsapi.controller.EnderecoController => java\br\com\fiap\gs\gsapi\controller\EnderecoController.java
 // br.com.fiap.gs.gsapi.controller.EonetController => java\br\com\fiap\gs\gsapi\controller\EonetController.java
 // br.com.fiap.gs.gsapi.controller.StatsController => java\br\com\fiap\gs\gsapi\controller\StatsController.java
+// br.com.fiap.gs.gsapi.controller.alert.AlertTriggerController => java\br\com\fiap\gs\gsapi\controller\alert\AlertTriggerController.java
+// br.com.fiap.gs.gsapi.dto.alert.AlertableEventDTO => java\br\com\fiap\gs\gsapi\dto\alert\AlertableEventDTO.java
+// br.com.fiap.gs.gsapi.dto.alert.UserAlertRequestDTO => java\br\com\fiap\gs\gsapi\dto\alert\UserAlertRequestDTO.java
 // br.com.fiap.gs.gsapi.dto.external.GoogleGeocodingApiResponseDTO => java\br\com\fiap\gs\gsapi\dto\external\GoogleGeocodingApiResponseDTO.java
 // br.com.fiap.gs.gsapi.dto.external.GoogleGeocodingGeometryDTO => java\br\com\fiap\gs\gsapi\dto\external\GoogleGeocodingGeometryDTO.java
 // br.com.fiap.gs.gsapi.dto.external.GoogleGeocodingLocationDTO => java\br\com\fiap\gs\gsapi\dto\external\GoogleGeocodingLocationDTO.java
@@ -85,6 +92,8 @@ main/
 // br.com.fiap.gs.gsapi.service.ContatoService => java\br\com\fiap\gs\gsapi\service\ContatoService.java
 // br.com.fiap.gs.gsapi.service.EnderecoService => java\br\com\fiap\gs\gsapi\service\EnderecoService.java
 // br.com.fiap.gs.gsapi.service.EonetService => java\br\com\fiap\gs\gsapi\service\EonetService.java
+// br.com.fiap.gs.gsapi.service.alert.UserSpecificAlertService => java\br\com\fiap\gs\gsapi\service\alert\UserSpecificAlertService.java
+// br.com.fiap.gs.gsapi.service.notification.EmailNotificationService => java\br\com\fiap\gs\gsapi\service\notification\EmailNotificationService.java
 // br.com.fiap.gs.gsapi.utils.GeoUtils => java\br\com\fiap\gs\gsapi\utils\GeoUtils.java
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -1303,6 +1312,178 @@ public class StatsController {
         return ResponseEntity.ok(stats);
     }
 
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// java\br\com\fiap\gs\gsapi\controller\alert\AlertTriggerController.java   |   package br.com.fiap.gs.gsapi.controller.alert   |   class AlertTriggerController
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// Pacote: br.com.fiap.gs.gsapi.controller.alert
+package br.com.fiap.gs.gsapi.controller.alert;
+
+import br.com.fiap.gs.gsapi.dto.alert.UserAlertRequestDTO;
+import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
+import br.com.fiap.gs.gsapi.service.alert.UserSpecificAlertService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/alerts")
+@Tag(name = "Alertas de Usuário", description = "Endpoints para disparar alertas específicos para usuários")
+public class AlertTriggerController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AlertTriggerController.class);
+    private final UserSpecificAlertService userSpecificAlertService;
+
+    @Autowired
+    public AlertTriggerController(UserSpecificAlertService userSpecificAlertService) {
+        this.userSpecificAlertService = userSpecificAlertService;
+    }
+
+    @PostMapping("/trigger-user-specific-alert")
+    @Operation(summary = "Dispara um alerta para um usuário específico sobre um evento",
+            description = "Recebe o ID do usuário e detalhes de um evento, busca o contato do usuário e envia uma notificação.")
+    @ApiResponse(responseCode = "200", description = "Solicitação de alerta processada (não garante o envio, verifique logs).")
+    @ApiResponse(responseCode = "400", description = "Requisição inválida.")
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado.")
+    public ResponseEntity<String> triggerAlertForUser(@Valid @RequestBody UserAlertRequestDTO requestDTO) {
+        try {
+            logger.info("Recebida requisição para alertar usuário ID: {} sobre evento: {}", requestDTO.getUserId(), requestDTO.getEventDetails().getTitle());
+            userSpecificAlertService.processAndSendAlert(requestDTO.getUserId(), requestDTO.getEventDetails());
+            return ResponseEntity.ok("Solicitação de alerta para usuário ID " + requestDTO.getUserId() + " processada.");
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Não foi possível processar alerta: {}", e.getMessage());
+            throw e; // Deixa o GlobalExceptionHandler tratar
+        } catch (Exception e) {
+            logger.error("Erro inesperado ao processar solicitação de alerta para usuário ID: {}", requestDTO.getUserId(), e);
+            // Pode retornar um ResponseEntity.internalServerError() ou deixar o GlobalExceptionHandler
+            return ResponseEntity.internalServerError().body("Erro interno ao processar a solicitação de alerta.");
+        }
+    }
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// java\br\com\fiap\gs\gsapi\dto\alert\AlertableEventDTO.java   |   package br.com.fiap.gs.gsapi.dto.alert   |   class AlertableEventDTO
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// Pacote: br.com.fiap.gs.gsapi.dto.alert
+package br.com.fiap.gs.gsapi.dto.alert;
+
+import java.time.OffsetDateTime;
+
+public class AlertableEventDTO {
+    private String eventId; // Ex: ID da EONET
+    private String title;
+    private String eventDate; // Pode ser String formatada ou OffsetDateTime se preferir converter
+    private String link;      // Link para mais detalhes sobre o evento
+    private String description; // Uma breve descrição do que será enviado no alerta
+
+    // Construtores, Getters e Setters
+
+    public AlertableEventDTO() {
+    }
+
+    public AlertableEventDTO(String eventId, String title, String eventDate, String link, String description) {
+        this.eventId = eventId;
+        this.title = title;
+        this.eventDate = eventDate;
+        this.link = link;
+        this.description = description;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(String eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// java\br\com\fiap\gs\gsapi\dto\alert\UserAlertRequestDTO.java   |   package br.com.fiap.gs.gsapi.dto.alert   |   class UserAlertRequestDTO
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// Pacote: br.com.fiap.gs.gsapi.dto.alert
+package br.com.fiap.gs.gsapi.dto.alert;
+
+import jakarta.validation.constraints.NotNull;
+
+public class UserAlertRequestDTO {
+
+    @NotNull(message = "O ID do usuário não pode ser nulo.")
+    private Long userId;
+
+    @NotNull(message = "Os detalhes do evento não podem ser nulos.")
+    private AlertableEventDTO eventDetails;
+
+    // Construtores, Getters e Setters
+
+    public UserAlertRequestDTO() {
+    }
+
+    public UserAlertRequestDTO(Long userId, AlertableEventDTO eventDetails) {
+        this.userId = userId;
+        this.eventDetails = eventDetails;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public AlertableEventDTO getEventDetails() {
+        return eventDetails;
+    }
+
+    public void setEventDetails(AlertableEventDTO eventDetails) {
+        this.eventDetails = eventDetails;
+    }
 }
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
@@ -4671,6 +4852,158 @@ public class EonetService {
     }
 
     // O método getEventsOverTime que dependia das queries Raw foi REMOVIDO.
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// java\br\com\fiap\gs\gsapi\service\alert\UserSpecificAlertService.java   |   package br.com.fiap.gs.gsapi.service.alert   |   class UserSpecificAlertService
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// Pacote: br.com.fiap.gs.gsapi.service.alert
+package br.com.fiap.gs.gsapi.service.alert;
+
+import br.com.fiap.gs.gsapi.dto.alert.AlertableEventDTO;
+import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
+import br.com.fiap.gs.gsapi.model.Cliente; // Usando a entidade Cliente existente
+import br.com.fiap.gs.gsapi.model.Contato; // Para pegar o email do contato principal
+import br.com.fiap.gs.gsapi.repository.ClienteRepository; // Usando o repositório existente
+import br.com.fiap.gs.gsapi.service.notification.EmailNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.Optional;
+
+@Service
+public class UserSpecificAlertService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserSpecificAlertService.class);
+
+    private final ClienteRepository clienteRepository;
+    private final EmailNotificationService emailNotificationService;
+
+    @Autowired
+    public UserSpecificAlertService(ClienteRepository clienteRepository,
+                                    EmailNotificationService emailNotificationService) {
+        this.clienteRepository = clienteRepository;
+        this.emailNotificationService = emailNotificationService;
+    }
+
+    @Transactional(readOnly = true) // readOnly = true pois apenas lê e envia email (envio de email é externo)
+    public void processAndSendAlert(Long userId, AlertableEventDTO eventDetails) {
+        logger.info("Processando alerta para usuário ID: {} sobre evento: {}", userId, eventDetails.getTitle());
+
+        Cliente usuario = clienteRepository.findById(userId)
+                .orElseThrow(() -> {
+                    logger.warn("Usuário com ID: {} não encontrado para envio de alerta.", userId);
+                    return new ResourceNotFoundException("Usuário com ID: " + userId + " não encontrado.");
+                });
+
+        // Tenta obter o e-mail do primeiro contato ou do contato marcado como principal (se houver tal lógica)
+        // Por simplicidade, pegaremos o primeiro e-mail encontrado.
+        Optional<String> recipientEmailOpt = usuario.getContatos().stream()
+                .filter(contato -> contato.getEmail() != null && !contato.getEmail().isEmpty())
+                .map(Contato::getEmail)
+                // Poderia adicionar uma lógica para priorizar contato "Principal" se existir esse campo.
+                // .sorted(Comparator.comparing(contato -> "Principal".equalsIgnoreCase(contato.getTipoContato()) ? 0 : 1)) 
+                .findFirst();
+
+        if (recipientEmailOpt.isPresent()) {
+            String recipientEmail = recipientEmailOpt.get();
+            String userName = usuario.getNome(); // Ou nome completo se preferir
+
+            // Preenchendo a descrição do evento para o email, caso não venha do frontend
+            String eventDescriptionForEmail = eventDetails.getDescription();
+            if (eventDescriptionForEmail == null || eventDescriptionForEmail.isEmpty()) {
+                eventDescriptionForEmail = "Um evento natural foi detectado nas proximidades.";
+            }
+            AlertableEventDTO emailEventDetails = new AlertableEventDTO(
+                    eventDetails.getEventId(),
+                    eventDetails.getTitle(),
+                    eventDetails.getEventDate(),
+                    eventDetails.getLink(),
+                    eventDescriptionForEmail
+            );
+
+            emailNotificationService.sendEventAlertEmail(recipientEmail, userName, emailEventDetails);
+        } else {
+            logger.warn("Usuário ID: {} ({}) não possui um e-mail de contato válido cadastrado. Alerta não enviado.", userId, usuario.getNome());
+            // Poderia lançar uma exceção customizada ou apenas logar, dependendo da política de negócios.
+        }
+    }
+}
+
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+// java\br\com\fiap\gs\gsapi\service\notification\EmailNotificationService.java   |   package br.com.fiap.gs.gsapi.service.notification   |   class EmailNotificationService
+//――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+// Pacote: br.com.fiap.gs.gsapi.service.notification
+package br.com.fiap.gs.gsapi.service.notification;
+
+import br.com.fiap.gs.gsapi.dto.alert.AlertableEventDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailNotificationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailNotificationService.class);
+    private final JavaMailSender mailSender;
+
+    @Autowired
+    public EmailNotificationService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public void sendEventAlertEmail(String recipientEmail, String userName, AlertableEventDTO eventDetails) {
+        if (recipientEmail == null || recipientEmail.isEmpty()) {
+            logger.warn("Não foi possível enviar email de alerta: destinatário de email nulo ou vazio para o usuário {}", userName);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(recipientEmail);
+            message.setSubject("GS Alerta Desastres: Novo Evento Próximo à Sua Localização!");
+
+            StringBuilder emailBody = new StringBuilder();
+            emailBody.append("Olá, ").append(userName).append("!\n\n");
+            emailBody.append("Detectamos um evento de desastre natural próximo a uma de suas localizações cadastradas:\n\n");
+            emailBody.append("Evento: ").append(eventDetails.getTitle()).append("\n");
+            if (eventDetails.getEventDate() != null && !eventDetails.getEventDate().isEmpty()) {
+                emailBody.append("Data do Evento: ").append(eventDetails.getEventDate()).append("\n");
+            }
+            if (eventDetails.getDescription() != null && !eventDetails.getDescription().isEmpty()) {
+                emailBody.append("Descrição: ").append(eventDetails.getDescription()).append("\n");
+            }
+            if (eventDetails.getLink() != null && !eventDetails.getLink().isEmpty()) {
+                emailBody.append("Mais informações em: ").append(eventDetails.getLink()).append("\n");
+            }
+            emailBody.append("\nPor favor, tome as precauções necessárias.\n\n");
+            emailBody.append("Atenciosamente,\nEquipe GS Alerta Desastres");
+
+            message.setText(emailBody.toString());
+
+            // Você precisará configurar o remetente no application.properties (spring.mail.username)
+            // message.setFrom("seu-email@example.com"); // Opcional se já configurado globalmente
+
+            mailSender.send(message);
+            logger.info("Email de alerta enviado com sucesso para {} sobre o evento {}", recipientEmail, eventDetails.getEventId());
+
+        } catch (MailException e) {
+            logger.error("Falha ao enviar email de alerta para {}: {}", recipientEmail, e.getMessage(), e);
+            // Considerar adicionar uma lógica de retentativa ou notificar um administrador
+        } catch (Exception e) {
+            logger.error("Erro inesperado ao tentar enviar email de alerta para {}: {}", recipientEmail, e.getMessage(), e);
+        }
+    }
 }
 
 //――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――

@@ -332,3 +332,37 @@ A aplicação possui uma barra de navegação superior persistente com links par
 
 ## 12. 📜 Licença
 Licenciado sob a Licença MIT.
+
+
+### 📂 **Link do Repositório (Java Spring):**
+[![GitHub](https://img.shields.io/badge/GitHub-GS%20Java%20Spring-blue?style=for-the-badge&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced)
+
+---
+## 🎨 **Tecnologias Utilizadas no Projeto (Java Spring):**
+
+**Backend (Java & Spring Ecosystem):**
+<p>
+  <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/Spring%20MVC-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring MVC" />
+  <img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Data JPA" />
+  <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white" alt="Hibernate" />
+  <img src="https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle DB" />
+  <img src="https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger (OpenAPI)" />
+  <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven" />
+  <img src="https://img.shields.io/badge/Spring%20Cache-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Cache" />
+  <img src="https://img.shields.io/badge/Jakarta%20Validation-6DB33F?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyBhcmlhLWhpZGRlbj0idHJ1ZSIgZm9jdXNhYmxlPSJmYWxzZSIgZGF0YS1wcmVmaXg9ImZhciIgZGF0YS1pY29uPSJjaGVjay1jaXJjbGUiIHJvbGU9ImltZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgY2xhc3M9InN2Zy1pbmxpbmUtLWZhIGZhLWNoZWNrLWNpcmNsZSBmYS13LTE2IGZhLWxnIj48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yNTYgOEMxMTkuMCA4IDggMTE5LjAgOCAyNTZzMTExLjAgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5My4wIDggMjU2IDh6bTAgNDQ4Yy0xMTAuNSAwLTIwMC04OS41LTIwMC0yMDJzODkuNS0yMDAgMjAwLTIwMCAyMDAgODkuNSAyMDAgMjAwLTg5LjUgMjAwLTIwMCAyMDB6bTE1NC44LTEyNC44bC0uMS4xYy00LjctNC43LTEyLjMtNC43LTE3IDBsLTg4LjggODguOC0zMi4zLTMyLjNjLTQuNy00LjctMTIuMy00LjctMTcgMC00LjcgNC43LTQuNyAxMi4zIDAgMTdsNDkuMyA0OS4zYy0uMS4xLjEgLjEgLjIgLjJsLjQtLjNsLjMtLjRjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDEwMy44LTEwMy44YzQuNy00LjcgNC43LTEyLjMtLjEtMTd6IiBjbGFzcz0iIj48L3BhdGg+PC9zdmc+" alt="Jakarta Validation" />
+  <img src="https://img.shields.io/badge/Spring%20Mail-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Mail" />
+</p>
+
+**Frontend (Next.js & React):**
+*(Assumindo o mesmo frontend do projeto .NET para uma solução full-stack consistente)*
+<p>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Leaflet-1EB300?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet.js" />
+  <img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chart.js&logoColor=white" alt="Chart.js" />
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+</p>

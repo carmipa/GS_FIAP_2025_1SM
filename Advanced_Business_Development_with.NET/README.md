@@ -1,6 +1,12 @@
 
 # 📄 Documentação do Projeto: GS Alerta Desastres (Equipe MetaMind)
 
+<p align="center">
+  <a href="https://youtu.be/M-Ia0UnPZjI" target="_blank">
+    <img src="https://img.shields.io/badge/Nossa%20Apresentação-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
+  </a>
+</p>
+
 Bem-vindo à documentação oficial do projeto **GS Alerta Desastres**. Este sistema foi desenvolvido como parte da Global Solution FIAP 2025/1 pela Equipe MetaMind e visa fornecer uma solução tecnológica para monitorar eventos de desastres naturais, fornecer informações cruciais e permitir o disparo de alertas.
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-blueviolet?style=for-the-badge&logo=.net)](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -16,33 +22,37 @@ Bem-vindo à documentação oficial do projeto **GS Alerta Desastres**. Este sis
 
 ## 🧭 Menu de Navegação
 
-* [Introdução](#-introdução)
-* [Arquitetura Geral](#-arquitetura-geral)
-* [Backend (API .NET C#)](#-backend-api-net-c)
-    * [Estrutura do Projeto Backend](#estrutura-do-projeto-backend)
-    * [Configuração Principal (`Program.cs`)](#configuração-principal-programcs)
-    * [Endpoints da API (Controladores)](#endpoints-da-api-controladores)
-        * [ClientesController](#clientescontroller)
-        * [ContatosController](#contatoscontroller)
-        * [EnderecosController](#enderecoscontroller)
-        * [EonetController](#eonetcontroller)
-        * [StatsController](#statscontroller)
-        * [AlertsController](#alertscontroller)
-    * [Modelo de Dados (Entidades)](#modelo-de-dados-entidades)
-    * [DTOs (Data Transfer Objects)](#dtos-data-transfer-objects)
-    * [Serviços](#serviços-backend)
-    * [Tratamento de Exceções](#tratamento-de-exceções)
-    * [Documentação da API (Swagger)](#documentação-da-api-swagger)
-* [Frontend (Next.js & React)](#-frontend-nextjs--react)
-    * [Estrutura do Projeto Frontend](#estrutura-do-projeto-frontend)
-    * [Principais Páginas e Funcionalidades](#principais-páginas-e-funcionalidades-frontend)
-        * [Página Inicial (`/`)](#página-inicial--pagetsx)
-        * [Módulo de Usuários (`/clientes`)](#módulo-de-usuários-clientes)
-        * [Módulo de Desastres (`/desastres`)](#módulo-de-desastres-desastres)
-        * [Página de Contato (`/contato`)](#página-de-contato-contato)
-    * [Componentes Reutilizáveis](#componentes-reutilizáveis)
-    * [Comunicação com a API](#comunicação-com-a-api)
-* [Considerações Finais](#-considerações-finais)
+- [📄 Documentação do Projeto: GS Alerta Desastres (Equipe MetaMind)](#-documentação-do-projeto-gs-alerta-desastres-equipe-metamind)
+  - [🧭 Menu de Navegação](#-menu-de-navegação)
+  - [🌟 Introdução](#-introdução)
+  - [🏗️ Arquitetura Geral](#️-arquitetura-geral)
+  - [🖥️ Backend (API .NET C#)](#️-backend-api-net-c)
+    - [Estrutura do Projeto Backend](#estrutura-do-projeto-backend)
+    - [Configuração Principal (`Program.cs`)](#configuração-principal-programcs)
+    - [Endpoints da API (Controladores)](#endpoints-da-api-controladores)
+      - [`ClientesController`](#clientescontroller)
+      - [`ContatosController`](#contatoscontroller)
+      - [`EnderecosController`](#enderecoscontroller)
+      - [`EonetController`](#eonetcontroller)
+      - [`StatsController`](#statscontroller)
+      - [`AlertsController`](#alertscontroller)
+    - [Modelo de Dados (Entidades)](#modelo-de-dados-entidades)
+    - [DTOs (Data Transfer Objects)](#dtos-data-transfer-objects)
+    - [Serviços (Backend)](#serviços-backend)
+    - [Tratamento de Exceções](#tratamento-de-exceções)
+    - [Documentação da API (Swagger)](#documentação-da-api-swagger)
+  - [⚛️ Frontend (Next.js \& React)](#️-frontend-nextjs--react)
+    - [Estrutura do Projeto Frontend](#estrutura-do-projeto-frontend)
+    - [Principais Páginas e Funcionalidades (Frontend)](#principais-páginas-e-funcionalidades-frontend)
+      - [Página Inicial (`/app/page.tsx`)](#página-inicial-apppagetsx)
+      - [Módulo de Usuários (`/app/clientes/`)](#módulo-de-usuários-appclientes)
+      - [Módulo de Desastres (`/app/desastres/`)](#módulo-de-desastres-appdesastres)
+      - [Página de Contato (`/app/contato/page.tsx`)](#página-de-contato-appcontatopagetsx)
+    - [Componentes Reutilizáveis](#componentes-reutilizáveis)
+    - [Comunicação com a API](#comunicação-com-a-api)
+  - [✨ Considerações Finais](#-considerações-finais)
+    - [📂 **Link do Repositório:**  ](#-link-do-repositório-)
+  - [🎨 **Tecnologias Utilizadas no Projeto:**](#-tecnologias-utilizadas-no-projeto)
 
 ---
 

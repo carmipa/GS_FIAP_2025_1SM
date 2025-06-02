@@ -1,5 +1,10 @@
 # 💾 **Mastering Relational and Non-Relational Database**
 
+<p align="center">
+  <a href="https://youtu.be/M-Ia0UnPZjI" target="_blank">
+    <img src="https://img.shields.io/badge/Nossa%20Apresentação-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
+  </a>
+</p>
 
 Este documento detalha a estrutura, funcionalidades e exemplos de uso do banco de dados Oracle projetado para gerenciar informações de clientes, seus contatos, endereços e a associação com eventos naturais EONET.
 

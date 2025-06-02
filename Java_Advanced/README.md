@@ -1,5 +1,11 @@
 # 🛰️ GS Alerta Desastres - Projeto MetaMind
 
+<p align="center">
+  <a href="https://youtu.be/M-Ia0UnPZjI" target="_blank">
+    <img src="https://img.shields.io/badge/Nossa%20Apresentação-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
+  </a>
+</p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Global Solution FIAP](https://img.shields.io/badge/Global%20Solution-FIAP%202025-blue)](https://www.fiap.com.br/graduacao/global-solution/)
 
@@ -17,8 +23,8 @@
     - [1.3. Objetivos](#13-objetivos)
   - [2. ✨ Funcionalidades Implementadas](#2--funcionalidades-implementadas)
   - [3. 🛠️ Tecnologias Utilizadas](#3-️-tecnologias-utilizadas)
-    - [3.1. Backend (Java & Spring Ecosystem)](#31-backend-java--spring-ecosystem)
-    - [3.2. Frontend (Next.js & React Ecosystem)](#32-frontend-nextjs--react-ecosystem)
+    - [3.1. Backend (Java \& Spring Ecosystem)](#31-backend-java--spring-ecosystem)
+    - [3.2. Frontend (Next.js \& React Ecosystem)](#32-frontend-nextjs--react-ecosystem)
     - [3.3. Banco de Dados](#33-banco-de-dados)
   - [4. 🏗️ Arquitetura da Solução](#4-️-arquitetura-da-solução)
   - [5. 🚀 Como Executar o Projeto](#5--como-executar-o-projeto)
@@ -46,6 +52,8 @@
   - [10. 🌐 Links Úteis](#10--links-úteis)
   - [11. 🤝 Como Contribuir](#11--como-contribuir)
   - [12. 📜 Licença](#12--licença)
+    - [📂 **Link do Repositório (Java Spring):**](#-link-do-repositório-java-spring)
+  - [🎨 **Tecnologias Utilizadas no Projeto (Java Spring):**](#-tecnologias-utilizadas-no-projeto-java-spring)
 
 ---
 

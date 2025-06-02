@@ -165,7 +165,7 @@ try
                           "\n" +
                           "\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)" +
                           "\n" +
-                          "\n- Diagramas de relacionamento: [GitHub](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)";
+                          "\n- Diagramas de relacionamento: [GitHub](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET/DIAGRAMAS)";
 
 
         c.SwaggerDoc("v1", new OpenApiInfo

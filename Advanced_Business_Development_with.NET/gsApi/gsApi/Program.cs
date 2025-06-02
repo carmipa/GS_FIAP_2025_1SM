@@ -155,9 +155,19 @@ try
                           "para tratar de problemas crticos e auxiliar as pessoas em perodos de extrema urgncia, incluindo persistncia " +
                           "de dados, relacionamentos, documentao Swagger." + // Removido "e uso de migrations" conforme contexto
                           "\n\n**Equipe MetaMind:**" +
-                          "\n- Paulo Andr Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)" +
+                          "\n- Paulo André Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)" +
                           "\n- Arthur Bispo de Lima (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)" +
-                          "\n- Joo Paulo Moreira (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)";
+                          "\n- João Paulo Moreira (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)" +
+                          "\n" +
+                          "\n- Repósritório do projéto - GitHub: [GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM)" +
+                          "\n" +
+                          "\n- Repósritório dda matéria - GitHub: [Advanced_Business_Development_with.NET](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)" +
+                          "\n" +
+                          "\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)" +
+                          "\n" +
+                          "\n- Diagramas de relacionamento: [GitHub](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)";
+
+
         c.SwaggerDoc("v1", new OpenApiInfo
         {
             Title = "GS Alerta Desastres - API (.NET) - Desafio Eventos Extremos",

@@ -56,4 +56,4 @@ aws_access_keys.csv
 # Diretório genérico para segredos, se você padronizar um
 /secrets/
 secrets/
-**/secrets/
+**/secrets/exemplo_secreto.txt

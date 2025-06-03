@@ -2,7 +2,7 @@
 # 📄 Documentação do Projeto: GS Alerta Desastres (Equipe MetaMind)
 
 <p align="center">
-  <a href="https://youtu.be/M-Ia0UnPZjI" target="_blank">
+  <a href="https://www.youtube.com/watch?v=Ad20_tE9ccU" target="_blank">
     <img src="https://img.shields.io/badge/Nossa%20Apresentação-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
   </a>
 </p>

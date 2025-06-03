@@ -36,7 +36,8 @@ const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | n
 type TabKey = 'listarLocais' | 'sincronizar' | 'buscarProximos' | 'alertarUsuario';
 
 export default function DesastresPage() {
-    const [activeTab, setActiveTab] = useState<TabKey>('listarLocais');
+    // Aba ativa inicial alterada para 'sincronizar'
+    const [activeTab, setActiveTab] = useState<TabKey>('sincronizar');
 
     // Estados para "Eventos Locais"
     const [eventosLocaisPage, setEventosLocaisPage] = useState<Page<EonetResponseDTO> | null>(null);
@@ -115,13 +116,15 @@ export default function DesastresPage() {
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    }, [activeTab]);
+    }, [activeTab, currentLocalPage, proximidadeParams.clienteId]); // Adicionado currentLocalPage e proximidadeParams.clienteId para abranger todas as dependências implícitas da lógica interna
 
+    // Este useEffect separado para currentLocalPage pode ser combinado com o acima se a lógica de dependência for cuidadosamente gerenciada.
+    // Por enquanto, mantê-lo separado garante que a paginação de eventos locais funcione como esperado.
     useEffect(() => {
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    }, [currentLocalPage]);
+    }, [currentLocalPage]); // Removido activeTab daqui, pois o useEffect acima já o cobre e este é específico para currentLocalPage.
 
     const handleSyncParamChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setSyncParams(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -135,8 +138,14 @@ export default function DesastresPage() {
         try {
             const eventosSincronizados = await sincronizarNasaEonet(limitNum, daysNum, syncParams.status || undefined, syncParams.source || undefined);
             setSyncMensagem(`${eventosSincronizados.length} evento(s) processado(s) / sincronizado(s) com sucesso!`);
-            if (activeTab === 'listarLocais') { fetchEventosLocais(0); setCurrentLocalPage(0); }
-        } catch (error: any) { setSyncErro(`Falha na sincronização: ${error.message || 'Erro desconhecido'}`); setSyncMensagem(null);
+            // Se a aba de listagem local estiver ativa ou se quiser forçar um refresh após sincronizar:
+            // if (activeTab === 'listarLocais') { fetchEventosLocais(0); setCurrentLocalPage(0); }
+            // Ou, para sempre atualizar a lista local após uma sincronização bem-sucedida, independentemente da aba ativa:
+            // fetchEventosLocais(0); 
+            // setCurrentLocalPage(0); // Resetar para a primeira página da lista local
+        } catch (error: any) { 
+            setSyncErro(`Falha na sincronização: ${error.message || 'Erro desconhecido'}`); 
+            setSyncMensagem(null);
         } finally { setLoadingSync(false); }
     };
 
@@ -229,7 +238,8 @@ export default function DesastresPage() {
                     }
                 }
             }
-        } catch (error: any) { setErroProximidade(`Falha ao buscar eventos próximos: ${error.message}`);
+        } catch (error: any) { 
+            setErroProximidade(`Falha ao buscar eventos próximos: ${error.message}`);
         } finally { setLoadingProximidade(false); }
     };
 
@@ -301,7 +311,11 @@ export default function DesastresPage() {
 
     const formatDate = (dateString?: string | Date): string => {
         if (!dateString) return 'N/A';
-        try { return new Date(dateString).toLocaleDateString('pt-BR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+        try { 
+            return new Date(dateString).toLocaleDateString('pt-BR', { 
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit', timeZone: 'UTC' 
+            });
         } catch (e) { return 'Data inválida'; }
     };
 
@@ -344,12 +358,13 @@ export default function DesastresPage() {
                 Gerenciamento de Eventos de Desastres (EONET)
             </h1>
 
+            {/* Botões das abas reordenados */}
             <div style={{ marginBottom: '0px', borderBottom: '1px solid var(--border-color)' }}>
-                <button style={tabButtonStyle('listarLocais')} onClick={() => setActiveTab('listarLocais')}>
-                    <span className="material-icons-outlined">storage</span> Eventos Locais
-                </button>
                 <button style={tabButtonStyle('sincronizar')} onClick={() => setActiveTab('sincronizar')}>
                     <span className="material-icons-outlined">sync</span> Sincronizar NASA
+                </button>
+                <button style={tabButtonStyle('listarLocais')} onClick={() => setActiveTab('listarLocais')}>
+                    <span className="material-icons-outlined">storage</span> Eventos Locais
                 </button>
                 <button style={tabButtonStyle('buscarProximos')} onClick={() => setActiveTab('buscarProximos')}>
                     <span className="material-icons-outlined">travel_explore</span> Buscar Próximos

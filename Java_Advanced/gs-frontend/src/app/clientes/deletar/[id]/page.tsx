@@ -23,7 +23,7 @@ export default function DeletarClienteConfirmPage() {
         if (idPath) {
             const clienteId = Number(idPath);
             if (isNaN(clienteId)) {
-                setErro("ID do cliente inválido na URL.");
+                setErro("ID do Usuário inválido na URL.");
                 setLoading(false);
                 return;
             }
@@ -36,13 +36,13 @@ export default function DeletarClienteConfirmPage() {
                     setTimeout(() => confirmButtonRef.current?.focus(), 0);
                 })
                 .catch(error => {
-                    console.error("Erro ao buscar cliente para deleção:", error);
-                    setErro(`Falha ao carregar cliente para deleção: ${error.message || 'Cliente não encontrado.'}`);
+                    console.error("Erro ao buscar Usuário para deleção:", error);
+                    setErro(`Falha ao carregar Usuário para deleção: ${error.message || 'Usuário não encontrado.'}`);
                     setCliente(null);
                 })
                 .finally(() => setLoading(false));
         } else {
-            setErro("ID do cliente não fornecido para deleção.");
+            setErro("ID do Usuário não fornecido para deleção.");
             setLoading(false);
         }
     }, [idPath]);
@@ -54,12 +54,12 @@ export default function DeletarClienteConfirmPage() {
             try {
                 await deletarCliente(cliente.idCliente);
                 // Idealmente, usar um sistema de notificação/toast em vez de alert
-                alert('Cliente deletado com sucesso!');
+                alert('Usuário deletado com sucesso!');
                 router.push('/clientes/listar');
             } catch (error: any) {
                 console.error("Erro ao confirmar deleção:", error);
                 const apiErrorMessage = error.message || "Erro desconhecido ao tentar deletar.";
-                setErro(`Falha ao deletar cliente: ${apiErrorMessage}`);
+                setErro(`Falha ao deletar Usuário: ${apiErrorMessage}`);
                 setDeleting(false);
             }
         }
@@ -96,7 +96,7 @@ export default function DeletarClienteConfirmPage() {
                 Confirmar Deleção
             </h1>
             <div style={{ backgroundColor: 'white', padding: '25px 30px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                <p style={{fontSize: '1.1em', marginBottom: '10px'}}>Você tem certeza que deseja deletar o cliente:</p>
+                <p style={{fontSize: '1.1em', marginBottom: '10px'}}>Você tem certeza que deseja deletar o Usuário:</p>
                 <p style={{fontSize: '1.2em', fontWeight: '500', color: '#333'}}>{cliente.nome} {cliente.sobrenome}</p>
                 <p style={{color: '#555', marginBottom: '20px'}}>(ID: {cliente.idCliente} | Documento: {cliente.documento})</p>
 
@@ -115,7 +115,7 @@ export default function DeletarClienteConfirmPage() {
                         style={{padding: '10px 20px', fontSize: '1em'}}
                     >
                         <span className="material-icons-outlined">delete_forever</span>
-                        {deleting ? 'Deletando...' : 'Sim, Deletar Cliente'}
+                        {deleting ? 'Deletando...' : 'Sim, Deletar Usuário'}
                     </button>
                     <Link
                         href={`/clientes/${cliente.idCliente}`}

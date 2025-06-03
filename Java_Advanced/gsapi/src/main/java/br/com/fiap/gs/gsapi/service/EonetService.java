@@ -249,5 +249,5 @@ public class EonetService {
                 .collect(Collectors.toList());
     }
 
-    // O método getEventsOverTime que dependia das queries Raw foi REMOVIDO.
+
 }

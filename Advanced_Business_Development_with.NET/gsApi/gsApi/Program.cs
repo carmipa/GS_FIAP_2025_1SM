@@ -143,6 +143,10 @@ try
     builder.Services.AddTransient<IEmailNotificationService, EmailNotificationService>();
     earlyStageLogger.LogInformation("Servios de cliente HTTP (ViaCep, GeoCoding, NasaEonet) e EmailNotificationService registrados.");
 
+    // <<< ADICIONADO: Registro do Serviço de Cache em Memória >>>
+    builder.Services.AddMemoryCache();
+    earlyStageLogger.LogInformation("Serviço AddMemoryCache() adicionado para cache em memória.");
+
     builder.Services.AddSwaggerGen(c =>
     {
         var description = "API RESTful desenvolvida como parte da Global Solution FIAP 2025/1 " +
@@ -153,7 +157,7 @@ try
                           "maiores em cenrios impactados por eventos extremos da natureza. Esta API .NET, criada para a disciplina " +
                           "'Advanced Business Development with .NET', tem como objetivo atender aos requisitos de uma API REST robusta " +
                           "para tratar de problemas crticos e auxiliar as pessoas em perodos de extrema urgncia, incluindo persistncia " +
-                          "de dados, relacionamentos, documentao Swagger." + // Removido "e uso de migrations" conforme contexto
+                          "de dados, relacionamentos, documentao Swagger." +
                           "\n\n**Equipe MetaMind:**" +
                           "\n- Paulo André Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)" +
                           "\n- Arthur Bispo de Lima (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)" +
@@ -166,7 +170,6 @@ try
                           "\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)" +
                           "\n" +
                           "\n- Diagramas de relacionamento: [GitHub](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET/DIAGRAMAS)";
-
 
         c.SwaggerDoc("v1", new OpenApiInfo
         {

@@ -399,26 +399,70 @@ namespace gsApi.controller
         }
 
         /// <summary>
-        /// Deleta um cliente pelo seu ID.
+        /// Deleta um cliente pelo seu ID, incluindo a remoção de suas associações 
+        /// com contatos e endereços nas tabelas de junção.
         /// </summary>
         /// <param name="id">O ID do cliente a ser deletado.</param>
-        /// <response code="204">Cliente deletado com sucesso.</response>
+        /// <response code="204">Cliente e suas associações diretas (em tabelas de junção) deletados com sucesso.</response>
         /// <response code="404">Se o cliente com o ID especificado não for encontrado.</response>
-        /// <response code="500">Se ocorrer um erro interno no servidor.</response>
+        /// <response code="500">Se ocorrer um erro interno no servidor durante o processo de deleção.</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeletarCliente(long id)
         {
-            _logger.LogInformation("Endpoint DELETE /api/clientes/{Id} chamado.", id);
-            var cliente = await _context.Clientes.FindAsync(id); // FindAsync é bom para PK
+            _logger.LogInformation("Endpoint DELETE /api/clientes/{Id} chamado para deletar cliente e suas associações.", id);
+
+            // Passo 1: Carregar o cliente E suas coleções de Contatos e Enderecos.
+            // Isso é crucial para que o EF Core saiba quais registros nas tabelas de junção precisam ser removidos.
+            var cliente = await _context.Clientes
+                                      .Include(c => c.Contatos)    // Carrega os contatos associados
+                                      .Include(c => c.Enderecos)  // Carrega os endereços associados
+                                      .FirstOrDefaultAsync(c => c.IdCliente == id);
+
             if (cliente == null)
             {
-                return NotFound(new ProblemDetails { Status = StatusCodes.Status404NotFound, Title = "Recurso não encontrado", Detail = $"Cliente com ID {id} não encontrado." });
+                _logger.LogWarning("Cliente com ID {Id} não encontrado para deleção.", id);
+                return NotFound(new ProblemDetails { Status = 404, Title = "Recurso não encontrado", Detail = $"Cliente com ID {id} não encontrado." });
             }
-            _context.Clientes.Remove(cliente);
-            await _context.SaveChangesAsync();
-            return NoContent();
+
+            try
+            {
+                // Passo 2: Limpar as coleções (desassociar)
+                // Isso sinaliza ao EF Core para remover as entradas correspondentes das tabelas de junção.
+                // Os objetos Contato e Endereco em si NÃO são deletados, apenas a associação com este Cliente.
+                cliente.Contatos.Clear();
+                cliente.Enderecos.Clear();
+
+                // Passo 3: Salvar as mudanças da desassociação (opcional, mas pode ser feito separadamente para clareza)
+                // Se você não salvar aqui, o EF Core tentará fazer tudo em uma transação no próximo SaveChangesAsync.
+                // await _context.SaveChangesAsync(); // Descomente se quiser salvar a desassociação separadamente.
+
+                // Passo 4: Remover a entidade Cliente principal
+                _context.Clientes.Remove(cliente);
+
+                // Passo 5: Salvar as mudanças finais (remoção do cliente e das entradas nas tabelas de junção)
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Cliente com ID {Id} e suas associações foram removidos com sucesso.", id);
+                return NoContent();
+            }
+            catch (DbUpdateException ex) // Captura exceções de atualização do banco
+            {
+                // Log detalhado do erro, incluindo a inner exception que geralmente tem a mensagem do Oracle
+                _logger.LogError(ex, "Erro de atualização do banco ao deletar cliente ID {Id}. Detalhes: {ErrorMessage}", id, ex.InnerException?.Message ?? ex.Message);
+
+                // Retorna um erro 500 genérico, pois o TratadorGlobalExcecoesMiddleware também pegaria,
+                // mas aqui podemos ser um pouco mais específicos se quisermos.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                {
+                    Title = "Erro ao deletar cliente",
+                    Detail = "Ocorreu um erro ao tentar deletar o cliente e/ou suas associações. " +
+                             "Verifique se ele não possui outras dependências não resolvidas no banco de dados. " +
+                             "Detalhe do erro original: " + (ex.InnerException?.Message ?? ex.Message)
+                });
+            }
         }
 
         /// <summary>

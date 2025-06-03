@@ -5,6 +5,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|d:\\fiap-2025\\1_semestre_fiap-2025\\gs_fiap_2025_1sm\\advanced_business_development_with.net\\gsapi\\gsapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|solutionrelative:gsapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|d:\\fiap-2025\\1_semestre_fiap-2025\\gs_fiap_2025_1sm\\advanced_business_development_with.net\\gsapi\\gsapi\\controller\\statscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|solutionrelative:gsapi\\controller\\statscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|d:\\fiap-2025\\1_semestre_fiap-2025\\gs_fiap_2025_1sm\\advanced_business_development_with.net\\gsapi\\gsapi\\controller\\clientescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2EC9B188-C674-4520-AA54-486FC061DA2F}|gsApi\\gsApi.csproj|solutionrelative:gsapi\\controller\\clientescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -24,9 +32,35 @@
               "RelativeDocumentMoniker": "gsApi\\Program.cs",
               "ToolTip": "D:\\FIAP-2025\\1_semestre_fiap-2025\\GS_FIAP_2025_1SM\\Advanced_Business_Development_with.NET\\gsApi\\gsApi\\Program.cs",
               "RelativeToolTip": "gsApi\\Program.cs",
-              "ViewState": "AgIAAJEAAAAAAAAAAAAkwKcAAACrAAAAAAAAAA==",
+              "ViewState": "AgIAAN4AAAAAAAAAAAAowP0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-02T22:45:18.678Z",
+              "WhenOpened": "2025-06-03T00:28:21.505Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "StatsController.cs",
+              "DocumentMoniker": "D:\\FIAP-2025\\1_semestre_fiap-2025\\GS_FIAP_2025_1SM\\Advanced_Business_Development_with.NET\\gsApi\\gsApi\\controller\\StatsController.cs",
+              "RelativeDocumentMoniker": "gsApi\\controller\\StatsController.cs",
+              "ToolTip": "D:\\FIAP-2025\\1_semestre_fiap-2025\\GS_FIAP_2025_1SM\\Advanced_Business_Development_with.NET\\gsApi\\gsApi\\controller\\StatsController.cs",
+              "RelativeToolTip": "gsApi\\controller\\StatsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-03T00:18:35.877Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ClientesController.cs",
+              "DocumentMoniker": "D:\\FIAP-2025\\1_semestre_fiap-2025\\GS_FIAP_2025_1SM\\Advanced_Business_Development_with.NET\\gsApi\\gsApi\\controller\\ClientesController.cs",
+              "RelativeDocumentMoniker": "gsApi\\controller\\ClientesController.cs",
+              "ToolTip": "D:\\FIAP-2025\\1_semestre_fiap-2025\\GS_FIAP_2025_1SM\\Advanced_Business_Development_with.NET\\gsApi\\gsApi\\controller\\ClientesController.cs",
+              "RelativeToolTip": "gsApi\\controller\\ClientesController.cs",
+              "ViewState": "AgIAAAUCAAAAAAAAAAAowCQCAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-02T23:32:45.045Z",
               "EditorCaption": ""
             }
           ]

@@ -102,7 +102,7 @@ export async function deletarCliente(id: number): Promise<void> {
     return handleApiResponse<void>(response);
 }
 
-// --- Contatos (operações "sozinhas" como usadas na página de cadastro de cliente) ---
+// --- Contatos ---
 
 export async function criarContatoSozinho(contatoData: ContatoRequestDTO): Promise<ContatoResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/contatos`, {
@@ -113,12 +113,22 @@ export async function criarContatoSozinho(contatoData: ContatoRequestDTO): Promi
     return handleApiResponse<ContatoResponseDTO>(response);
 }
 
-// Se precisar de atualizarContatoSozinho e deletarContatoSozinho, adicione similarmente:
-// export async function atualizarContatoSozinho(id: number, contatoData: ContatoRequestDTO): Promise<ContatoResponseDTO> { ... }
+/**
+ * ATUALIZADO: Função para atualizar um contato existente.
+ */
+export async function atualizarContato(id: number, contatoData: ContatoRequestDTO): Promise<ContatoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/contatos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contatoData),
+    });
+    return handleApiResponse<ContatoResponseDTO>(response);
+}
+
 // export async function deletarContatoSozinho(id: number): Promise<void> { ... }
 
 
-// --- Endereços (operações "sozinhas" e serviços de geolocalização) ---
+// --- Endereços ---
 
 export async function criarEnderecoSozinho(enderecoData: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
     const response = await fetch(`${API_BASE_URL}/enderecos`, {
@@ -129,7 +139,19 @@ export async function criarEnderecoSozinho(enderecoData: EnderecoRequestDTO): Pr
     return handleApiResponse<EnderecoResponseDTO>(response);
 }
 
-// Se precisar de atualizarEnderecoSozinho e deletarEnderecoSozinho, adicione similarmente.
+/**
+ * ATUALIZADO: Função para atualizar um endereço existente.
+ */
+export async function atualizarEndereco(id: number, enderecoData: EnderecoRequestDTO): Promise<EnderecoResponseDTO> {
+    const response = await fetch(`${API_BASE_URL}/enderecos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(enderecoData),
+    });
+    return handleApiResponse<EnderecoResponseDTO>(response);
+}
+
+// Se precisar de deletarEnderecoSozinho, adicione similarmente.
 
 export async function consultarCepPelaApi(cep: string): Promise<ViaCepResponseDTO> {
     // O backend C# encapsula a chamada ao ViaCEP
@@ -210,13 +232,7 @@ export async function triggerUserSpecificAlert(alertData: UserAlertRequestDTO): 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(alertData),
     });
-    // A API C# de exemplo retorna Ok("mensagem"), então o handleApiResponse pode precisar
-    // de um tratamento especial se não for JSON, ou a API C# deve retornar um objeto JSON.
-    // Assumindo que a API C# retorna um objeto JSON { message: "..." } ou texto plano.
-    // Se for texto plano, o handleApiResponse vai falhar ao tentar response.json().
-    // Por simplicidade, vamos esperar que a API C# retorne JSON ou adaptar handleApiResponse.
-    // Para este exemplo, assumimos que o backend retorna um objeto { message: "..." } ou similar
-    // ou que handleApiResponse é robusto o suficiente, ou que o backend retorna texto e precisa de .text()
+
     if (!response.ok) {
         // tratamento de erro similar ao handleApiResponse mas para texto/string
         const errorText = await response.text();

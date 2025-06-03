@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "GS Alerta Desastres - API (.NET) - Desafio Eventos Extremos",
-    "description": "API RESTful desenvolvida como parte da Global Solution FIAP 2025/1 (2 Ano - Anlise e Desenvolvimento de Sistemas, Turmas de Fevereiro) para o desafio 'Eventos Extremos'. O projeto 'GS Alerta Desastres', da Equipe MetaMind, prope uma soluo tecnolgica para monitorar eventos de desastres naturais em tempo real (utilizando dados da API EONET da NASA), fornecer informaes cruciais e permitir o disparo de alertas para usurios cadastrados, visando ajudar pessoas e prevenir problemas maiores em cenrios impactados por eventos extremos da natureza. Esta API .NET, criada para a disciplina 'Advanced Business Development with .NET', tem como objetivo atender aos requisitos de uma API REST robusta para tratar de problemas crticos e auxiliar as pessoas em perodos de extrema urgncia, incluindo persistncia de dados, relacionamentos, documentao Swagger.\n\n**Equipe MetaMind:**\n- Paulo André Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)\n- Arthur Bispo de Lima (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)\n- João Paulo Moreira (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)\n\n- Repósritório do projéto - GitHub: [GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM)\n\n- Repósritório dda matéria - GitHub: [Advanced_Business_Development_with.NET](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)\n\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)",
+    "description": "API RESTful desenvolvida como parte da Global Solution FIAP 2025/1 (2 Ano - Anlise e Desenvolvimento de Sistemas, Turmas de Fevereiro) para o desafio 'Eventos Extremos'. O projeto 'GS Alerta Desastres', da Equipe MetaMind, prope uma soluo tecnolgica para monitorar eventos de desastres naturais em tempo real (utilizando dados da API EONET da NASA), fornecer informaes cruciais e permitir o disparo de alertas para usurios cadastrados, visando ajudar pessoas e prevenir problemas maiores em cenrios impactados por eventos extremos da natureza. Esta API .NET, criada para a disciplina 'Advanced Business Development with .NET', tem como objetivo atender aos requisitos de uma API REST robusta para tratar de problemas crticos e auxiliar as pessoas em perodos de extrema urgncia, incluindo persistncia de dados, relacionamentos, documentao Swagger.\n\n**Equipe MetaMind:**\n- Paulo André Carminati (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)\n- Arthur Bispo de Lima (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)\n- João Paulo Moreira (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)\n\n- Repósritório do projéto - GitHub: [GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM)\n\n- Repósritório dda matéria - GitHub: [Advanced_Business_Development_with.NET](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)\n\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)\n\n- Diagramas de relacionamento: [GitHub](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET/DIAGRAMAS)",
     "contact": {
       "name": "Equipe MetaMind",
       "url": "https://github.com/carmipa/GS_FIAP_2025_1SM",
@@ -289,7 +289,7 @@
         "tags": [
           "Clientes"
         ],
-        "summary": "Deleta um cliente pelo seu ID.",
+        "summary": "Deleta um cliente pelo seu ID, incluindo a remoção de suas associações \r\ncom contatos e endereços nas tabelas de junção.",
         "parameters": [
           {
             "name": "id",
@@ -304,7 +304,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Cliente deletado com sucesso."
+            "description": "Cliente e suas associações diretas (em tabelas de junção) deletados com sucesso."
           },
           "404": {
             "description": "Se o cliente com o ID especificado não for encontrado.",
@@ -317,7 +317,14 @@
             }
           },
           "500": {
-            "description": "Se ocorrer um erro interno no servidor."
+            "description": "Se ocorrer um erro interno no servidor durante o processo de deleção.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -1735,12 +1742,12 @@
           "Stats"
         ],
         "summary": "Obtém a contagem de eventos EONET locais por categoria para um determinado período em dias.",
-        "description": "Calcula o número de eventos para cada categoria com base nos dados JSON armazenados \r\npara os eventos EONET dentro do período especificado.",
+        "description": "Calcula o número de eventos para cada categoria com base nos dados JSON armazenados\r\npara os eventos EONET dentro do período especificado. Os resultados são cacheados em memória.",
         "parameters": [
           {
             "name": "days",
             "in": "query",
-            "description": "Número de dias no passado a serem considerados para a estatística (ex: 365 para o último ano). Deve ser um número positivo. Padrão é 365.",
+            "description": "Número de dias no passado a serem considerados para a estatística (ex: 365 para o último ano).\r\n            Deve ser um número positivo. Padrão é 365.",
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,

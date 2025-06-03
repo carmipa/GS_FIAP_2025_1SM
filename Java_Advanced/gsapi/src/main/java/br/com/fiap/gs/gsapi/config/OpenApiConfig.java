@@ -1,11 +1,15 @@
 // Pacote: br.com.fiap.gs.gsapi.config
 package br.com.fiap.gs.gsapi.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+// import io.swagger.v3.oas.models.ExternalDocumentation; // Descomente se for usar externalDocs
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,15 +20,12 @@ import java.util.List;
 
 /**
  * Classe de configuração do Springdoc OpenAPI para definir as informações detalhadas da API.
- * Isso inclui título, versão, descrição, informações de contato e licença,
- * que serão exibidos na interface do Swagger UI.
  */
 @Configuration
 public class OpenApiConfig {
 
     private static final Logger log = LoggerFactory.getLogger(OpenApiConfig.class);
 
-    // Você pode injetar valores do application.properties se precisar
     @Value("${server.port:8080}")
     private String serverPort;
 
@@ -35,40 +36,84 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         log.info("🔧 Configuração personalizada do OpenAPI inicializada.");
 
-        // Constrói a URL base do servidor dinamicamente
-        String serverUrl = "http://localhost:" + serverPort + (contextPath != null ? contextPath : "");
+        String serverUrl = "http://localhost:" + serverPort + contextPath;
+        log.info("🔗 URL do Servidor para Swagger UI: {}", serverUrl);
+
+        final String SECURITY_SCHEME_NAME = "bearerAuth";
+        final String CONTATO_EMAIL_EQUIPE = "rm557881@fiap.com.br"; // ✅ ATUALIZE AQUI: Email de contato principal da equipe
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("GS API - Alertas de Desastres Naturais") // Título da sua API
-                        .version("v1.0.0") // Versão da sua API
-                        .description("""
+                        .title("GS API - Alertas de Desastres Naturais")
+                        .version("v1.0.0")
+                        .description(String.format("""
                                 **API RESTful para o Global Solution FIAP 2025**
-
-                                Esta API fornece funcionalidades para consulta de informações sobre desastres naturais
-                                e gerenciamento de alertas para usuários com base em sua localização.
-                                Integração com a API EONET da NASA e serviços de geolocalização.
-
-                                **Funcionalidades Principais:**
+                                Esta API visa fornecer funcionalidades para o gerenciamento e alerta de desastres naturais,
+                                utilizando dados da NASA EONET e informações de geolocalização de usuários.
+                                
+                                ---
+                                
+                                **FUNCIONALIDADES PRINCIPAIS DA API** ⚙️
                                 - Cadastro e gerenciamento de clientes e seus endereços.
                                 - Consulta de eventos de desastres naturais (via EONET).
-                                - Associação de eventos de desastres a endereços de clientes.
-                                - Visualização de alertas em mapas (a ser implementado no frontend).
-                                """)
+                                - Sincronização de eventos da NASA para o banco de dados local.
+                                - Busca de eventos próximos a coordenadas geográficas.
+                                - Disparo de alertas para usuários específicos sobre eventos.
+                                
+                                ---
+                                
+                                **EQUIPE METAMIND** 👨‍💻
+
+                                - **Paulo André Carminati** (RM: 557881) - GitHub: [carmipa](https://github.com/carmipa)
+                                - **Arthur Bispo de Lima** (RM: 557568) - GitHub: [ArthurBispo00](https://github.com/ArthurBispo00)
+                                - **João Paulo Moreira** (RM: 557808) - GitHub: [joao1015](https://github.com/joao1015)
+
+                                ---
+                                
+                                **RECURSOS DO PROJETO** 🛠️
+
+                                - 📦 **Repositório do projeto (API): ** GitHub: [GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM) 
+                                - 📚 **Repositório da matéria (Exemplo):** GitHub: [Java_Advanced](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced) 
+                                - 🎬 **Vídeo de Apresentação:** YouTube: ** [Assistir Vídeo](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=54s) 
+                                - 📊 **Diagrama de Relcionamento:** Github: ** [link de acesso](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced/DIAGRAMAS) 
+                                - 📝 **Documentação:** Github: ** [link de acesso](https://github.com/carmipa/GS_FIAP_2025_1SM/blob/main/Java_Advanced/README.md) 
+                                
+
+                                ---
+                                **MAIS INFORMAÇÕES** 🔗
+
+                                - 🌐 [Equipe MetaMind - Website](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced/DIAGRAMAS) 
+                                - 📧 [Enviar email para Equipe MetaMind](mailto:%s)
+                                - 📜 [MIT License](URL_DA_LICENCA_MIT_OU_ARQUIVO_LICENSE_NO_REPO) 
+                                - 🎓 [Saiba mais sobre a Global Solution FIAP](https://www.fiap.com.br/graduacao/global-solution/)
+
+                                ---
+                                
+                                """, CONTATO_EMAIL_EQUIPE)) // Formata o email no link mailto
                         .contact(new Contact()
-                                .name("Equipe GS API") // Nome da sua equipe ou seu nome
-                                .email("seu-email@fiap.com.br") // Seu email de contato
-                                .url("https://github.com/seu-usuario/gs-api-repo") // URL do seu projeto no GitHub
+                                .name("Equipe MetaMind GS")
+                                .email(CONTATO_EMAIL_EQUIPE) // Usando a constante definida acima
+                                .url("https://github.com/carmipa/GS_FIAP_2025_1SM") // Link principal do projeto ou da equipe
                         )
                         .license(new License()
-                                .name("Apache 2.0") // Ou a licença que você escolher
-                                .url("https://www.apache.org/licenses/LICENSE-2.0.html")
+                                .name("MIT License") // Alterado para MIT conforme imagem, mas confirme qual licença você usa
+                                .url("https://opensource.org/licenses/MIT") // URL padrão para MIT License
                         )
                 )
                 .servers(List.of(
                         new Server().url(serverUrl).description("Servidor Local de Desenvolvimento")
-                        // Você pode adicionar outros servidores aqui (ex: homologação, produção)
-                        // new Server().url("https://api.seudominio.com/gsapi").description("Servidor de Produção")
-                ));
+                        // new Server().url("https://sua-api-em-producao.com" + contextPath).description("Servidor de Produção")
+                ))
+                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+                .components(new Components()
+                        .addSecuritySchemes(SECURITY_SCHEME_NAME,
+                                new SecurityScheme()
+                                        .name(SECURITY_SCHEME_NAME)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("Insira o token JWT no formato: Bearer {seuTokenAqui}. O token pode ser obtido através do endpoint de login.")
+                        )
+                );
     }
 }

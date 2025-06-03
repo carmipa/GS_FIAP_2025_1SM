@@ -167,7 +167,7 @@ try
                           "\n" +
                           "\n- Repósritório dda matéria - GitHub: [Advanced_Business_Development_with.NET](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET)" +
                           "\n" +
-                          "\n- Vídeo de Apresentação: [YOUTUBE](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=52s)" +
+                          "\n- Vídeo de Apresentação: [YOUTUBE](https://youtu.be/Ad20_tE9ccU)" +
                           "\n" +
                           "\n- Diagramas de relacionamento: [GitHub](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Advanced_Business_Development_with.NET/DIAGRAMAS)";
 

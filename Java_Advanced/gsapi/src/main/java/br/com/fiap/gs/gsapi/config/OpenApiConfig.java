@@ -74,7 +74,7 @@ public class OpenApiConfig {
 
                                 - 📦 **Repositório do projeto (API): ** GitHub: [GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM) 
                                 - 📚 **Repositório da matéria (Exemplo):** GitHub: [Java_Advanced](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced) 
-                                - 🎬 **Vídeo de Apresentação:** YouTube: ** [Assistir Vídeo](https://www.youtube.com/watch?v=M-Ia0UnPZjI&t=54s) 
+                                - 🎬 **Vídeo de Apresentação:** YouTube: ** [Assistir Vídeo](https://youtu.be/j_qpO5N5fVY) 
                                 - 📊 **Diagrama de Relcionamento:** Github: ** [link de acesso](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced/DIAGRAMAS) 
                                 - 📝 **Documentação:** Github: ** [link de acesso](https://github.com/carmipa/GS_FIAP_2025_1SM/blob/main/Java_Advanced/README.md) 
                                 

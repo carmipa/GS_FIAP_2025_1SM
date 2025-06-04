@@ -32,7 +32,8 @@ export default function DesastresLayout({
         alignItems: 'center',
         gap: '6px',
     };
-
+    
+    // Efeito hover simples (pode ser melhorado com CSS :hover)
     const handleLinkMouseOver = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.currentTarget.style.backgroundColor = '#e9ecef';
         e.currentTarget.style.color = '#003f80';
@@ -55,12 +56,12 @@ export default function DesastresLayout({
                     <span className="material-icons-outlined">dashboard</span> Painel EONET
                 </Link>
                 <Link
-                    href="/desastres/mapa"
+                    href="/desastres/mapa" // O "Mapa de Eventos (Locais)" que agora é por usuário
                     style={subNavLinkStyle}
                     onMouseOver={handleLinkMouseOver}
                     onMouseOut={handleLinkMouseOut}
                 >
-                    <span className="material-icons-outlined">map</span> Mapa de Eventos (Locais)
+                    <span className="material-icons-outlined">person_pin_circle</span> Mapa por Usuário
                 </Link>
                 <Link
                     href="/desastres/mapa-atuais"
@@ -70,7 +71,16 @@ export default function DesastresLayout({
                 >
                     <span className="material-icons-outlined">public</span> Mapa Atuais (NASA)
                 </Link>
-                {/* ***** INÍCIO DO NOVO LINK ADICIONADO ***** */}
+                {/* ***** NOVO LINK ADICIONADO ***** */}
+                <Link
+                    href="/desastres/mapa-historico"
+                    style={subNavLinkStyle}
+                    onMouseOver={handleLinkMouseOver}
+                    onMouseOut={handleLinkMouseOut}
+                >
+                    <span className="material-icons-outlined">history</span> Mapa Histórico
+                </Link>
+                {/* ***** FIM DO NOVO LINK ADICIONADO ***** */}
                 <Link
                     href="/desastres/estatisticas"
                     style={subNavLinkStyle}
@@ -79,7 +89,6 @@ export default function DesastresLayout({
                 >
                     <span className="material-icons-outlined">leaderboard</span> Estatísticas
                 </Link>
-                {/* ***** FIM DO NOVO LINK ADICIONADO ***** */}
             </nav>
 
             <div className="container">

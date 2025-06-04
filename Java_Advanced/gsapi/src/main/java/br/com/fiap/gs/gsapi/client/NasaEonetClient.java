@@ -17,7 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils; // Para StringUtils.hasText
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -43,25 +43,21 @@ public class NasaEonetClient {
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    // ***** MÉTODO MODIFICADO PARA INCLUIR startDate e endDate *****
-    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source, String bbox, String startDate, String endDate) {
+    // ***** MÉTODO MODIFICADO PARA INCLUIR categoryId *****
+    public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source,
+                                             String bbox, String startDate, String endDate, String categoryId) { // Novo parâmetro categoryId
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(eonetApiUrl);
 
         if (limit != null && limit > 0) {
             uriBuilder.queryParam("limit", limit);
         }
 
-        // Se startDate e endDate forem fornecidos, 'days' geralmente não é usado pela EONET.
-        // A API EONET prioriza start/end se ambos 'days' e 'start'/'end' estiverem presentes.
         if (StringUtils.hasText(startDate)) {
             uriBuilder.queryParam("start", startDate);
         }
         if (StringUtils.hasText(endDate)) {
             uriBuilder.queryParam("end", endDate);
         }
-        // Se start/end não forem usados, então 'days' pode ser aplicado.
-        // Se start/end forem fornecidos, o parâmetro 'days' pode ser ignorado pela EONET ou causar comportamento inesperado.
-        // Para ser seguro, só adicionamos 'days' se start e end não estiverem definidos.
         else if (days != null && days > 0) {
             uriBuilder.queryParam("days", days);
         }
@@ -75,35 +71,53 @@ public class NasaEonetClient {
         if (StringUtils.hasText(bbox)) {
             uriBuilder.queryParam("bbox", bbox);
         }
+        // Adicionar o novo parâmetro de categoria se presente
+        if (StringUtils.hasText(categoryId)) {
+            uriBuilder.queryParam("category", categoryId);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0");
+        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0 (gs.metamind@fiap.com.br)"); // Atualize se necessário
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         String url = uriBuilder.toUriString();
         logger.info("Consultando NASA EONET API: {}", url);
 
         try {
-            ResponseEntity<NasaEonetApiResponseDTO> response = restTemplate.exchange(
+            ResponseEntity<String> responseAsString = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,
-                    NasaEonetApiResponseDTO.class);
+                    String.class);
 
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                logger.info("Resposta da NASA EONET API para '{}': {} eventos retornados.", url,
-                        response.getBody().getEvents() != null ? response.getBody().getEvents().size() : 0);
-                return response.getBody();
+            if (responseAsString.getStatusCode().is2xxSuccessful() && responseAsString.getBody() != null) {
+                String jsonResponse = responseAsString.getBody();
+                logger.info("Resposta BRUTA da NASA EONET API para URL '{}':\n{}", url, jsonResponse.substring(0, Math.min(jsonResponse.length(), 1000)) + (jsonResponse.length() > 1000 ? "..." : ""));
+
+
+                NasaEonetApiResponseDTO apiResponse = objectMapper.readValue(jsonResponse, NasaEonetApiResponseDTO.class);
+
+                logger.info("Resposta DESSERIALIZADA da NASA EONET API para '{}': {} eventos retornados.", url,
+                        apiResponse.getEvents() != null ? apiResponse.getEvents().size() : 0);
+
+                if (apiResponse.getEvents() != null) {
+                    apiResponse.getEvents().forEach(eventDto -> {
+                        if (eventDto.getGeometry() == null || eventDto.getGeometry().isEmpty()) {
+                            // logger.warn("Evento DTO (ID: {}) desserializado SEM geometrias ou com geometrias vazias.", eventDto.getId());
+                        }
+                    });
+                }
+                return apiResponse;
             } else {
-                logger.error("Erro ao consultar NASA EONET API. URL: {}, Status: {}", url, response.getStatusCode());
-                throw new ServiceUnavailableException("Serviço NASA EONET retornou status: " + response.getStatusCode());
+                logger.error("Erro ao consultar NASA EONET API. URL: {}, Status: {}", url, responseAsString.getStatusCode());
+                throw new ServiceUnavailableException("Serviço NASA EONET retornou status: " + responseAsString.getStatusCode());
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Erro HTTP ao consultar NASA EONET API. URL: {}, Status: {}, Body: {}", url, e.getStatusCode(), e.getResponseBodyAsString(), e);
             throw new ServiceUnavailableException("Erro ao comunicar com o serviço NASA EONET: " + e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Erro inesperado ao consultar NASA EONET API. URL: {}: {}", url, e.getMessage(), e);
+            logger.error("Erro inesperado ao consultar ou processar resposta da NASA EONET API. URL: {}: {}", url, e.getMessage(), e);
             throw new ServiceUnavailableException("Erro inesperado ao processar consulta à NASA EONET.", e);
         }
     }

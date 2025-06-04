@@ -8,7 +8,6 @@ import br.com.fiap.gs.gsapi.dto.external.NasaEonetEventDTO;
 import br.com.fiap.gs.gsapi.dto.request.EonetRequestDTO;
 import br.com.fiap.gs.gsapi.dto.response.EonetResponseDTO;
 import br.com.fiap.gs.gsapi.dto.stats.CategoryCountDTO;
-// import br.com.fiap.gs.gsapi.dto.stats.TimeCountDTO; // Removido se getEventsOverTime for removido
 import br.com.fiap.gs.gsapi.exception.ResourceNotFoundException;
 import br.com.fiap.gs.gsapi.mapper.EonetMapper;
 import br.com.fiap.gs.gsapi.model.Eonet;
@@ -59,7 +58,6 @@ public class EonetService {
         this.objectMapper = objectMapper;
     }
 
-    // ... (métodos listarTodosEventos, buscarEventoPorIdInterno, etc. permanecem os mesmos) ...
     @Transactional(readOnly = true)
     @Cacheable(value = "eonetEventos", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     public Page<EonetResponseDTO> listarTodosEventos(Pageable pageable) {
@@ -84,7 +82,7 @@ public class EonetService {
     }
 
     @Transactional
-    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true) // Removido "eonetStatsEventsOverTime"
+    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true)
     public EonetResponseDTO salvarEventoManualmente(EonetRequestDTO eonetRequestDTO) {
         eonetRepository.findByEonetIdApi(eonetRequestDTO.getEonetIdApi()).ifPresent(existingEvent -> {
             throw new IllegalArgumentException("Já existe um evento EONET registrado com o API ID: " + eonetRequestDTO.getEonetIdApi());
@@ -96,11 +94,10 @@ public class EonetService {
 
     @Transactional
     @CachePut(value = "eonetEventoById", key = "#idInterno")
-    @CacheEvict(value = {"eonetEventos", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true) // Removido "eonetStatsEventsOverTime"
+    @CacheEvict(value = {"eonetEventos", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true)
     public EonetResponseDTO atualizarEventoManualmente(Long idInterno, EonetRequestDTO eonetRequestDTO) {
         Eonet eventoExistente = eonetRepository.findById(idInterno)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento EONET não encontrado com o ID interno: " + idInterno));
-
         if (!eventoExistente.getEonetIdApi().equals(eonetRequestDTO.getEonetIdApi())) {
             eonetRepository.findByEonetIdApi(eonetRequestDTO.getEonetIdApi()).ifPresent(anotherEvent -> {
                 if (!anotherEvent.getIdEonet().equals(idInterno)) {
@@ -116,7 +113,7 @@ public class EonetService {
     }
 
     @Transactional
-    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true) // Removido "eonetStatsEventsOverTime"
+    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI"}, allEntries = true)
     public void deletarEvento(Long idInterno) {
         if (!eonetRepository.existsById(idInterno)) {
             throw new ResourceNotFoundException("Evento EONET não encontrado com o ID interno: " + idInterno);
@@ -137,12 +134,12 @@ public class EonetService {
     }
 
     @Transactional
-    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI", "eonetStatsEventsOverTime"}, allEntries = true) // Removido "eonetStatsEventsOverTime"
+    @CacheEvict(value = {"eonetEventos", "eonetEventoById", "eonetEventoByApiId", "eonetEventosPorData", "eonetStatsCountByCategory", "eventosProximosDaAPI", "eonetStatsEventsOverTime"}, allEntries = true)
     public List<EonetResponseDTO> sincronizarEventosDaNasa(Integer limit, Integer days, String status, String source) {
         logger.info("Iniciando sincronização de eventos da NASA EONET. Limite: {}, Dias: {}, Status: {}, Fonte: {}",
                 limit, days, status, source);
-
-        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, days, status, source, null, null, null);
+        // Passando null para os novos parâmetros (bbox, startDate, endDate, categoryId) pois não são usados aqui
+        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, days, status, source, null, null, null, null);
         List<EonetResponseDTO> eventosSalvosOuAtualizados = new ArrayList<>();
 
         if (respostaDaApi != null && respostaDaApi.getEvents() != null) {
@@ -172,34 +169,36 @@ public class EonetService {
         return eventosSalvosOuAtualizados;
     }
 
+    // ***** MÉTODO MODIFICADO PARA INCLUIR categoryId *****
     @Transactional(readOnly = true)
-    @Cacheable(value = "eventosProximosDaAPI", key = "{#latitude, #longitude, #raioKm, #limit, #days, #status, #source, #startDate, #endDate}")
+    @Cacheable(value = "eventosProximosDaAPI", key = "{#latitude, #longitude, #raioKm, #limit, #days, #status, #source, #startDate, #endDate, #categoryId}")
     public List<NasaEonetEventDTO> buscarEventosEonetProximosDaAPI(
             Double latitude, Double longitude, Double raioKm,
             Integer limit, Integer days, String status, String source,
-            String startDate, String endDate) {
+            String startDate, String endDate, String categoryId) { // Novo parâmetro categoryId
 
         String bbox = null;
         Integer effectiveDays = days;
 
         if (StringUtils.hasText(startDate) || StringUtils.hasText(endDate)) {
-            logger.info("Buscando eventos EONET por intervalo de datas: Start='{}', End='{}'", startDate, endDate);
+            logger.info("Buscando eventos EONET por intervalo de datas: Start='{}', End='{}', Categoria='{}'", startDate, endDate, categoryId);
             effectiveDays = null;
         } else if (latitude != null && longitude != null && raioKm != null && raioKm > 0) {
-            logger.info("Buscando eventos EONET próximos a Lat: {}, Lon: {}, Raio: {}km", latitude, longitude, raioKm);
+            logger.info("Buscando eventos EONET próximos a Lat: {}, Lon: {}, Raio: {}km, Categoria='{}'", latitude, longitude, raioKm, categoryId);
             bbox = GeoUtils.calcularBoundingBox(latitude, longitude, raioKm);
             logger.info("Bounding Box calculado: {}", bbox);
         } else {
-            logger.info("Buscando eventos EONET globais.");
+            logger.info("Buscando eventos EONET globais. Categoria='{}'", categoryId);
         }
 
         String effectiveStatus = status;
         if (bbox == null && !StringUtils.hasText(startDate) && !StringUtils.hasText(endDate) && !StringUtils.hasText(status)) {
-            effectiveStatus = "";
-            logger.info("Nenhum status especificado para busca global, usando status 'all' (vazio).");
+            effectiveStatus = "all"; // NASA API usa 'all' para todos os status, não string vazia.
+            // Ou deixe nulo/vazio se a API EONET tratar string vazia como "all".
+            logger.info("Nenhum status especificado para busca global/por data, usando status 'all'.");
         }
 
-        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, effectiveDays, effectiveStatus, source, bbox, startDate, endDate);
+        NasaEonetApiResponseDTO respostaDaApi = nasaEonetClient.getEvents(limit, effectiveDays, effectiveStatus, source, bbox, startDate, endDate, categoryId); // Passa categoryId
 
         if (respostaDaApi != null && respostaDaApi.getEvents() != null) {
             logger.info("{} eventos encontrados na API da NASA para os critérios fornecidos.", respostaDaApi.getEvents().size());
@@ -209,8 +208,8 @@ public class EonetService {
         logger.info("Nenhum evento encontrado na API da NASA para os critérios fornecidos (respostaDaApi ou eventos nulos).");
         return Collections.emptyList();
     }
+    // ***** FIM DA MODIFICAÇÃO *****
 
-    // Método para contagem por categoria (permanece, pois usa JSON parsing em Java)
     @Transactional(readOnly = true)
     @Cacheable(value = "eonetStatsCountByCategory", key = "#daysAgo")
     public List<CategoryCountDTO> getEventCountByCategoryLastXDays(int daysAgo) {
@@ -231,23 +230,21 @@ public class EonetService {
                         return eventoDetalhes.getCategories();
                     } catch (Exception e) {
                         logger.error("Erro ao parsear JSON do evento local ID {}: {}. JSON: {}",
-                                eonet.getEonetIdApi() != null ? eonet.getEonetIdApi() : "ID_API_NULL", // Adicionado null check
+                                eonet.getEonetIdApi() != null ? eonet.getEonetIdApi() : eonet.getIdEonet(),
                                 e.getMessage(),
                                 eonet.getJson().substring(0, Math.min(eonet.getJson().length(), 200)));
                         return Collections.<NasaEonetCategoryDTO>emptyList();
                     }
                 })
                 .filter(categories -> categories != null && !categories.isEmpty())
-                .flatMap(List::stream)
-                .map(NasaEonetCategoryDTO::getTitle)
-                .filter(StringUtils::hasText)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+                .flatMap(List::stream) // Desaninha a lista de categorias de cada evento
+                .map(NasaEonetCategoryDTO::getTitle) // Pega o título de cada categoria
+                .filter(StringUtils::hasText) // Filtra títulos vazios
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())); // Agrupa por título e conta
 
         return categoryCounts.entrySet().stream()
                 .map(entry -> new CategoryCountDTO(entry.getKey(), entry.getValue()))
-                .sorted((c1, c2) -> Long.compare(c2.getCount(), c1.getCount()))
+                .sorted((c1, c2) -> Long.compare(c2.getCount(), c1.getCount())) // Ordena por contagem decrescente
                 .collect(Collectors.toList());
     }
-
-
 }

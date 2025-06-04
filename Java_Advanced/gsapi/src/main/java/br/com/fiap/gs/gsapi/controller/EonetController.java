@@ -41,7 +41,6 @@ public class EonetController {
         this.eonetService = eonetService;
     }
 
-    // ... (outros endpoints CRUD e de sincronização permanecem os mesmos) ...
     @Operation(summary = "Lista todos os eventos EONET armazenados localmente, de forma paginada")
     @GetMapping
     public ResponseEntity<Page<EonetResponseDTO>> listarTodosEventosEonetLocalmente(
@@ -116,13 +115,12 @@ public class EonetController {
         return ResponseEntity.ok(novosEventosProcessados);
     }
 
-    // ***** MÉTODO MODIFICADO PARA INCLUIR startDate e endDate *****
-    @Operation(summary = "Busca eventos da API EONET da NASA. Permite busca por intervalo de datas, proximidade geográfica, ou globais recentes.")
+    @Operation(summary = "Busca eventos da API EONET da NASA. Permite busca por intervalo de datas, proximidade, categoria ou globais recentes.")
     @ApiResponse(responseCode = "200", description = "Eventos encontrados.",
             content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = NasaEonetEventDTO.class))))
     @ApiResponse(responseCode = "204", description = "Nenhum evento encontrado.")
     @ApiResponse(responseCode = "400", description = "Parâmetros inválidos.")
-    @GetMapping("/nasa/proximos") // O nome do endpoint é mantido por consistência, mas agora é mais flexível
+    @GetMapping("/nasa/proximos")
     public ResponseEntity<List<NasaEonetEventDTO>> buscarEventosDaNasa(
             @Parameter(description = "Latitude do ponto central (para busca por proximidade)", example = "-23.550520")
             @RequestParam(required = false) Double latitude,
@@ -134,10 +132,10 @@ public class EonetController {
             @RequestParam(required = false) Double raioKm,
 
             @Parameter(description = "Data de início da busca (formato YYYY-MM-DD). Se usada, 'days' é ignorado.", example = "2023-01-01")
-            @RequestParam(required = false) String startDate, // Formato YYYY-MM-DD
+            @RequestParam(required = false) String startDate,
 
             @Parameter(description = "Data de fim da busca (formato YYYY-MM-DD). Se usada, 'days' é ignorado.", example = "2023-01-31")
-            @RequestParam(required = false) String endDate,   // Formato YYYY-MM-DD
+            @RequestParam(required = false) String endDate,
 
             @Parameter(description = "Número máximo de eventos a retornar")
             @RequestParam(required = false) Integer limit,
@@ -145,21 +143,24 @@ public class EonetController {
             @Parameter(description = "Número de dias passados para buscar (usado se startDate/endDate não fornecidos)")
             @RequestParam(required = false) Integer days,
 
-            @Parameter(description = "Status dos eventos (open, closed, ou vazio para todos)")
+            @Parameter(description = "Status dos eventos (open, closed, ou vazio/all para todos)")
             @RequestParam(required = false) String status,
 
             @Parameter(description = "Fonte dos eventos (PDC, CEMS)")
-            @RequestParam(required = false) String source) {
+            @RequestParam(required = false) String source,
+
+            // ***** NOVO PARÂMETRO ADICIONADO *****
+            @Parameter(description = "ID da categoria do evento EONET (ex: wildfires, volcanoes)")
+            @RequestParam(required = false) String category) {
 
         List<NasaEonetEventDTO> eventos = eonetService.buscarEventosEonetProximosDaAPI(
                 latitude, longitude, raioKm,
                 limit, days, status, source,
-                startDate, endDate); // Passa os novos parâmetros
+                startDate, endDate, category); // Passa o novo parâmetro category
 
         if (eventos == null || eventos.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(eventos);
     }
-    // ***** FIM DA MODIFICAÇÃO *****
 }

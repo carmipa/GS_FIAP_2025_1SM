@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 
 import Link from 'next/link';
@@ -38,6 +37,34 @@ interface ReliefWebApiResponse {
   data: ReliefWebReport[];
 }
 
+// Interface para os shields de tecnologia
+interface TechShield {
+  name: string;
+  backgroundColor: string;
+  color?: string;
+}
+
+// Array com as tecnologias e seus estilos (baseado na imagem fornecida)
+const technologies: TechShield[] = [
+  { name: 'JAVA', backgroundColor: '#f89820', color: '#000000' },
+  { name: 'SPRING BOOT', backgroundColor: '#6DB33F', color: '#FFFFFF' },
+  { name: 'ORACLE', backgroundColor: '#F80000', color: '#FFFFFF' },
+  { name: 'SWAGGER', backgroundColor: '#85EA2D', color: '#000000' },
+  { name: 'OPENAPI', backgroundColor: '#6BA539', color: '#FFFFFF' },
+  { name: 'NEXT.JS', backgroundColor: '#000000', color: '#FFFFFF' },
+  { name: 'REACT', backgroundColor: '#61DAFB', color: '#000000' },
+  { name: 'TYPESCRIPT', backgroundColor: '#3178C6', color: '#FFFFFF' },
+  { name: 'LEAFLET', backgroundColor: '#199900', color: '#FFFFFF' },
+  { name: 'CHART.JS', backgroundColor: '#FF6384', color: '#FFFFFF' },
+  { name: 'REACT SLICK', backgroundColor: '#3498DB', color: '#FFFFFF' },
+  { name: 'NASA EONET API', backgroundColor: '#11356F', color: '#FFFFFF' },
+  { name: 'GOOGLE GEOCODING API', backgroundColor: '#34A853', color: '#FFFFFF' },
+  { name: 'VIACEP API', backgroundColor: '#5CB85C', color: '#FFFFFF' },
+  { name: 'RELIEFWEB API', backgroundColor: '#007bff', color: '#FFFFFF' },
+  { name: 'OPENSTREETMAP', backgroundColor: '#7FBC6E', color: '#000000' },
+];
+
+
 // --- Componente da Página ---
 export default function HomePage() {
   const [noticias, setNoticias] = useState<NoticiaDesastre[]>([]);
@@ -68,13 +95,22 @@ export default function HomePage() {
                 imageUrl = item.fields.file[0].preview["url-small"];
             }
 
+            let linkNoticiaFinal: string;
+            if (item.fields.url) {
+                linkNoticiaFinal = item.fields.url; 
+            } else {
+                linkNoticiaFinal = `https://reliefweb.int/report/${item.id}`; 
+            }
+            
+            console.log(`Notícia: "${item.fields.title}", Link CORRIGIDO: ${linkNoticiaFinal}, API Href (JSON): ${item.href}`);
+
             return {
               id: item.id,
               titulo: item.fields.title,
-              linkUrl: item.href || item.fields.url || '#',
+              linkUrl: linkNoticiaFinal,
               dataPublicacao: item.fields.date.created,
               fonte: item.fields.source && item.fields.source.length > 0 ? item.fields.source[0].name : 'ReliefWeb',
-              resumoHtml: item.fields["body-html"], // Lembre-se de sanitizar se for usar dangerouslySetInnerHTML
+              resumoHtml: item.fields["body-html"],
               imagemUrl: imageUrl,
             };
           });
@@ -113,13 +149,13 @@ export default function HomePage() {
         settings: { slidesToShow: 2, arrows: false }
       },
       {
-        breakpoint: 768, // Ajuste para telas menores que as barras laterais anteriores
+        breakpoint: 768, 
         settings: { slidesToShow: 1, arrows: false }
       }
     ]
   };
 
-  // Estilos (mantidos da sua versão anterior da página)
+  // --- Estilos ---
   const heroStyle: React.CSSProperties = {
     padding: '50px 20px', backgroundColor: '#00579D', color: 'white',
     textAlign: 'center', marginBottom: '40px', borderRadius: '8px',
@@ -128,12 +164,12 @@ export default function HomePage() {
     marginBottom: '40px', padding: '20px',
     backgroundColor: '#f9f9f9', borderRadius: '8px',
   };
-   const newsSectionStyle: React.CSSProperties = { // Estilo para a seção de notícias
+  const newsSectionStyle: React.CSSProperties = { 
     margin: '0px auto 40px auto', 
     padding: '20px', 
     maxWidth: '100%', 
     boxSizing: 'border-box',
-    backgroundColor: '#f0f3f5', // Um fundo suave diferente para destacar
+    backgroundColor: '#f0f3f5', 
     borderRadius: '8px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.07)'
   };
@@ -164,24 +200,69 @@ export default function HomePage() {
     backgroundColor: '#28a745', color: 'white', textDecoration: 'none', 
     borderRadius: '5px', fontWeight: '500', 
     transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-   };
+  };
   const fiapLinkStyle: React.CSSProperties = { 
     display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', 
     backgroundColor: '#007bff', color: 'white', textDecoration: 'none', 
     borderRadius: '5px', fontWeight: '500', 
     transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
-   };
+  };
+
+  // Estilo para a nova seção combinada (Recursos Adicionais + Desenvolvido Com)
+  const resourcesAndTechSectionStyle: React.CSSProperties = {
+    padding: '30px 20px',
+    backgroundColor: '#F8F9FA', // Fundo claro como na imagem de exemplo
+    borderRadius: '8px',
+    marginTop: '40px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.07)', // Sombra sutil
+  };
+
+  // Estilo para o título da subseção "Desenvolvido Com"
+  const developedWithTitleStyle: React.CSSProperties = {
+    textAlign: 'center',
+    fontSize: '1.8em',
+    marginBottom: '25px',
+    color: '#4A4A4A',
+    fontWeight: 500, // Peso mais leve para o subtítulo
+  };
+
+  // Estilo para o ícone ao lado do título "Desenvolvido Com"
+  const developedWithIconStyle: React.CSSProperties = {
+    fontSize: '1em', 
+    verticalAlign: 'middle',
+    marginRight: '10px',
+    color: '#4A4A4A',
+  };
   
-  // Funções de hover (você pode otimizar ou mover para CSS)
+  // Estilo para o container dos shields de tecnologia
+  const techShieldsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '10px', // Espaçamento entre os shields
+    marginTop: '20px' // Espaçamento em relação ao título "Desenvolvido Com"
+  };
+
+  // Estilo base para cada shield de tecnologia
+  const shieldStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: '4px',
+    fontSize: '0.9em',
+    fontWeight: 500,
+    display: 'inline-block',
+    // As cores (backgroundColor e color) serão aplicadas dinamicamente
+  };
+  
+  // Funções de hover
   const handleMouseOverCard = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.currentTarget.style.transform = 'translateY(-5px)';
     e.currentTarget.style.boxShadow = '0 8px 15px rgba(0,0,0,0.2)';
   };
   const handleMouseOutCard = (e: React.MouseEvent<HTMLAnchorElement>) => {
-     e.currentTarget.style.transform = 'translateY(0)';
-     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
   };
-   const handleMouseOverButton = (e: React.MouseEvent<HTMLAnchorElement>, isGithub: boolean) => {
+  const handleMouseOverButton = (e: React.MouseEvent<HTMLAnchorElement>, isGithub: boolean) => {
     e.currentTarget.style.transform = 'translateY(-3px)';
     e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.15)';
     if(isGithub) e.currentTarget.style.backgroundColor = '#218838';
@@ -236,7 +317,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SEÇÃO DE NOTÍCIAS MOVIDA PARA CÁ */}
+        {/* SEÇÃO DE NOTÍCIAS */}
         {loadingNoticias && 
           <div style={{textAlign: 'center', padding: '30px'}}>
             <p className="message info">Carregando últimas notícias sobre desastres...</p>
@@ -273,7 +354,7 @@ export default function HomePage() {
                              style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: '100%', height: '180px', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d' }}>
-                           <span className="material-icons-outlined" style={{fontSize: '3em'}}>image_not_supported</span>
+                            <span className="material-icons-outlined" style={{fontSize: '3em'}}>image_not_supported</span>
                         </div>
                       )}
                       <div style={{ padding: '15px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -311,8 +392,9 @@ export default function HomePage() {
         }
         {/* FIM DA SEÇÃO DE NOTÍCIAS */}
 
-        <section style={{ ...sectionStyle, textAlign: 'center', backgroundColor: 'transparent', border: 'none', boxShadow: 'none', marginTop: '30px' }}>
-          <h2 style={{ fontSize: '2em', marginBottom: '25px', color: '#333' }}>Recursos Adicionais</h2>
+        {/* SEÇÃO DE RECURSOS ADICIONAIS E TECNOLOGIAS UTILIZADAS */}
+        <section style={resourcesAndTechSectionStyle}>
+          <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>Recursos Adicionais</h2>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
             <a href="https://github.com/carmipa/GS_FIAP_2025_1SM" target="_blank" rel="noopener noreferrer" style={githubLinkStyle} 
                onMouseOver={(e) => handleMouseOverButton(e, true)} onMouseOut={(e) => handleMouseOutButton(e, true)}>
@@ -324,6 +406,29 @@ export default function HomePage() {
               <span className="material-icons-outlined">school</span>
               Saiba mais sobre a Global Solution FIAP
             </a>
+          </div>
+
+          {/* Subseção Desenvolvido Com */}
+          <div style={{ marginTop: '50px' }}> {/* Adiciona um espaço maior acima do "Desenvolvido Com" */}
+            <h2 style={developedWithTitleStyle}>
+              <span className="material-icons-outlined" style={developedWithIconStyle}>schedule</span>
+              Desenvolvido Com
+            </h2>
+            <div style={techShieldsContainerStyle}>
+              {technologies.map(tech => (
+                <span 
+                  key={tech.name} 
+                  style={{
+                    ...shieldStyle, 
+                    backgroundColor: tech.backgroundColor, 
+                    color: tech.color || '#FFFFFF' // Default text color branco se não especificado
+                  }}
+                  title={tech.name} // Adiciona um tooltip com o nome da tecnologia
+                >
+                  {tech.name}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
       </div>

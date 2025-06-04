@@ -37,23 +37,18 @@
     - [7.2. Página Inicial (`/`)](#72-página-inicial-)
     - [7.3. Seção de Usuários (`/clientes/...`)](#73-seção-de-usuários-clientes)
     - [7.4. Seção de Desastres EONET (`/desastres/...`)](#74-seção-de-desastres-eonet-desastres)
-      - [7.4.1. Aba: Eventos Locais (Dentro do Painel EONET em `/desastres`)](#741-aba-eventos-locais-dentro-do-painel-eonet-em-desastres)
-      - [7.4.2. Aba: Sincronizar NASA (Dentro do Painel EONET em `/desastres`)](#742-aba-sincronizar-nasa-dentro-do-painel-eonet-em-desastres)
+      - [7.4.1. Aba: Sincronizar NASA (Dentro do Painel EONET em `/desastres`)](#741-aba-sincronizar-nasa-dentro-do-painel-eonet-em-desastres)
+      - [7.4.2. Aba: Eventos Locais (Dentro do Painel EONET em `/desastres`)](#742-aba-eventos-locais-dentro-do-painel-eonet-em-desastres)
       - [7.4.3. Aba: Buscar Próximos (Eventos NASA) (Dentro do Painel EONET em `/desastres`)](#743-aba-buscar-próximos-eventos-nasa-dentro-do-painel-eonet-em-desastres)
       - [7.4.4. Aba: Alertar Usuário (Dentro do Painel EONET em `/desastres`)](#744-aba-alertar-usuário-dentro-do-painel-eonet-em-desastres)
-      - [7.4.5. Página: Mapa de Eventos Locais (`/desastres/mapa`)](#745-página-mapa-de-eventos-locais-desastresmapa)
+      - [7.4.5. Página: Mapa por Usuário (`/desastres/mapa`)](#745-página-mapa-por-usuário-desastresmapa)
       - [7.4.6. Página: Mapa Atuais/Por Data (NASA) (`/desastres/mapa-atuais`)](#746-página-mapa-atuaispor-data-nasa-desastresmapa-atuais)
-      - [7.4.7. Página: Estatísticas de Desastres (`/desastres/estatisticas`)](#747-página-estatísticas-de-desastres-desastresestatisticas)
+      - [7.4.7. Página: Mapa Histórico (`/desastres/mapa-historico`)](#747-página-mapa-histórico-desastresmapa-historico)
+      - [7.4.8. Página: Estatísticas de Desastres (`/desastres/estatisticas`)](#748-página-estatísticas-de-desastres-desastresestatisticas)
     - [7.5. Página Fale Conosco (`/contato`)](#75-página-fale-conosco-contato)
   - [8. 📂 Estrutura Simplificada do Projeto](#8--estrutura-simplificada-do-projeto)
     - [8.1. Backend (`gsapi/` - Java Spring)](#81-backend-gsapi---java-spring)
-    - [8.2. Frontend (Next.js)](#82-frontend-nextjs)
-  - [9. 🧑‍💻 Equipe MetaMind](#9--equipe-metamind)
-  - [10. 🌐 Links Úteis](#10--links-úteis)
-  - [11. 🤝 Como Contribuir](#11--como-contribuir)
-  - [12. 📜 Licença](#12--licença)
-    - [📂 **Link do Repositório (Java Spring):**](#-link-do-repositório-java-spring)
-  - [🎨 **Tecnologias Utilizadas no Projeto (Java Spring):**](#-tecnologias-utilizadas-no-projeto-java-spring)
+
 
 ---
 
@@ -68,13 +63,15 @@ O **GS Alerta Desastres** surge como uma resposta tecnológica a este desafio. N
 * **Facilitar o acesso:** Através de uma interface web intuitiva, os usuários podem se cadastrar, visualizar eventos em mapas e consultar estatísticas.
 * **Alertas Direcionados:** Implementa um sistema para o disparo de notificações (configurado para e-mail via Spring Mail, com infraestrutura para expansão) para usuários específicos sobre eventos relevantes próximos à sua localização ou de interesse.
 * **Promover a prevenção:** Ao disponibilizar dados históricos e atuais, buscamos auxiliar na conscientização e no planejamento para mitigação de riscos.
+* **Informação Contínua:** Exibe um feed de notícias recentes sobre desastres na página inicial para manter os usuários atualizados.
 
 ### 1.3. Objetivos
 * Desenvolver uma aplicação full-stack funcional e escalável com backend Java Spring e frontend Next.js.
-* Integrar com sucesso a API EONET da NASA para obtenção de dados sobre desastres.
+* Integrar com sucesso a API EONET da NASA para obtenção de dados sobre desastres e a API ReliefWeb (ou similar) para notícias.
 * Permitir o cadastro e gerenciamento de **Usuários**.
-* Apresentar os dados de forma clara e útil, utilizando mapas interativos (Leaflet) e múltiplos formatos de gráficos estatísticos (Chart.js).
-* Implementar um sistema de alerta por e-mail que pode ser acionado tanto contextualmente (após uma busca de eventos próximos por um usuário) quanto manualmente por um administrador.
+* Apresentar os dados de forma clara e útil, utilizando mapas interativos (Leaflet) com **opção de visualização de ruas ou satélite**, e múltiplos formatos de gráficos estatísticos (Chart.js).
+* Implementar um sistema de alerta por e-mail.
+* Fornecer uma seção de **notícias dinâmicas sobre desastres** na página principal.
 
 ---
 
@@ -89,34 +86,41 @@ O sistema evoluiu e agora conta com:
     * Validações de dados para garantir a integridade das informações.
 
 * 🌋 **Painel de Desastres EONET (Aba Principal `/desastres`):**
-    * **Eventos Locais:** Listagem paginada de eventos EONET sincronizados no banco de dados local.
     * **Sincronizar NASA:** Formulário para buscar e salvar/atualizar eventos da API EONET da NASA no banco local, com filtros por limite, dias, status e fonte.
+    * **Eventos Locais:**
+        * Listagem paginada de eventos EONET sincronizados no banco de dados local.
+        * Cada evento listado exibe um **mini-mapa interativo** ao lado de suas informações, mostrando a localização do evento.
+        * Os mini-mapas, assim como os mapas principais, possuem um **seletor para alternar entre visualização de ruas e imagens de satélite**.
+        * Efeito visual de "levantar" ao passar o mouse sobre os itens da lista para melhor interatividade.
     * **Buscar Próximos (Eventos NASA):**
-        * Formulário para buscar eventos diretamente da API EONET da NASA com base em coordenadas geográficas, ID de usuário (para obter suas coordenadas), ou por intervalo de datas.
-        * **Exibição do nome do usuário:** Ao buscar coordenadas por ID, o nome do usuário correspondente é exibido na tela para confirmação.
-        * **Disparo de alerta contextual:** Se um ID de usuário foi utilizado e eventos são encontrados próximos a ele, o sistema aciona o backend para enviar um alerta por e-mail para esse usuário específico sobre o evento principal encontrado. Mensagens de feedback sobre o processo de alerta são exibidas.
-    * **Alertar Usuário (Nova Aba):**
-        * Interface dedicada para um administrador disparar manualmente um alerta por e-mail para um usuário específico sobre um evento EONET específico (que deve estar previamente sincronizado no banco local).
-        * **Verificação de Dados:** Campos para inserir "ID do Usuário" e "ID do Evento EONET". Botões "Verificar Usuário" e "Verificar Evento" buscam e exibem detalhes do usuário (nome, e-mail principal) e do evento (título, data) na tela antes do envio, permitindo confirmação.
-        * **Envio Controlado:** O botão "Enviar Alerta ao Usuário Verificado" só é habilitado após a verificação bem-sucedida de ambos, usuário e evento. O envio real do e-mail depende da configuração correta do servidor SMTP no backend.
+        * Formulário para buscar eventos diretamente da API EONET da NASA com base em coordenadas geográficas (obtidas por ID de usuário ou inseridas manualmente) ou por período.
+        * Exibição do nome do usuário para confirmação.
+        * Disparo de alerta contextual por e-mail se um ID de usuário foi utilizado.
+        * Resultados exibidos em cards, cada um com informações do evento e um **mini-mapa interativo** com opção de ruas/satélite.
+        * Efeito visual de "levantar" ao passar o mouse sobre os cards.
+    * **Alertar Usuário:**
+        * Interface para administradores dispararem manualmente um alerta para um usuário sobre um evento específico (previamente sincronizado).
+        * Funcionalidade de verificação de dados do usuário e do evento antes do envio.
 
 * 🗺️ **Visualização em Mapas Interativos (Leaflet):**
-    * **Mapa de Eventos Locais (`/desastres/mapa`):** Exibe no mapa todos os eventos EONET armazenados localmente com coordenadas válidas, ajustando automaticamente o zoom para mostrar todos os marcadores.
-    * **Mapa Atuais/Por Data (NASA) (`/desastres/mapa-atuais`):** Busca e exibe no mapa o evento global mais recente da EONET ou eventos dentro de um intervalo de datas especificado pelo usuário. Exibe detalhes do evento único em foco.
+    * **Seletor de Camada Base:** Todos os mapas principais e mini-mapas agora incluem um controle que permite ao usuário alternar entre a visualização de mapa de ruas (OpenStreetMap) e imagens de satélite (ESRI World Imagery).
+    * **Mapa por Usuário (`/desastres/mapa`):** Permite buscar por ID de usuário e exibe no mapa principal eventos da NASA EONET próximos à localização daquele usuário, com opção de camada de ruas/satélite.
+    * **Mapa Atuais/Por Data (NASA) (`/desastres/mapa-atuais`):** Exibe no mapa principal o evento global mais recente da NASA ou eventos filtrados por data, com detalhes do evento e opção de camada de ruas/satélite.
+    * **Mapa Histórico (`/desastres/mapa-historico`):** Nova página que permite filtrar eventos históricos da API da NASA por período e tipo de desastre (em português), exibindo-os no mapa principal com opção de camada de ruas/satélite.
 
 * 📊 **Estatísticas de Desastres (Chart.js) (`/desastres/estatisticas`):**
-    * Apresentação de dados consolidados sobre os eventos EONET armazenados localmente.
-    * **Variedade de Gráficos:** Barras Verticais/Horizontais (com escala logarítmica), Pizza, Rosca (Doughnut), Área Polar.
-    * **Filtro de Período Expansivo:** Seleção de período de 30 dias a 50 anos para análise.
+    * Apresentação de dados consolidados sobre os eventos EONET locais.
+    * Variedade de Gráficos e filtro de período expansivo.
+
+* 📰 **Página Inicial (`/`):**
+    * **Feed de Notícias de Desastres:** Um carrossel horizontal exibe as últimas notícias e alertas sobre desastres globais (obtidas da ReliefWeb API), com imagens, títulos, fontes, datas e links para os artigos completos.
 
 * 📞 **Página de Contato (`/contato`):**
-    * Apresentação da equipe MetaMind com fotos individuais, RMs, e-mails, links do GitHub e turmas.
-    * Formulário de contato simulado.
-    * Mapa interativo com a localização da FIAP.
+    * Apresentação da equipe MetaMind, formulário de contato simulado e mapa da FIAP.
 
-* 🏠 **Navegação Aprimorada:**
-    * Link "Home" explícito na barra de navegação principal.
-    * Sub-navegação clara e funcional dentro das seções "Usuários" e "Desastres EONET".
+* 🏠 **Navegação e Interface:**
+    * Navegação principal e sub-navegação claras.
+    * Uso de Material Icons para melhor identificação visual.
 
 ---
 
@@ -129,7 +133,7 @@ O sistema evoluiu e agora conta com:
   <img src="https://img.shields.io/badge/Spring%20Web%20(MVC)-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring MVC" />
   <img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Data JPA" />
   <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white" alt="Hibernate" />
-  <img src="https://img.shields.io/badge/MapStruct-FF5A00?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4cHgiIGhlaWdodD0iNDhweCI+PHBhdGggZmlsbD0iI2ZmNWEwMCIgZD0iTTM2LjgzLDkuMTdMMjQuMDUsMi40MWMtMC40My0wLjI0LTAuOTUtMC4yNC0xLjM4LDBMMTAuMTcsOS4xN2MtMC40MywwLjI0LTAuNjksMC43MS0wLjY5LDEuMjF2MjUuMjNjMCwwLjUsMC4yNiwAuOTcsMC42OSwxLjIxbDEyLjU4LDYuNzVjMC4yMSwwLjExLDAuNDUsMC4xNywwLjY5LDAuMTZjMC4yNCwwLDAuNDgtMC4wNSwwLjY5LTAuMTZsMTIuNTgtNi43NWMwLjQzLTAuMjMsMC42OS0wLjcxLDAuNjktMS4yMVYxMC4zOEMzNy41Miw5Ljg4LDM3LjI2LDkuNDEsMzYuODMsOS4xN3oiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjMuMzMsMTkuMDVsLTUuNjQtMy4xOGwtMi4xMywxLjM0bDcuNzcsNC41MnYxMS4xMWwxMS4zLTUuNjVWMTYuMTFsLTExLjMsNS42NFYxOS4wNXogTTI4LjM2LDExLjY5djMuMTFsNS42My0zLjE0TDMyLjg4LDExLjVsLTQuNTIsMi41M1YxMS42OXogTTIwLjkyLDExLjY5djIuNTJsLTQuNTItMi41MkwxNS4yNywxMS41bDQuNTIsMy4xNFYxMS42OXoiLz48L3N2Zz4=" alt="MapStruct" />
+  <img src="https://img.shields.io/badge/MapStruct-FF5A00?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4cHgiIGhlaWdodD0iNDhweCI+PHBhdGggZmlsbD0iI2ZmNWEwMCIgZD0iTTM2LjgzLDkuMTdMMjQuMDUsMi40MWMtMC40My0wLjI0LTAuOTUtMC4yNC0xLjM4LDBMMTAuMTcsOS4xN2MtMC40MywwLjI0LTAuNjksMC43MS0wLjY5LDEuMjF2MjUuMjNjMCwwLjUsMC4yNiwuOTcsMC42OSwxLjIxbDEyLjU4LDYuNzVjMC4yMSwwLjExLDAuNDUsMC4xNywwLjY5LDAuMTZjMC4yNCwwLDAuNDgtMC4wNSwwLjY5LTAuMTZsMTIuNTgtNi43NWMwLjQzLTAuMjMsMC42OS0wLjcxLDAuNjktMS4yMVYxMC4zOEMzNy41Miw5Ljg4LDM3LjI2LDkuNDEsMzYuODMsOS4xN3oiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjMuMzMsMTkuMDVsLTUuNjQtMy4xOGwtMi4xMywxLjM0bDcuNzcsNC41MnYxMS4xMWwxMS4zLTUuNjVWMTYuMTFsLTExLjMsNS42NFYxOS4wNXogTTI4LjM2LDExLjY5djMuMTFsNS42My0zLjE0TDMyLjg4LDExLjVsLTQuNTIsMi41M1YxMS42OXogTTIwLjkyLDExLjY5djIuNTJsLTQuNTItMi41MkwxNS4yNywxMS41bDQuNTIsMy4xNFYxMS42OXoiLz48L3N2Zz4=" alt="MapStruct" />
   <img src="https://img.shields.io/badge/Jackson-E64A19?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGhlaWdodD0iMjRweCI+PHBhdGggZmlsbD0iI0U2NEEwMCIgZD0iTTEyIDJDNi40OCA1IDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTBzMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgMThjLTQuNDEgMC04LTMuNTktOC04czMuNTktOCA4LTggOCAzLjU5IDggOC0zLjU5IDgtOCA4eiIvPjxwYXRoIGZpbGw9IiNGRkYiIGQ9Ik0xMiA2Yy0zLjMyIDAtNiAyLjY4LTYgNnMxLjc5IDQuNTcgNC4yNiA1LjQ5bDEuNDItMS40MmMtMS41MS0uNjYtMi42OC0yLjA3LTIuNjgtMy45N2MwLTIuNzYgMi4yNC01IDUtNWMxLjM4IDAgMi42My41NiAzLjUyIDEuNDZsMS40MS0xLjQxQzE2LjU4IDYuNzkgMTQuMzggNiAxMiA2eiIvPjwvc3ZnPg==" alt="Jackson" />
   <img src="https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger (OpenAPI)" />
   <img src="https://img.shields.io/badge/RestTemplate-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="RestTemplate" />
@@ -140,7 +144,6 @@ O sistema evoluiu e agora conta com:
 </p>
 
 ### 3.2. Frontend (Next.js & React Ecosystem)
-*(Assumindo o mesmo frontend da versão .NET para uma solução full-stack consistente)*
 <p>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 18+" />
@@ -151,6 +154,7 @@ O sistema evoluiu e agora conta com:
   <img src="https://img.shields.io/badge/React%20Leaflet-1EB300?style=for-the-badge&logo=leaflet&logoColor=white" alt="React-Leaflet" />
   <img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chart.js&logoColor=white" alt="Chart.js" />
   <img src="https://img.shields.io/badge/React%20Chartjs%202-FF6384?style=for-the-badge&logo=chart.js&logoColor=white" alt="React-Chartjs-2" />
+  <img src="https://img.shields.io/badge/React%20Slick-007ACC?style=for-the-badge&logo=react&logoColor=white" alt="React Slick" />
   <img src="https://img.shields.io/badge/Lucide%20React-007ACC?style=for-the-badge&logo=lucide&logoColor=white" alt="Lucide React Icons" />
   <img src="https://img.shields.io/badge/React%20Icons-E91E63?style=for-the-badge&logo=react-icons&logoColor=white" alt="React Icons" />
 </p>
@@ -164,8 +168,8 @@ O sistema evoluiu e agora conta com:
 
 ## 4. 🏗️ Arquitetura da Solução
 O projeto segue uma arquitetura cliente-servidor:
-* **Servidor (Backend):** A API RESTful desenvolvida com Java Spring Boot atua como o servidor. Ele é responsável por toda a lógica de negócios, processamento de dados, interações com o banco de dados Oracle e comunicação com as APIs externas (NASA EONET, ViaCEP, Google Geocoding). Ele expõe endpoints seguros e bem definidos para o frontend consumir, incluindo um novo endpoint para o disparo de alertas específicos.
-* **Cliente (Frontend):** A aplicação desenvolvida com Next.js e React atua como o cliente. Ela consome os dados da API backend para renderizar as interfaces de usuário, permitindo que os usuários interajam com o sistema. A navegação é gerenciada pelo App Router do Next.js.
+* **Servidor (Backend):** A API RESTful desenvolvida com Java Spring Boot atua como o servidor. Ele é responsável por toda a lógica de negócios, processamento de dados, interações com o banco de dados Oracle e comunicação com as APIs externas (NASA EONET, ViaCEP, Google Geocoding). Ele expõe endpoints seguros e bem definidos para o frontend consumir.
+* **Cliente (Frontend):** A aplicação desenvolvida com Next.js e React atua como o cliente. Ela consome os dados da API backend para renderizar as interfaces de usuário e, para a seção de notícias, consome diretamente a API ReliefWeb. A navegação é gerenciada pelo App Router do Next.js.
 
 ---
 
@@ -179,28 +183,31 @@ O projeto segue uma arquitetura cliente-servidor:
 
 ### 5.2. Configuração do Backend
 1.  Clone o repositório: `git clone https://github.com/carmipa/GS_FIAP_2025_1SM.git`
-2.  Navegue para a pasta do backend Java: `cd GS_FIAP_2025_1SM/Java_Advanced` (ou o caminho correto para o seu projeto Java).
+2.  Navegue para a pasta do backend Java: `cd GS_FIAP_2025_1SM/Java_Advanced` (ou o caminho correto).
 3.  **Banco de Dados:**
     * Garanta que o Oracle esteja rodando.
-    * Crie o usuário/schema e execute o script DDL fornecido no projeto (geralmente `Oracle_DDL_GS_AlertaDesastres_SCRIPT.sql` ou similar que você tenha adaptado para o Java).
-    * Configure `src/main/resources/application.properties` com suas credenciais do Oracle (`spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password`).
-    * **Para envio de e-mail (funcionalidade de alerta):** Configure as propriedades `spring.mail.*` (host, port, username, password/senha de app) para seu servidor SMTP (ex: Gmail com Senha de App, SendGrid, etc.). Sem essa configuração, a tentativa de envio de e-mail resultará em erro de autenticação no log do backend.
-4.  **Dependências Maven:**
-    * Certifique-se que a dependência `spring-boot-starter-mail` está no `pom.xml` para a funcionalidade de e-mail.
-5.  Compile e execute: `mvn spring-boot:run`
-    * A API estará disponível em `http://localhost:8080` (ou a porta configurada).
-    * A documentação Swagger UI estará acessível em `http://localhost:8080/swagger-ui.html`.
+    * Crie o usuário/schema e execute o script DDL fornecido.
+    * Configure `src/main/resources/application.properties` com suas credenciais do Oracle.
+    * **Para envio de e-mail:** Configure as propriedades `spring.mail.*` (use senhas de aplicativo para Gmail com 2FA).
+4.  Compile e execute: `mvn spring-boot:run`
+    * API: `http://localhost:8080`
+    * Swagger UI: `http://localhost:8080/swagger-ui.html`
 
 ### 5.3. Configuração do Frontend
-1.  Navegue para a pasta do frontend (ex: `cd ../frontend-gs-alertas` - ajuste o nome da pasta conforme seu projeto).
-2.  Instale dependências: `npm install` (ou `yarn install`).
-3.  **Variável de Ambiente:** Se necessário, crie um arquivo `.env.local` na raiz do projeto frontend e defina a URL da API do backend:
+1.  Navegue para a pasta do frontend.
+2.  Instale dependências: `npm install` (ou `yarn install`). **Certifique-se de ter instalado `react-slick` e `slick-carousel`**:
+    ```bash
+    npm install react-slick slick-carousel
+    # ou
+    yarn add react-slick slick-carousel
+    ```
+3.  **Variável de Ambiente:** Crie `.env.local` na raiz do frontend:
     ```
     NEXT_PUBLIC_API_URL=http://localhost:8080/api
     ```
-4.  **Imagens da Equipe:** Coloque as fotos dos membros da equipe na pasta `public/fotos-equipe/` (ex: `paulo.jpg`, `arthur.jpg`, `joao.jpg`). Os nomes dos arquivos devem corresponder aos definidos no componente da página de contato.
-5.  Execute o servidor de desenvolvimento: `npm run dev`
-    * A aplicação frontend estará acessível em `http://localhost:3000` (ou a porta configurada).
+4.  **Imagens da Equipe:** Em `public/fotos-equipe/`.
+5.  Execute: `npm run dev`
+    * Aplicação: `http://localhost:3000`
 
 ---
 
@@ -209,222 +216,83 @@ Acesse a documentação interativa completa via **Swagger UI** quando o backend 
 [`http://localhost:8080/swagger-ui.html`](http://localhost:8080/swagger-ui.html)
 
 Principais grupos de endpoints:
-* `/api/clientes`: Gerenciamento de usuários.
-* `/api/contatos`: Gerenciamento de contatos.
-* `/api/enderecos`: Gerenciamento de endereços, consulta ViaCEP e geocodificação (Google/Nominatim).
-* `/api/eonet`: Operações com eventos EONET (sincronização, busca local por ID da API: `GET /api/eonet/api-id/{eonetApiId}`, busca na API da NASA por proximidade ou data).
-* `/api/stats`: Dados para gráficos de estatísticas de eventos EONET.
-* `/api/alerts`: Endpoints para disparo de alertas para usuários (ex: `POST /api/alerts/trigger-user-specific-alert`).
+* `/api/clientes`, `/api/contatos`, `/api/enderecos`: Gerenciamento de dados de usuários.
+* `/api/eonet`: Operações com eventos EONET (sincronização, busca local, busca na API da NASA por proximidade, categoria ou data).
+* `/api/stats`: Estatísticas de eventos EONET.
+* `/api/alerts`: Disparo de alertas para usuários.
 
 ---
 
 ## 7. 🗺️ Manual de Funcionamento e Navegação no Frontend
 
 ### 7.1. Visão Geral da Interface
-A aplicação possui uma barra de navegação superior persistente com links para "Home", "Usuários", "Desastres EONET" e "Fale Conosco". As seções "Usuários" e "Desastres EONET" possuem uma sub-navegação interna para suas funcionalidades específicas.
+Navegação superior persistente e sub-navegação interna nas seções principais.
 
 ### 7.2. Página Inicial (`/`)
-* **Acesso:** `http://localhost:3000` ou clicando no logo/link "Home".
-* **Conteúdo:** Introdução ao projeto, cards para acesso rápido a "Gerenciar Usuários", "Painel de Desastres" e "Fale Conosco". Links para o GitHub do projeto e para a página da Global Solution FIAP.
+* **Acesso:** `http://localhost:3000`.
+* **Conteúdo:**
+    * Introdução ao projeto.
+    * **Feed de Notícias de Desastres:** Carrossel horizontal com as últimas notícias e alertas globais sobre desastres (da ReliefWeb API), incluindo imagens, títulos, fontes, datas e links.
+    * Cards de acesso rápido às funcionalidades.
+    * Links para GitHub e Global Solution.
 
 ### 7.3. Seção de Usuários (`/clientes/...`)
-* **Acesso:** Link "Usuários" na navbar principal.
-* **Sub-Navegação:**
-    * **Listar Usuários (`/clientes/listar`):** Exibe lista paginada de usuários. Ações: Ver detalhes, Editar, Deletar (com modal de confirmação).
-    * **Cadastrar Usuário (`/clientes/cadastrar`):** Formulário para novos usuários, com busca de CEP e obtenção de coordenadas.
-    * **Buscar Usuário (`/clientes/buscar`):** Busca por ID ou Documento. Redireciona para detalhes se encontrado.
-    * **Detalhes, Alterar, Deletar:** Páginas acessadas a partir da lista ou busca.
+* **Acesso:** Link "Usuários".
+* **Sub-Navegação:** Listar, Cadastrar, Buscar, Detalhes, Alterar, Deletar.
 
 ### 7.4. Seção de Desastres EONET (`/desastres/...`)
-* **Acesso:** Link "Desastres EONET" na navbar principal. A página principal (`/desastres`) é o "Painel EONET" organizado em abas.
-* **Sub-Navegação (Layout):** Links "Painel EONET", "Mapa de Eventos (Locais)", "Mapa Atuais (NASA)", "Estatísticas" levam para as respectivas páginas.
+* **Acesso:** Link "Desastres EONET".
+* **Sub-Navegação (Layout):** "Painel EONET", "Mapa por Usuário", "Mapa Atuais (NASA)", "Mapa Histórico", "Estatísticas".
 
-#### 7.4.1. Aba: Eventos Locais (Dentro do Painel EONET em `/desastres`)
-* **Funcionalidade:** Lista eventos EONET do banco de dados local.
-* **Uso:** Visualizar eventos sincronizados, com paginação. O JSON de cada evento é parseado para exibir título, data e categorias.
+#### 7.4.1. Aba: Sincronizar NASA (Dentro do Painel EONET em `/desastres`)
+* **Funcionalidade:** Busca e salva eventos da API EONET da NASA no banco local.
+* **Uso:** Filtros para limite, dias, status, fonte.
 
-#### 7.4.2. Aba: Sincronizar NASA (Dentro do Painel EONET em `/desastres`)
-* **Funcionalidade:** Busca e salva eventos da API EONET da NASA.
-* **Uso:** Preencha filtros (limite, dias, status, fonte) e clique em "Iniciar Sincronização". Feedback da operação é exibido.
+#### 7.4.2. Aba: Eventos Locais (Dentro do Painel EONET em `/desastres`)
+* **Funcionalidade:** Lista eventos EONET do banco local.
+* **Uso:**
+    * Visualização paginada de eventos.
+    * Cada evento é exibido com suas informações e um **mini-mapa interativo** ao lado, mostrando a localização.
+    * Os mini-mapas possuem **seletor para alternar entre visualização de ruas e satélite**.
+    * Efeito visual de "levantar" ao passar o mouse sobre os itens.
 
 #### 7.4.3. Aba: Buscar Próximos (Eventos NASA) (Dentro do Painel EONET em `/desastres`)
-* **Funcionalidade:** Busca eventos na API da NASA por proximidade geográfica ou período e pode disparar alerta contextual.
+* **Funcionalidade:** Busca eventos na API da NASA por proximidade ou período e pode disparar alerta contextual.
 * **Uso:**
-    1.  Opcional: Insira "ID do Usuário", clique "Buscar Coords". O nome do usuário e suas coordenadas (do endereço principal) serão preenchidos e exibidos.
-    2.  Ou preencha manualmente Latitude, Longitude e Raio (km).
-    3.  Opcional: Defina filtros de data (`startDate`, `endDate`), limite, dias, status, fonte.
-    4.  Clique "Buscar Eventos Próximos".
-    5.  Se um ID de usuário foi utilizado na busca de coordenadas e eventos são encontrados, um alerta por e-mail é solicitado ao backend. Feedback é exibido.
-    6.  Lista de eventos encontrados aparece abaixo.
+    * Busca por ID de usuário ou coordenadas manuais/raio.
+    * Exibe nome do usuário.
+    * Dispara alerta por e-mail.
+    * Resultados em cards com informações e **mini-mapa interativo** (com seletor ruas/satélite).
+    * Efeito de "levantar" ao passar o mouse.
 
 #### 7.4.4. Aba: Alertar Usuário (Dentro do Painel EONET em `/desastres`)
-* **Funcionalidade:** Dispara manualmente um alerta para um usuário sobre um evento EONET específico (que deve existir no banco local).
-* **Uso:**
-    1.  Insira "ID do Usuário a ser Alertado", clique "Verificar Usuário". Nome e e-mail do usuário são exibidos.
-    2.  Insira "ID do Evento EONET" (o ID da API da NASA, ex: EONET_xxxx), clique "Verificar Evento". Título e data do evento (do banco local) são exibidos.
-    3.  Se ambos verificados, o botão "Enviar Alerta ao Usuário Verificado" é habilitado. Clique para disparar a notificação por e-mail. Feedback da operação é exibido.
+* **Funcionalidade:** Permite a um administrador disparar manualmente um alerta.
+* **Uso:** Inserir IDs, verificar dados, enviar alerta.
 
-#### 7.4.5. Página: Mapa de Eventos Locais (`/desastres/mapa`)
-* **Acesso:** Pela sub-navegação da seção "Desastres EONET".
-* **Funcionalidade:** Mapa Leaflet com marcadores de eventos EONET armazenados localmente. O mapa se ajusta para mostrar todos os eventos.
+#### 7.4.5. Página: Mapa por Usuário (`/desastres/mapa`)
+* **Acesso:** Pela sub-navegação.
+* **Funcionalidade:** Busca por ID de usuário e exibe no mapa principal eventos da NASA EONET próximos à localização do usuário.
+* O mapa principal possui **seletor para alternar entre camadas de ruas e satélite**.
 
 #### 7.4.6. Página: Mapa Atuais/Por Data (NASA) (`/desastres/mapa-atuais`)
-* **Acesso:** Pela sub-navegação da seção "Desastres EONET".
-* **Funcionalidade:** Mapa Leaflet que exibe o evento global mais recente da NASA ou eventos filtrados por um intervalo de datas. Detalhes do evento em foco (se for um único resultado) são mostrados.
+* **Acesso:** Pela sub-navegação.
+* **Funcionalidade:** Exibe no mapa principal o evento global mais recente ou eventos filtrados por data da API da NASA.
+* O mapa principal possui **seletor para alternar entre camadas de ruas e satélite**.
 
-#### 7.4.7. Página: Estatísticas de Desastres (`/desastres/estatisticas`)
-* **Acesso:** Pela sub-navegação da seção "Desastres EONET".
-* **Funcionalidade:** Apresenta gráficos (Barras Verticais/Horizontais com escala logarítmica, Pizza, Rosca, Área Polar) da contagem de eventos EONET locais por categoria. Inclui um filtro de período expansivo (30 dias a 50 anos). Tooltips dos gráficos exibem contagem e porcentagem.
+#### 7.4.7. Página: Mapa Histórico (`/desastres/mapa-historico`)
+* **Acesso:** Nova página pela sub-navegação.
+* **Funcionalidade:** Filtra eventos históricos da API da NASA por período e tipo de desastre (em português).
+* Eventos filtrados exibidos no mapa principal, com **seletor de camada ruas/satélite**.
+
+#### 7.4.8. Página: Estatísticas de Desastres (`/desastres/estatisticas`)
+* **Acesso:** Pela sub-navegação.
+* **Funcionalidade:** Gráficos variados sobre eventos locais, com filtro de período.
 
 ### 7.5. Página Fale Conosco (`/contato`)
-* **Acesso:** Link "Fale Conosco" na navbar principal.
-* **Conteúdo:** Fotos individuais e informações da equipe MetaMind, formulário de contato (simulado), mapa Leaflet com a localização da FIAP.
+* **Acesso:** Link "Fale Conosco".
+* **Conteúdo:** Informações da equipe, formulário, mapa da FIAP.
 
 ---
 
 ## 8. 📂 Estrutura Simplificada do Projeto
 ### 8.1. Backend (`gsapi/` - Java Spring)
-
-gsapi/ (Java_Advanced no repositório)
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── br/com/fiap/gs/gsapi/
-    │   │       ├── GsapiApplication.java
-    │   │       ├── client/             (ViaCepClient, NasaEonetClient, GeoCodingClient)
-    │   │       ├── config/             (AppConfig, CorsConfig, OpenApiConfig, SwaggerBrowserLauncher)
-    │   │       ├── controller/
-    │   │       │   ├── alert/AlertTriggerController.java
-    │   │       │   ├── ClienteController.java
-    │   │       │   ├── ContatoController.java
-    │   │       │   ├── EnderecoController.java
-    │   │       │   ├── EonetController.java
-    │   │       │   └── StatsController.java
-    │   │       ├── dto/
-    │   │       │   ├── alert/          (AlertableEventDTO, UserAlertRequestDTO)
-    │   │       │   ├── external/       (DTOs da NASA, Google)
-    │   │       │   ├── geo/            (GeoCoordinatesDTO)
-    │   │       │   ├── request/        (ClienteRequestDTO, etc.)
-    │   │       │   ├── response/       (ClienteResponseDTO, etc.)
-    │   │       │   └── stats/          (CategoryCountDTO, TimeCountDTO)
-    │   │       ├── exception/          (GlobalExceptionHandler, Custom Exceptions)
-    │   │       ├── mapper/             (Interfaces MapStruct)
-    │   │       ├── model/              (Entidades JPA: Cliente, Contato, Endereco, Eonet)
-    │   │       ├── repository/         (Interfaces Spring Data JPA)
-    │   │       ├── service/
-    │   │       │   ├── alert/UserSpecificAlertService.java
-    │   │       │   ├── notification/EmailNotificationService.java
-    │   │       │   ├── ClienteService.java
-    │   │       │   ├── ContatoService.java
-    │   │       │   ├── EnderecoService.java
-    │   │       │   └── EonetService.java
-    │   │       └── utils/              (GeoUtils)
-    │   └── resources/
-    │       ├── application.properties
-    │       └── static/
-    └── test/
-        └── java/
-└── pom.xml
-
-### 8.2. Frontend (Next.js)
-frontend-gs-alertas/ (ou nome similar)
-├── public/
-│   ├── fotos-equipe/
-│   │   ├── arthur.jpg
-│   │   ├── joao.jpg
-│   │   └── paulo.jpg
-│   └── favicon.ico
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx              (Root Layout)
-│   │   ├── page.tsx                (Home Page)
-│   │   ├── globals.css
-│   │   ├── clientes/
-│   │   │   ├── [id]/page.tsx
-│   │   │   ├── alterar/[id]/page.tsx
-│   │   │   ├── buscar/page.tsx
-│   │   │   ├── cadastrar/page.tsx
-│   │   │   ├── deletar/[id]/page.tsx
-│   │   │   ├── layout.tsx
-│   │   │   └── listar/page.tsx
-│   │   ├── desastres/
-│   │   │   ├── page.tsx             (Painel EONET com abas)
-│   │   │   ├── layout.tsx
-│   │   │   ├── estatisticas/page.tsx
-│   │   │   ├── mapa/page.tsx
-│   │   │   └── mapa-atuais/page.tsx
-│   │   └── contato/
-│   │       ├── layout.tsx
-│   │       └── page.tsx
-│   ├── components/
-│   │   ├── EonetEventMap.tsx
-│   │   └── LeafletMap.tsx
-│   └── lib/
-│       ├── apiService.ts        (Funções de chamada à API Backend)
-│       └── types.ts             (Interfaces TypeScript para DTOs)
-├── package.json
-├── tsconfig.json
-└── next.config.mjs (ou .js)
-
----
-
-## 9. 🧑‍💻 Equipe MetaMind
-* **Arthur Bispo de Lima** - RM: 557568 (🐙 [ArthurBispo00](https://github.com/ArthurBispo00))
-* **João Paulo Moreira** - RM: 557808 (🐙 [joao1015](https://github.com/joao1015))
-* **Paulo André Carminati** - RM: 557881 (🐙 [carmipa](https://github.com/carmipa))
-
----
-
-## 10. 🌐 Links Úteis
-* 🐙 **Repositório Principal do Projeto (GS):** [https://github.com/carmipa/GS_FIAP_2025_1SM](https://github.com/carmipa/GS_FIAP_2025_1SM)
-    * **Backend Java/Spring:** [https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced)
-* 🎓 **Página Oficial da Global Solution FIAP:** [https://www.fiap.com.br/graduacao/global-solution/](https://www.fiap.com.br/graduacao/global-solution/)
-
----
-
-## 11. 🤝 Como Contribuir
-1.  Faça um Fork do repositório.
-2.  Crie sua Branch de funcionalidade (`git checkout -b feature/SuaNovaFeature`).
-3.  Commit suas mudanças (`git commit -m 'Adiciona funcionalidade X Y Z'`).
-4.  Faça o Push para a Branch (`git push origin feature/SuaNovaFeature`).
-5.  Abra um Pull Request detalhando suas alterações.
-
----
-
-## 12. 📜 Licença
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo `LICENSE` no repositório para mais detalhes.
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https:/
-
-
-### 📂 **Link do Repositório (Java Spring):**
-[![GitHub](https://img.shields.io/badge/GitHub-GS%20Java%20Spring-blue?style=for-the-badge&logo=github)](https://github.com/carmipa/GS_FIAP_2025_1SM/tree/main/Java_Advanced)
-
----
-## 🎨 **Tecnologias Utilizadas no Projeto (Java Spring):**
-
-**Backend (Java & Spring Ecosystem):**
-<p>
-  <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
-  <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
-  <img src="https://img.shields.io/badge/Spring%20MVC-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring MVC" />
-  <img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Data JPA" />
-  <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white" alt="Hibernate" />
-  <img src="https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle DB" />
-  <img src="https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger (OpenAPI)" />
-  <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven" />
-  <img src="https://img.shields.io/badge/Spring%20Cache-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Cache" />
-  <img src="https://img.shields.io/badge/Jakarta%20Validation-6DB33F?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyBhcmlhLWhpZGRlbj0idHJ1ZSIgZm9jdXNhYmxlPSJmYWxzZSIgZGF0YS1wcmVmaXg9ImZhciIgZGF0YS1pY29uPSJjaGVjay1jaXJjbGUiIHJvbGU9ImltZyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgY2xhc3M9InN2Zy1pbmxpbmUtLWZhIGZhLWNoZWNrLWNpcmNsZSBmYS13LTE2IGZhLWxnIj48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yNTYgOEMxMTkuMCA4IDggMTE5LjAgOCAyNTZzMTExLjAgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5My4wIDggMjU2IDh6bTAgNDQ4Yy0xMTAuNSAwLTIwMC04OS41LTIwMC0yMDJzODkuNS0yMDAgMjAwLTIwMCAyMDAgODkuNSAyMDAgMjAwLTg5LjUgMjAwLTIwMCAyMDB6bTE1NC44LTEyNC44bC0uMS4xYy00LjctNC43LTEyLjMtNC43LTE3IDBsLTg4LjggODguOC0zMi4zLTMyLjNjLTQuNy00LjctMTIuMy00LjctMTcgMC00LjcgNC43LTQuNyAxMi4zIDAgMTdsNDkuMyA0OS4zYy0uMS4xLjEgLjEgLjIgLjJsLjQtLjNsLjMtLjRjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDEwMy44LTEwMy44YzQuNy00LjcgNC43LTEyLjMtLjEtMTd6IiBjbGFzcz0iIj48L3BhdGg+PC9zdmc+" alt="Jakarta Validation" />
-  <img src="https://img.shields.io/badge/Spring%20Mail-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Mail" />
-</p>
-
-**Frontend (Next.js & React):**
-*(Assumindo o mesmo frontend do projeto .NET para uma solução full-stack consistente)*
-<p>
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/Leaflet-1EB300?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet.js" />
-  <img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chart.js&logoColor=white" alt="Chart.js" />
-  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
-  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
-</p>

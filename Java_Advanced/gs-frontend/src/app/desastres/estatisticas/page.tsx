@@ -1,8 +1,6 @@
-// src/app/desastres/estatisticas/page.tsx
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-// Adicionado PolarArea e Doughnut
 import { Bar, Pie, Doughnut, PolarArea } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -14,7 +12,8 @@ import {
     Tooltip,
     Legend,
     ArcElement,
-    RadialLinearScale // Necessário para PolarArea
+    RadialLinearScale,
+    TooltipItem
 } from 'chart.js';
 import { getEonetCategoryStats } from '@/lib/apiService';
 import type { CategoryCountDTO } from '@/lib/types';
@@ -28,7 +27,7 @@ ChartJS.register(
     Tooltip,
     Legend,
     ArcElement,
-    RadialLinearScale // Registrar RadialLinearScale
+    RadialLinearScale
 );
 
 interface ChartDataset {
@@ -57,19 +56,21 @@ const periodOptions = [
     { label: 'Últimos 40 Anos', value: 365 * 40 }, { label: 'Máximo Histórico (ex: 50 Anos)', value: 365 * 50 }
 ];
 
-const ثابتColors = [
+const chartColors = [
     'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
     'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
     'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 89, 0.7)', 'rgba(140, 160, 175, 0.7)',
     'rgba(220, 130, 80, 0.7)'
 ];
+
 const generateChartColors = (numColors: number): string[] => {
     const colors: string[] = [];
-    for (let i = 0; i < numColors; i++) { colors.push(ثابتColors[i % ثابتColors.length]); }
+    for (let i = 0; i < numColors; i++) {
+        colors.push(chartColors[i % chartColors.length]);
+    }
     return colors;
 };
 
-// Adicionada nova aba para PolarArea
 type ActiveGraphTab = 'barrasVerticais' | 'pizza' | 'barrasHorizontais' | 'doughnut' | 'polarArea';
 
 export default function EstatisticasDesastresPage() {
@@ -93,9 +94,10 @@ export default function EstatisticasDesastresPage() {
                     const selectedLabel = periodOptions.find(p => p.value === selectedPeriodDays)?.label || `${selectedPeriodDays} dias`;
                     setError(`Nenhuma estatística de categoria encontrada para o período: ${selectedLabel}. Verifique se há eventos locais sincronizados nesse período.`);
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Erro ao buscar estatísticas:", err);
-                setError(`Falha ao carregar estatísticas: ${err.message}`);
+                const message = err instanceof Error ? err.message : String(err);
+                setError(`Falha ao carregar estatísticas: ${message}`);
             } finally {
                 setLoading(false);
             }
@@ -109,8 +111,8 @@ export default function EstatisticasDesastresPage() {
         const counts = rawStatsData.map(item => item.count);
         const backgroundColors = generateChartColors(labels.length);
         const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
-        const totalCountForOffset = counts.reduce((sum, current) => sum + current, 0);
-        const chartOffsets = counts.map(count => (count > 0 && totalCountForOffset > 0 && count < (totalCountForOffset * 0.05)) ? 20 : 0);
+        const totalCount = counts.reduce((sum, current) => sum + current, 0);
+        const chartOffsets = counts.map(count => (count > 0 && totalCount > 0 && count < (totalCount * 0.05)) ? 20 : 0);
 
         return {
             labels,
@@ -126,25 +128,71 @@ export default function EstatisticasDesastresPage() {
     }, [rawStatsData]);
 
     const commonChartTitle = `Eventos por Categoria (${periodOptions.find(p => p.value === selectedPeriodDays)?.label || selectedPeriodDays + ' dias'})`;
-    const tooltipCallback = (context: any) => {
+
+    // CALLBACKS ESPECÍFICAS PARA CADA GRÁFICO
+    const pieTooltipCallback = (context: TooltipItem<'pie'>) => {
         const label = context.label || '';
-        const value = context.parsed.r ?? context.parsed; // .r para PolarArea, .parsed para outros
+        const value = typeof context.parsed === 'number' ? context.parsed : 0;
         let sum = 0;
-        const data = context.chart.data.datasets[0].data;
-        if (data && Array.isArray(data)) { sum = data.reduce((a: number, b: number) => a + b, 0); }
-        const percentage = sum > 0 ? ((value / sum) * 100).toFixed(1) + '%' : '0.0%';
-        return `${label}: ${value.toLocaleString()} (${percentage})`;
+        const datasetData = context.chart.data.datasets[0].data;
+        if (Array.isArray(datasetData)) {
+            sum = datasetData.reduce((acc: number, curr: unknown) => {
+                if (typeof curr === 'number' && !isNaN(curr)) return acc + curr;
+                return acc;
+            }, 0);
+        }
+        const percentage = sum > 0 && typeof value === 'number'
+            ? ((value / sum) * 100).toFixed(1) + '%'
+            : '0.0%';
+        return `${label}: ${typeof value === 'number' ? value.toLocaleString() : value} (${percentage})`;
     };
 
+    const doughnutTooltipCallback = (context: TooltipItem<'doughnut'>) => {
+        const label = context.label || '';
+        const value = typeof context.parsed === 'number' ? context.parsed : 0;
+        let sum = 0;
+        const datasetData = context.chart.data.datasets[0].data;
+        if (Array.isArray(datasetData)) {
+            sum = datasetData.reduce((acc: number, curr: unknown) => {
+                if (typeof curr === 'number' && !isNaN(curr)) return acc + curr;
+                return acc;
+            }, 0);
+        }
+        const percentage = sum > 0 && typeof value === 'number'
+            ? ((value / sum) * 100).toFixed(1) + '%'
+            : '0.0%';
+        return `${label}: ${typeof value === 'number' ? value.toLocaleString() : value} (${percentage})`;
+    };
+
+    const polarAreaTooltipCallback = (context: TooltipItem<'polarArea'>) => {
+        const label = context.label || '';
+        const value = context.parsed?.r ?? 0;
+        let sum = 0;
+        const datasetData = context.chart.data.datasets[0].data;
+        if (Array.isArray(datasetData)) {
+            sum = datasetData.reduce((acc: number, curr: unknown) => {
+                if (typeof curr === 'number' && !isNaN(curr)) return acc + curr;
+                return acc;
+            }, 0);
+        }
+        const percentage = sum > 0 && typeof value === 'number'
+            ? ((value / sum) * 100).toFixed(1) + '%'
+            : '0.0%';
+        return `${label}: ${typeof value === 'number' ? value.toLocaleString() : value} (${percentage})`;
+    };
 
     const barChartOptions = {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: true, position: 'top' as const },
             title: { display: true, text: `${commonChartTitle} - Escala Logarítmica`, font: { size: 16 } },
-            tooltip: { callbacks: {
-                    label: (context: any) => `${context.dataset.label || ''}: ${context.parsed.y.toLocaleString()}`
-                }}
+            tooltip: {
+                callbacks: {
+                    label: (context: TooltipItem<'bar'>) =>
+                        `${context.dataset.label || ''}: ${context.parsed.y.toLocaleString()}`
+                }
+            }
         },
         scales: {
             y: { type: 'logarithmic' as const, position: 'left' as const, min: 0.1, title: { display: true, text: 'Número de Eventos (Escala Logarítmica)' } },
@@ -153,13 +201,18 @@ export default function EstatisticasDesastresPage() {
     };
 
     const horizontalBarChartOptions = {
-        indexAxis: 'y' as const, responsive: true, maintainAspectRatio: false,
+        indexAxis: 'y' as const,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: true, position: 'top' as const },
             title: { display: true, text: `${commonChartTitle} - Barras Horizontais (Escala Log)`, font: { size: 16 } },
-            tooltip: { callbacks: {
-                    label: (context: any) => `${context.dataset.label || ''}: ${context.parsed.x.toLocaleString()}`
-                }}
+            tooltip: {
+                callbacks: {
+                    label: (context: TooltipItem<'bar'>) =>
+                        `${context.dataset.label || ''}: ${context.parsed.x.toLocaleString()}`
+                }
+            }
         },
         scales: {
             x: { type: 'logarithmic' as const, position: 'bottom' as const, min: 0.1, title: { display: true, text: 'Número de Eventos (Escala Logarítmica)' } },
@@ -167,40 +220,56 @@ export default function EstatisticasDesastresPage() {
         }
     };
 
+    // AGORA CADA UM TEM SUA TOOLTIP!
     const pieChartOptions = {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: true, position: 'top' as const },
             title: { display: true, text: `Distribuição ${commonChartTitle}`, font: { size: 16 } },
-            tooltip: { callbacks: { label: tooltipCallback } } // Usando callback comum
+            tooltip: { callbacks: { label: pieTooltipCallback } }
         }
     };
 
     const doughnutChartOptions = {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: true, position: 'top' as const },
             title: { display: true, text: `Distribuição ${commonChartTitle} (Rosca)`, font: { size: 16 } },
-            tooltip: { callbacks: { label: tooltipCallback } } // Usando callback comum
+            tooltip: { callbacks: { label: doughnutTooltipCallback } }
         }
     };
 
-    const polarAreaChartOptions = { // NOVO
-        responsive: true, maintainAspectRatio: false,
+    const polarAreaChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: true, position: 'top' as const },
             title: { display: true, text: `Comparativo ${commonChartTitle} (Área Polar)`, font: { size: 16 } },
-            tooltip: { callbacks: { label: tooltipCallback } } // Usando callback comum
+            tooltip: { callbacks: { label: polarAreaTooltipCallback } }
         },
-        scales: { // Escala radial para PolarArea
-            r: {
-                beginAtZero: true,
-                // ticks: { z: 1 } // Para evitar sobreposição de ticks se necessário
-            }
+        scales: {
+            r: { beginAtZero: true }
         }
     };
 
-    const tabButtonStyle = (tabKey: ActiveGraphTab): React.CSSProperties => ({ /* ... (como antes) ... */ });
+    const tabButtonStyle = (tabKey: ActiveGraphTab): React.CSSProperties => ({
+        padding: '10px 15px',
+        cursor: 'pointer',
+        backgroundColor: activeGraphTab === tabKey ? '#007bff' : 'transparent',
+        color: activeGraphTab === tabKey ? 'white' : 'black',
+        border: '1px solid #ccc',
+        borderBottom: activeGraphTab === tabKey ? 'none' : '1px solid #ccc',
+        marginRight: '2px',
+        borderTopLeftRadius: '4px',
+        borderTopRightRadius: '4px',
+        fontSize: '0.9em',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '5px',
+        transition: 'background-color 0.2s, color 0.2s',
+    });
 
     return (
         <div className="container estatisticas-page" style={{ paddingBottom: '20px' }}>
@@ -218,38 +287,37 @@ export default function EstatisticasDesastresPage() {
                 </div>
             </div>
 
-            {/* Navegação por Abas Atualizada */}
             <div style={{ marginBottom: '0px', borderBottom: '1px solid #ccc' }}>
                 <button style={tabButtonStyle('barrasVerticais')} onClick={() => setActiveGraphTab('barrasVerticais')}>
-                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>bar_chart</span>Barras Verticais
+                    <span className="material-icons-outlined" style={{ fontSize: '1.2em' }}>bar_chart</span>Barras Verticais
                 </button>
                 <button style={tabButtonStyle('barrasHorizontais')} onClick={() => setActiveGraphTab('barrasHorizontais')}>
-                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px', transform: 'rotate(90deg)'}}>bar_chart</span>Barras Horizontais
+                    <span className="material-icons-outlined" style={{ fontSize: '1.2em', transform: 'rotate(90deg)' }}>bar_chart</span>Barras Horizontais
                 </button>
                 <button style={tabButtonStyle('pizza')} onClick={() => setActiveGraphTab('pizza')}>
-                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>pie_chart</span>Pizza
+                    <span className="material-icons-outlined" style={{ fontSize: '1.2em' }}>pie_chart</span>Pizza
                 </button>
                 <button style={tabButtonStyle('doughnut')} onClick={() => setActiveGraphTab('doughnut')}>
-                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>donut_small</span>Rosca
+                    <span className="material-icons-outlined" style={{ fontSize: '1.2em' }}>donut_small</span>Rosca
                 </button>
-                <button style={tabButtonStyle('polarArea')} onClick={() => setActiveGraphTab('polarArea')}> {/* NOVO BOTÃO DE ABA */}
-                    <span className="material-icons-outlined" style={{fontSize: '1.2em', marginRight: '5px'}}>flare</span>Área Polar
+                <button style={tabButtonStyle('polarArea')} onClick={() => setActiveGraphTab('polarArea')}>
+                    <span className="material-icons-outlined" style={{ fontSize: '1.2em' }}>flare</span>Área Polar
                 </button>
             </div>
 
             <div style={{ border: '1px solid #ccc', borderTop: 'none', padding: '20px', borderRadius: '0 0 6px 6px', backgroundColor: '#fff', minHeight: '450px' }}>
-                {loading && (<div className="flex items-center justify-center" style={{minHeight: '400px'}}><p className="text-lg text-slate-600">Carregando estatísticas...</p></div>)}
-                {error && !loading && (<div className="message error" style={{textAlign: 'center', padding: '20px'}}><p>{error}</p></div>)}
+                {loading && (<div className="flex items-center justify-center" style={{ minHeight: '400px' }}><p className="text-lg text-slate-600">Carregando estatísticas...</p></div>)}
+                {error && !loading && (<div className="message error" style={{ textAlign: 'center', padding: '20px' }}><p>{error}</p></div>)}
                 {!loading && !error && chartData && (
                     <div style={{ height: '60vh', minHeight: '400px' }}>
                         {activeGraphTab === 'barrasVerticais' && <Bar options={barChartOptions} data={chartData} />}
                         {activeGraphTab === 'barrasHorizontais' && <Bar options={horizontalBarChartOptions} data={chartData} />}
                         {activeGraphTab === 'pizza' && <Pie options={pieChartOptions} data={chartData} />}
                         {activeGraphTab === 'doughnut' && <Doughnut options={doughnutChartOptions} data={chartData} />}
-                        {activeGraphTab === 'polarArea' && <PolarArea options={polarAreaChartOptions} data={chartData} />} {/* NOVO GRÁFICO */}
+                        {activeGraphTab === 'polarArea' && <PolarArea options={polarAreaChartOptions} data={chartData} />}
                     </div>
                 )}
-                {!loading && !error && !chartData && (<div className="message info" style={{textAlign: 'center', padding: '20px'}}><p>Selecione um período para visualizar as estatísticas.</p></div>)}
+                {!loading && !error && !chartData && (<div className="message info" style={{ textAlign: 'center', padding: '20px' }}><p>Selecione um período para visualizar as estatísticas.</p></div>)}
             </div>
         </div>
     );

@@ -7,101 +7,82 @@ import type {
     ViaCepResponseDTO, ApiErrorResponse, Page,
     EonetResponseDTO, NasaEonetEventDTO,
     CategoryCountDTO,
-    UserAlertRequestDTO,
-    AlertableEventDTO
-} from './types'; // Certifique-se que o caminho para 'types' está correto e o arquivo existe
+    UserAlertRequestDTO
+} from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-// Log para verificar o valor de API_BASE_URL quando este módulo é carregado no navegador
 console.log(`[apiService Módulo Load] API_BASE_URL inicializada como: "${API_BASE_URL}"`);
 
 async function handleResponse<T>(response: Response, requestUrl: string): Promise<T> {
     const timestamp = new Date().toISOString();
-    // Log inicial com status da resposta
     console.log(`[apiService][${timestamp}] handleResponse - URL: ${requestUrl}, Status HTTP: ${response.status}, OK: ${response.ok}`);
 
-    if (!response.ok) { // Entra aqui para status como 4xx, 5xx
+    if (!response.ok) {
         const errorPrefix = `[apiService][${timestamp}] ERRO na API para ${requestUrl}`;
-        let errorPayload: any = null; // Para o corpo do erro JSON
-        let errorTextMessage: string | null = null; // Para o corpo do erro como texto
-        const responseCloneForErrorParsing = response.clone(); // Clonar para ler o corpo com segurança
+        let errorPayload: unknown = null;
+        let errorTextMessage: string | null = null;
+        const responseCloneForErrorParsing = response.clone();
 
         try {
             const contentType = response.headers.get("content-type");
             console.log(`${errorPrefix} - Content-Type da resposta de erro: ${contentType}`);
             if (contentType && contentType.includes("application/json")) {
-                errorPayload = await response.json(); // Tenta parsear JSON do response original
+                errorPayload = await response.json();
                 console.log(`${errorPrefix} - Corpo do erro (JSON parseado):`, errorPayload);
             } else {
-                errorTextMessage = await response.text(); // Tenta ler como texto do response original
+                errorTextMessage = await response.text();
                 console.log(`${errorPrefix} - Corpo do erro (Texto puro):`, errorTextMessage);
             }
         } catch (e) {
-            console.warn(`${errorPrefix} - Falha ao parsear o corpo do erro (JSON ou Texto). Tentando ler o corpo do clone como texto. Erro original do parse:`, e);
-            // Se o parse acima falhar (ex: response.json() em corpo não-JSON), o corpo original pode ter sido consumido.
-            // Tentar ler o clone como texto como último recurso.
+            console.warn(`${errorPrefix} - Falha ao parsear o corpo do erro.`, e);
             try {
                 errorTextMessage = await responseCloneForErrorParsing.text();
-                console.log(`${errorPrefix} - Corpo do erro (Texto do clone após falha no parse):`, errorTextMessage);
+                console.log(`${errorPrefix} - Texto do clone após falha:`, errorTextMessage);
             } catch (e2) {
-                console.warn(`${errorPrefix} - Falha crítica ao ler o corpo do erro como texto do clone.`, e2);
+                console.warn(`${errorPrefix} - Falha ao ler texto do clone.`, e2);
             }
         }
 
-        // Construção da mensagem de erro final
         let finalErrorMessage = `Erro ${response.status}: ${response.statusText || "Falha na requisição"}`;
-        if (errorPayload && typeof errorPayload.message === 'string' && errorPayload.message.trim() !== '') {
-            finalErrorMessage = errorPayload.message;
-        } else if (errorPayload && Array.isArray(errorPayload.messages) && errorPayload.messages.length > 0) {
-            finalErrorMessage = errorPayload.messages.join('; ');
-        } else if (errorPayload && typeof errorPayload.error === 'string') { // Comum em erros Spring não tratados pelo GlobalExceptionHandler
-            finalErrorMessage = `${errorPayload.error} (Status: ${errorPayload.status || response.status})`;
-        } else if (errorTextMessage && errorTextMessage.trim() !== '') {
-            finalErrorMessage = errorTextMessage.substring(0, 300); // Limita o tamanho
+        if (typeof errorPayload === 'object' && errorPayload !== null) {
+            const payload = errorPayload as Record<string, unknown>;
+            if (typeof payload.message === 'string' && payload.message.trim()) {
+                finalErrorMessage = payload.message;
+            } else if (Array.isArray(payload.messages) && payload.messages.length > 0) {
+                finalErrorMessage = payload.messages.join('; ');
+            } else if (typeof payload.error === 'string') {
+                finalErrorMessage = `${payload.error} (Status: ${payload.status || response.status})`;
+            }
+        } else if (errorTextMessage?.trim()) {
+            finalErrorMessage = errorTextMessage.substring(0, 300);
         }
 
-        console.error(`[apiService][${timestamp}] DETALHES DO ERRO FINAL: Mensagem='${finalErrorMessage}', Status=${response.status}, URL=${requestUrl}. Objeto de erro (se JSON):`, errorPayload);
+        console.error(`[apiService][${timestamp}] DETALHES DO ERRO FINAL: ${finalErrorMessage}`);
         throw new Error(finalErrorMessage);
     }
 
-    // Se response.ok for true:
-    if (response.status === 204) { // No Content
-        console.log(`[apiService][${timestamp}] Resposta 204 (No Content) para ${requestUrl}. Retornando null.`);
+    if (response.status === 204) {
+        console.log(`[apiService][${timestamp}] Resposta 204 (No Content) para ${requestUrl}.`);
         return null as T;
     }
 
     try {
         const contentType = response.headers.get("content-type");
-        console.log(`[apiService][${timestamp}] Resposta OK para ${requestUrl}. Content-Type: ${contentType}`);
-        if (contentType && contentType.includes("application/json")) {
+        if (contentType?.includes("application/json")) {
             const jsonData = await response.json();
-            // Logar apenas uma prévia de dados grandes
-            const previewData = JSON.stringify(jsonData).substring(0, 300) + (JSON.stringify(jsonData).length > 300 ? "..." : "");
-            console.log(`[apiService][${timestamp}] Resposta JSON OK para ${requestUrl}. Preview dos dados:`, previewData);
             return jsonData as T;
         } else {
-            // Se for OK mas não JSON (ex: string pura do ResponseEntity<String>)
             const textData = await response.text();
-            console.log(`[apiService][${timestamp}] Resposta Texto OK para ${requestUrl}:`, textData.substring(0,300) + "...");
-            // Se T for string, isso funciona. Se T for um objeto, isso causará erro no runtime no componente que consome.
-            // Idealmente, a API deveria ser consistente ou o tipo T deveria ser mais específico.
-            return textData as unknown as T; // Use 'unknown' para maior segurança de tipo aqui
+            return textData as unknown as T;
         }
     } catch (e) {
         const errorTimestamp = new Date().toISOString();
-        console.error(`[apiService][${errorTimestamp}] Erro CRÍTICO ao parsear resposta OK para ${requestUrl}. Isso não deveria acontecer se a API envia JSON válido. Erro:`, e);
-        let responseTextForDebug = "[Não foi possível ler o corpo da resposta como texto]";
-        try {
-            // Tenta ler o corpo da resposta original como texto para depuração
-            const responseClone = response.clone(); // Precisa clonar de novo se a leitura anterior falhou e consumiu
-            responseTextForDebug = await responseClone.text();
-        } catch (eDebug) {
-            // Silencia o erro de leitura do corpo para depuração
-        }
-        console.error(`[apiService][${errorTimestamp}] Corpo da resposta (texto) que falhou no parse JSON para ${requestUrl}:`, responseTextForDebug.substring(0, 500) + "...");
-        throw new Error(`Falha ao processar a resposta JSON da API para ${requestUrl}. Detalhes: ${(e as Error).message}`);
+        console.error(`[apiService][${errorTimestamp}] Erro ao parsear resposta para ${requestUrl}`, e);
+        throw new Error(`Erro ao processar a resposta da API (${requestUrl}): ${(e as Error).message}`);
     }
 }
+
+
 
 // --- Cliente API ---
 export async function listarClientes(page: number = 0, size: number = 10): Promise<Page<ClienteResponseDTO>> {
@@ -116,12 +97,10 @@ export async function listarClientes(page: number = 0, size: number = 10): Promi
         return handleResponse<Page<ClienteResponseDTO>>(response, requestUrl);
     } catch (error) {
         console.error(`[apiService] listarClientes - Erro CAPTURADO no fetch para ${requestUrl}:`, error instanceof Error ? error.message : error, error);
-        throw error; // Re-lança para ser tratado pelo componente que chamou
+        throw error;
     }
 }
 
-// Adapte as outras funções de forma similar se necessário, com logs de URL e try/catch.
-// Exemplo para buscarClientePorId:
 export async function buscarClientePorId(id: number): Promise<ClienteResponseDTO> {
     const requestUrl = `${API_BASE_URL}/clientes/${id}`;
     console.log(`[apiService] buscarClientePorId - Preparando para chamar: ${requestUrl}. API_BASE_URL: "${API_BASE_URL}"`);
@@ -133,10 +112,6 @@ export async function buscarClientePorId(id: number): Promise<ClienteResponseDTO
         throw error;
     }
 }
-
-// Copie o restante das suas funções de API (buscarClientePorDocumento, criarCliente, etc.) aqui,
-// adicionando o log da requestUrl e o bloco try/catch em volta do fetch como nos exemplos acima.
-// Vou adicionar o restante das suas funções com essa estrutura de log:
 
 export async function buscarClientePorDocumento(documento: string): Promise<ClienteResponseDTO> {
     const cleanedDocumento = (documento || '').replace(/\D/g, '');
@@ -298,7 +273,8 @@ export async function sincronizarNasaEonet(limit?: number, days?: number, status
 
 export async function buscarEventosNasaProximos(
     latitude?: number, longitude?: number, raioKm?: number, limit?: number,
-    days?: number, status?: string, source?: string, startDate?: string, endDate?: string
+    days?: number, status?: string, source?: string, startDate?: string, endDate?: string,
+    categoryId?: string
 ): Promise<NasaEonetEventDTO[]> {
     const queryParamsCollector: Record<string, string> = {};
     if (latitude !== undefined) queryParamsCollector.latitude = String(latitude);
@@ -310,6 +286,10 @@ export async function buscarEventosNasaProximos(
     if (!startDate && !endDate && days !== undefined) { queryParamsCollector.days = String(days); }
     if (status !== undefined && status !== null) { queryParamsCollector.status = status; }
     if (source !== undefined && source !== null && source.trim() !== '') { queryParamsCollector.source = source; }
+
+    if (categoryId && categoryId.trim() !== '') {
+        queryParamsCollector.category = categoryId;
+    }
 
     const params = new URLSearchParams(queryParamsCollector);
     const queryString = params.toString();
@@ -352,7 +332,6 @@ export async function triggerUserSpecificAlert(data: UserAlertRequestDTO): Promi
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        // Tratamento especial para esta função que espera uma string de sucesso
         if (!response.ok) {
             const errorPrefix = `[apiService] Erro na API para ${requestUrl}`;
             let errorMessage = `Falha ao disparar alerta (Status: ${response.status})`;
@@ -361,7 +340,6 @@ export async function triggerUserSpecificAlert(data: UserAlertRequestDTO): Promi
                 if (contentType && contentType.includes("application/json")) {
                     const errorJson: Partial<ApiErrorResponse> = await response.json();
                     console.log(`${errorPrefix} - Corpo do erro (JSON):`, errorJson);
-                    // ... (lógica de parse de erro JSON como antes) ...
                     if (Array.isArray(errorJson.messages) && errorJson.messages.length > 0) {
                         errorMessage = errorJson.messages.join('; ');
                     } else if (errorJson.message && typeof errorJson.message === 'string') {

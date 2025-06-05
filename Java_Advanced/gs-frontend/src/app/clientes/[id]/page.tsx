@@ -1,7 +1,7 @@
 // src/app/clientes/[id]/page.tsx
 'use client'; // Necessário para hooks
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { buscarClientePorId } from '@/lib/apiService'; // Ajuste o caminho se necessário
 import type { ClienteResponseDTO } from '@/lib/types'; // Ajuste o caminho se necessário

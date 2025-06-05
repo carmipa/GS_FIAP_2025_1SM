@@ -1,14 +1,18 @@
 // src/app/desastres/mapa-historico/page.tsx
 'use client';
 
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { buscarEventosNasaProximos } from '@/lib/apiService';
 import type { NasaEonetEventDTO, NasaEonetGeometryDTO } from '@/lib/types';
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
+// Ajuste: O tipo genérico aqui se refere às props do componente EonetEventMap.
+// Se EonetEventMapProps for a interface correta, use-a.
+// Por agora, vamos remover o tipo genérico explícito aqui se não tivermos a interface de props,
+// pois o linter não apontou erro nesta linha específica.
 const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
-    ssr: false,
+    ssr: false, 
     loading: () => (
         <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{minHeight: '400px'}}>
             <p className="text-center text-slate-600 py-4 text-lg">Carregando mapa...</p>
@@ -38,7 +42,8 @@ const formatDate = (dateString?: string | Date): string => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
-    } catch (e) { return 'Data inválida'; }
+    // Correção: Renomeado 'e' para '_e'
+    } catch { return 'Data inválida'; }
 };
 
 const periodOptions = [
@@ -59,13 +64,13 @@ const categoriasTraduzidas = [
     { id: "earthquakes", nome: "Terremotos" },
     { id: "floods", nome: "Inundações" },
     { id: "landslides", nome: "Deslizamentos de Terra" },
-    { id: "manmade", nome: "Eventos Causados pelo Homem" }, // (Incêndios industriais, derramamentos de óleo, etc.)
+    { id: "manmade", nome: "Eventos Causados pelo Homem" },
     { id: "seaLakeIce", nome: "Gelo Marinho/Lacustre" },
     { id: "severeStorms", nome: "Tempestades Severas" },
     { id: "snow", nome: "Neve Intensa" },
     { id: "tempExtremes", nome: "Temperaturas Extremas" },
     { id: "volcanoes", nome: "Vulcões" },
-    { id: "waterColor", nome: "Alterações na Cor da Água" }, // (Floração de algas, etc.)
+    { id: "waterColor", nome: "Alterações na Cor da Água" },
     { id: "wildfires", nome: "Incêndios Florestais" },
 ];
 
@@ -75,13 +80,12 @@ export default function MapaHistoricoPage() {
     const [error, setError] = useState<string | null>(null);
     const [infoMessage, setInfoMessage] = useState<string | null>("Selecione os filtros e clique em buscar para ver os eventos históricos.");
 
-    const [selectedPeriodDays, setSelectedPeriodDays] = useState<number>(365); // Padrão: Último Ano
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string>(""); // Padrão: Todos os Tipos
-    const [eventSearchLimit, setEventSearchLimit] = useState<number>(200); // Limite de eventos por busca
+    const [selectedPeriodDays, setSelectedPeriodDays] = useState<number>(365);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+    const [eventSearchLimit, setEventSearchLimit] = useState<number>(200);
 
-    // Centro e zoom iniciais do mapa (global)
-    const initialMapCenter: [number, number] = [0, 0]; 
-    const initialMapZoom: number = 2; 
+    const initialMapCenter: [number, number] = [0, 0];
+    const initialMapZoom: number = 2;
 
     const handleBuscarEventosHistoricos = async (e: FormEvent) => {
         e.preventDefault();
@@ -91,25 +95,28 @@ export default function MapaHistoricoPage() {
         setMarkers([]);
 
         try {
-            const eventos = await buscarEventosNasaProximos(
-                undefined, // latitude
-                undefined, // longitude
-                undefined, // raioKm
+            // Correção: Tipando a constante 'eventos'
+            const eventos: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
+                undefined,
+                undefined,
+                undefined,
                 eventSearchLimit,
                 selectedPeriodDays,
-                "all", // status: "all" para histórico
-                undefined, // source
-                undefined, // startDate
-                undefined, // endDate
-                selectedCategoryId || undefined // categoryId (passa undefined se for string vazia)
+                "all", // status
+                undefined, // sourceId (opcional, não usado aqui)
+                undefined, // startDate (opcional, não usado aqui pois usamos 'days')
+                undefined, // endDate (opcional, não usado aqui pois usamos 'days')
+                selectedCategoryId || undefined 
             );
 
             if (!eventos || eventos.length === 0) {
                 setInfoMessage("Nenhum evento histórico encontrado para os filtros selecionados.");
+                setLoading(false); // Parar loading se não houver eventos
                 return;
             }
 
             const newMarkers: EventMapMarkerData[] = [];
+            // eventoNasa será inferido como NasaEonetEventDTO devido à tipagem de 'eventos'
             for (const eventoNasa of eventos) {
                 if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                     const coords = getCoordinatesFromEvent(eventoNasa.geometry);
@@ -129,9 +136,11 @@ export default function MapaHistoricoPage() {
                 setInfoMessage("Eventos foram encontrados, mas nenhum possui coordenadas válidas para exibição no mapa.");
             }
 
-        } catch (err: any) {
+        // Correção: Tipar err como unknown e tratar
+        } catch (err: unknown) {
             console.error("Erro ao buscar eventos históricos:", err);
-            setError(`Falha ao buscar eventos históricos: ${err.message || 'Erro desconhecido.'}`);
+            const message = err instanceof Error ? err.message : String(err);
+            setError(`Falha ao buscar eventos históricos: ${message || 'Erro desconhecido.'}`);
             setInfoMessage(null);
         } finally {
             setLoading(false);
@@ -149,10 +158,10 @@ export default function MapaHistoricoPage() {
                 <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
                     <div className="form-group" style={{flex: '1 1 200px'}}>
                         <label htmlFor="periodSelect" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Período:</label>
-                        <select 
-                            id="periodSelect" 
-                            value={selectedPeriodDays} 
-                            onChange={(e) => setSelectedPeriodDays(Number(e.target.value))} 
+                        <select
+                            id="periodSelect"
+                            value={selectedPeriodDays}
+                            onChange={(e) => setSelectedPeriodDays(Number(e.target.value))}
                             disabled={loading}
                             style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
                         >
@@ -162,24 +171,24 @@ export default function MapaHistoricoPage() {
 
                     <div className="form-group" style={{flex: '1 1 200px'}}>
                         <label htmlFor="categorySelect" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Tipo de Desastre:</label>
-                        <select 
-                            id="categorySelect" 
-                            value={selectedCategoryId} 
-                            onChange={(e) => setSelectedCategoryId(e.target.value)} 
+                        <select
+                            id="categorySelect"
+                            value={selectedCategoryId}
+                            onChange={(e) => setSelectedCategoryId(e.target.value)}
                             disabled={loading}
                             style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
                         >
                             {categoriasTraduzidas.map(cat => (<option key={cat.id} value={cat.id}>{cat.nome}</option>))}
                         </select>
                     </div>
-                     <div className="form-group" style={{flex: '1 1 150px'}}>
+                    <div className="form-group" style={{flex: '1 1 150px'}}>
                         <label htmlFor="eventLimitInput" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Limite de Eventos:</label>
                         <input
                             type="number"
                             id="eventLimitInput"
                             value={eventSearchLimit}
                             min="1"
-                            max="1000" // Limite razoável
+                            max="1000" 
                             onChange={(e) => setEventSearchLimit(Number(e.target.value))}
                             disabled={loading}
                             style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
@@ -200,9 +209,9 @@ export default function MapaHistoricoPage() {
                 </div>
             )}
             {infoMessage && !loading && !error && (
-                 <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+                    <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
             )}
-            
+
             <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
                 <DynamicEonetEventMap
                     initialCenter={initialMapCenter}
@@ -215,7 +224,7 @@ export default function MapaHistoricoPage() {
                         backgroundColor: 'rgba(255, 255, 255, 0.95)', padding: '20px 30px', borderRadius: '8px',
                         boxShadow: '0 2px 10px rgba(0,0,0,0.2)', textAlign: 'center', zIndex: 1000
                     }}
-                         className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
+                        className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
                     >
                         {infoMessage || "Selecione os filtros e clique em 'Buscar Eventos Históricos'."}
                     </div>

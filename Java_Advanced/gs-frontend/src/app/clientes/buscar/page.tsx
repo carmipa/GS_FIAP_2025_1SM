@@ -1,13 +1,13 @@
 // src/app/clientes/buscar/page.tsx
 'use client';
 
-import { useState, FormEvent, useRef, ChangeEvent } from 'react'; // Adicionado ChangeEvent
+import { useState, FormEvent, useRef, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { buscarClientePorDocumento } from '@/lib/apiService'; // Importa a função da API
-import type { ClienteResponseDTO } from '@/lib/types'; // Importa o tipo de resposta
+import { buscarClientePorDocumento } from '@/lib/apiService';
+import type { ClienteResponseDTO } from '@/lib/types';
 
-export default function BuscarUsuarioPage() { // Nome da função da página atualizado
+export default function BuscarUsuarioPage() {
     const [termoBusca, setTermoBusca] = useState('');
     const [tipoBusca, setTipoBusca] = useState<'id' | 'documento'>('id');
     const router = useRouter();
@@ -18,18 +18,16 @@ export default function BuscarUsuarioPage() { // Nome da função da página atu
 
     const handleTipoBuscaChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setTipoBusca(e.target.value as 'id' | 'documento');
-        setTermoBusca(''); // Limpa o campo de busca ao trocar o tipo
-        setErro(null);    // Limpa mensagens de erro anteriores
-        termoBuscaRef.current?.focus(); // Foca no campo de busca
+        setTermoBusca('');
+        setErro(null);
+        termoBuscaRef.current?.focus();
     };
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         let valor = e.target.value;
         if (tipoBusca === 'documento') {
-            // Permite apenas números para documento e limita o tamanho (ex: 14 para CNPJ sem máscara)
             valor = valor.replace(/\D/g, '').slice(0, 14);
         } else if (tipoBusca === 'id') {
-            // Permite apenas números para ID
             valor = valor.replace(/\D/g, '');
         }
         setTermoBusca(valor);
@@ -54,14 +52,10 @@ export default function BuscarUsuarioPage() { // Nome da função da página atu
                 setLoading(false);
                 return;
             }
-            // A navegação para ID é direta, sem chamada de API nesta página
-            // O setLoading será false quando a nova página carregar ou se houver erro na navegação.
             router.push(`/clientes/${termoBusca}`);
-            // Considerar não setar setLoading(false) aqui, pois a navegação já muda o estado da UI.
-            // Se a navegação falhar por algum motivo (ex: rota não existe), o usuário fica na mesma página.
-            // Para esse caso, uma lógica de erro de navegação poderia ser adicionada, mas é mais complexo.
+            // setLoading(false) não é ideal aqui, pois o carregamento é da próxima página.
         } else if (tipoBusca === 'documento') {
-            const documentoLimpo = termoBusca.replace(/\D/g, ''); // Segurança extra, embora handleInputChange já faça
+            const documentoLimpo = termoBusca.replace(/\D/g, '');
             if (!documentoLimpo || (documentoLimpo.length !== 11 && documentoLimpo.length !== 14)) {
                 setErro('Documento (CPF/CNPJ) deve ter 11 ou 14 números.');
                 termoBuscaRef.current?.focus();
@@ -75,14 +69,15 @@ export default function BuscarUsuarioPage() { // Nome da função da página atu
                     console.log(`Usuário encontrado: ID ${usuarioEncontrado.idCliente}, Nome: ${usuarioEncontrado.nome}`);
                     router.push(`/clientes/${usuarioEncontrado.idCliente}`);
                 } else {
-                    // Este caso é menos provável se a API retornar 404, pois o handleResponse deve lançar erro.
                     console.warn(`Busca por documento ${documentoLimpo} retornou sucesso mas sem dados de usuário válidos.`);
                     setErro(`Não foi possível encontrar informações para o documento ${documentoLimpo}.`);
                 }
-            } catch (error: any) {
+            // Correção: Tipar error como unknown e tratar
+            } catch (error: unknown) {
                 console.error(`Falha ao buscar usuário por documento ${documentoLimpo}:`, error);
-                // A mensagem de erro de `apiService.ts` já é bem formatada
-                setErro(error.message || `Nenhum usuário encontrado com o documento ${documentoLimpo}.`);
+                // Verifica se error é uma instância de Error para acessar error.message de forma segura
+                const message = error instanceof Error ? error.message : `Nenhum usuário encontrado com o documento ${documentoLimpo}.`;
+                setErro(message);
             } finally {
                 setLoading(false);
             }
@@ -108,7 +103,6 @@ export default function BuscarUsuarioPage() { // Nome da função da página atu
                         id="tipoBusca"
                         value={tipoBusca}
                         onChange={handleTipoBuscaChange}
-                        // Estilos de select já definidos em globals.css
                     >
                         <option value="id">ID do Usuário</option>
                         <option value="documento">Documento (CPF/CNPJ)</option>
@@ -122,18 +116,17 @@ export default function BuscarUsuarioPage() { // Nome da função da página atu
                     <input
                         id="termoBusca"
                         ref={termoBuscaRef}
-                        type="text" // Mudado para text para melhor controle de formatação e input
+                        type="text"
                         value={termoBusca}
-                        onChange={handleInputChange} // Usar handler customizado
+                        onChange={handleInputChange}
                         placeholder={tipoBusca === 'id' ? 'Digite o ID numérico' : 'Digite apenas números do documento'}
                         required
-                        // Estilos de input já definidos em globals.css
-                        maxLength={tipoBusca === 'documento' ? 14 : undefined} // Limita para CNPJ (maior que CPF)
+                        maxLength={tipoBusca === 'documento' ? 14 : undefined}
                     />
                 </div>
                 <button
                     type="submit"
-                    className="button button-primary" // Usando classes de globals.css
+                    className="button button-primary"
                     style={{width: '100%', padding: '12px', fontSize: '1.1em'}}
                     disabled={loading}
                 >

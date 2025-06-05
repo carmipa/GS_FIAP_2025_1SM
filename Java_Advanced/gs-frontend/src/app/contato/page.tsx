@@ -3,7 +3,7 @@
 
 import React, { FormEvent, useState } from "react";
 import dynamic from "next/dynamic";
-import Image from 'next/image';
+import Image from 'next/image'; // Importação já existente e usada para fotos da equipe
 import { FaGithub, FaWhatsapp } from "react-icons/fa";
 import {
     User,
@@ -50,10 +50,8 @@ const teamMembers: TeamMember[] = [
     },
 ];
 
-// E-mail de destino para o formulário principal
-const emailDestinoPrincipal = "rm557881@fiap.com.br"; // Você pode alterar para um e-mail geral da equipe se preferir
+const emailDestinoPrincipal = "rm557881@fiap.com.br";
 
-// Função auxiliar para abrir o Gmail
 const openGmailCompose = (to: string, subject?: string, body?: string) => {
     const params = new URLSearchParams();
     params.append("view", "cm");
@@ -83,7 +81,7 @@ const ContactsPage: React.FC = () => {
 
         const formData = new FormData(e.target as HTMLFormElement);
         const name = formData.get('name') as string;
-        const emailFrom = formData.get('email') as string; // Email do remetente
+        const emailFrom = formData.get('email') as string;
         const message = formData.get('message') as string;
 
         if (!name || !emailFrom || !message) {
@@ -91,7 +89,7 @@ const ContactsPage: React.FC = () => {
             return;
         }
 
-        const subject = `Contato via Site MetaMind - ${name}`; // Assunto do e-mail
+        const subject = `Contato via Site MetaMind - ${name}`;
         const body = `Nome: ${name}\nEmail do Remetente: ${emailFrom}\n\nMensagem:\n${message}`;
 
         openGmailCompose(emailDestinoPrincipal, subject, body);
@@ -106,7 +104,6 @@ const ContactsPage: React.FC = () => {
                 <MessageSquare className="w-8 h-8 md:w-10 md:h-10" /> Conheça a Equipe MetaMind 🧠
             </h1>
 
-            {/* Seção dos Membros da Equipe */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12 md:mb-16">
                 {teamMembers.map((member) => (
                     <div key={member.rm} className="team-member-card">
@@ -120,7 +117,7 @@ const ContactsPage: React.FC = () => {
                             }}
                         >
                             <div style={{ marginBottom: '15px' }}>
-                                <Image
+                                <Image // Uso correto do next/image para fotos da equipe
                                     src={member.photoUrl}
                                     alt={`Foto de ${member.name}`}
                                     width={120}
@@ -131,7 +128,7 @@ const ContactsPage: React.FC = () => {
                                         border: '3px solid #007bff'
                                     }}
                                     className="mx-auto"
-                                    priority={true}
+                                    priority={true} // Considerar remover priority se não for LCP e houver muitas imagens
                                 />
                             </div>
                             <h3
@@ -160,7 +157,7 @@ const ContactsPage: React.FC = () => {
                                             openGmailCompose(member.email, `Contato para ${member.name}`);
                                         }}
                                         title={`Enviar email para ${member.name} via Gmail`}
-                                        className="hover:underline cursor-pointer text-blue-400" // Adicionada cor e cursor
+                                        className="hover:underline cursor-pointer text-blue-400"
                                     >
                                         {member.email}
                                     </a>
@@ -168,6 +165,8 @@ const ContactsPage: React.FC = () => {
                                 <div className="member-info github-badge-container" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <FaGithub size={16} /> GitHub:
                                     <a href={member.githubLink} target="_blank" rel="noopener noreferrer" className="ml-1" title={`Perfil de ${member.name} no GitHub`}>
+                                        {/* Correção: Adicionado comentário para desabilitar a regra do ESLint para esta linha específica */}
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`} alt={`GitHub ${member.githubUser} Shield`} />
                                     </a>
                                 </div>
@@ -178,7 +177,7 @@ const ContactsPage: React.FC = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         title={`Contatar ${member.name} via WhatsApp`}
-                                        className="flex items-center hover:underline text-blue-400" // Adicionada cor
+                                        className="flex items-center hover:underline text-blue-400"
                                     >
                                         {member.phone} <FaWhatsapp className="ml-1 text-green-500" />
                                     </a>
@@ -192,7 +191,6 @@ const ContactsPage: React.FC = () => {
                 ))}
             </section>
 
-            {/* Seção do Formulário de Contato */}
             <section className="contact-form-section">
                 <h2>
                     <MessageSquare /> Entre em Contato Conosco
@@ -220,7 +218,6 @@ const ContactsPage: React.FC = () => {
                 </form>
             </section>
 
-            {/* Seção do Mapa */}
             <section className="map-section">
                 <h2>
                     <MapPin /> Onde Estamos (FIAP Paulista)
@@ -234,7 +231,6 @@ const ContactsPage: React.FC = () => {
                 </p>
             </section>
 
-            {/* Seção de Links do Projeto */}
             <section className="contact-links-section">
                 <p>
                     Acompanhe nosso projeto no GitHub:

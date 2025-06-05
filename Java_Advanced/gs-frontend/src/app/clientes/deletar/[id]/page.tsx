@@ -1,6 +1,6 @@
 // src/app/clientes/deletar/[id]/page.tsx
 'use client';
-import { useEffect, useState, useRef } from 'react'; // Adicionado useRef
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { buscarClientePorId, deletarCliente } from '@/lib/apiService';
 import type { ClienteResponseDTO } from '@/lib/types';
@@ -16,7 +16,6 @@ export default function DeletarClienteConfirmPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [deleting, setDeleting] = useState<boolean>(false);
 
-    // Ref para o botão de confirmação, caso queira focar nele
     const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
@@ -32,12 +31,12 @@ export default function DeletarClienteConfirmPage() {
                 .then(data => {
                     setCliente(data);
                     setErro(null);
-                    // Focar no botão de confirmação após carregar os dados
                     setTimeout(() => confirmButtonRef.current?.focus(), 0);
                 })
-                .catch(error => {
+                .catch(error => { // Tipo de error inferido ou pode ser unknown
                     console.error("Erro ao buscar Usuário para deleção:", error);
-                    setErro(`Falha ao carregar Usuário para deleção: ${error.message || 'Usuário não encontrado.'}`);
+                    const message = error instanceof Error ? error.message : 'Usuário não encontrado.';
+                    setErro(`Falha ao carregar Usuário para deleção: ${message}`);
                     setCliente(null);
                 })
                 .finally(() => setLoading(false));
@@ -53,13 +52,14 @@ export default function DeletarClienteConfirmPage() {
             setErro(null);
             try {
                 await deletarCliente(cliente.idCliente);
-                // Idealmente, usar um sistema de notificação/toast em vez de alert
-                alert('Usuário deletado com sucesso!');
+                alert('Usuário deletado com sucesso!'); // Considere usar um sistema de notificação melhor
                 router.push('/clientes/listar');
-            } catch (error: any) {
+            // Correção: Tipar error como unknown e tratar
+            } catch (error: unknown) {
                 console.error("Erro ao confirmar deleção:", error);
-                const apiErrorMessage = error.message || "Erro desconhecido ao tentar deletar.";
-                setErro(`Falha ao deletar Usuário: ${apiErrorMessage}`);
+                // Verifica se error é uma instância de Error para acessar error.message de forma segura
+                const message = error instanceof Error ? error.message : "Erro desconhecido ao tentar deletar.";
+                setErro(`Falha ao deletar Usuário: ${message}`);
                 setDeleting(false);
             }
         }
@@ -67,7 +67,6 @@ export default function DeletarClienteConfirmPage() {
 
     if (loading) return <div className="container" style={{textAlign: 'center', paddingTop: '50px'}}><p>Carregando dados do cliente...</p></div>;
 
-    // Se houver erro e o cliente não foi carregado, mostrar erro e link para lista
     if (erro && !cliente) return (
         <div className="container" style={{textAlign: 'center', paddingTop: '30px'}}>
             <p className="message error" style={{marginBottom: '20px'}}>{erro}</p>
@@ -78,7 +77,6 @@ export default function DeletarClienteConfirmPage() {
         </div>
     );
 
-    // Se o cliente não for encontrado (mesmo sem erro de fetch, por exemplo, ID não existe)
     if (!cliente) return (
         <div className="container" style={{textAlign: 'center', paddingTop: '30px'}}>
             <p>Cliente não encontrado.</p>
@@ -121,8 +119,8 @@ export default function DeletarClienteConfirmPage() {
                         href={`/clientes/${cliente.idCliente}`}
                         className="button button-secondary"
                         style={{padding: '10px 20px', fontSize: '1em'}}
-                        aria-disabled={deleting} // Para acessibilidade
-                        onClick={(e) => { if(deleting) e.preventDefault(); }} // Prevenir navegação se estiver deletando
+                        aria-disabled={deleting}
+                        onClick={(e) => { if(deleting) e.preventDefault(); }}
                     >
                         <span className="material-icons-outlined">cancel</span>
                         Cancelar

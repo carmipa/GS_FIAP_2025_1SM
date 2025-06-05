@@ -17,12 +17,10 @@ export default function ListarClientesPage() {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [clienteParaDeletar, setClienteParaDeletar] = useState<ClienteResponseDTO | null>(null);
     const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
-    // const [debugInfo, setDebugInfo] = useState<string[]>([]); // REMOVIDO: Estado para logs no UI não é mais necessário
 
     const addDebugInfo = (info: string) => {
         const timestamp = new Date().toLocaleTimeString();
-        // setDebugInfo(prev => [...prev, `[${timestamp}] ${info}`]); // REMOVIDO: Atualização do estado da UI não é mais necessária
-        console.log(`[ListarClientesPage Debug] [${timestamp}] ${info}`); // MANTIDO: Log no console
+        console.log(`[ListarClientesPage Debug] [${timestamp}] ${info}`);
     };
 
     useEffect(() => {
@@ -36,10 +34,12 @@ export default function ListarClientesPage() {
                 const data = await listarClientes(page, 5);
                 addDebugInfo(`fetchClientes - Dados recebidos para página ${page}: ${data ? `Total: ${data.totalElements}, Conteúdo: ${data.content.length} itens` : 'Nenhum dado'}`);
                 setClientesPage(data);
-            } catch (error: any) {
-                addDebugInfo(`fetchClientes - ERRO ao buscar clientes para página ${page}: ${error.message}`);
-                console.error("[ListarClientesPage] fetchClientes - Detalhes do Erro:", error, error.stack);
-                setErro(`Falha ao carregar clientes (useEffect): ${error.message || 'Erro desconhecido'}`);
+            // Correção: Tipar error como unknown e tratar
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Erro desconhecido';
+                addDebugInfo(`fetchClientes - ERRO ao buscar clientes para página ${page}: ${message}`);
+                console.error("[ListarClientesPage] fetchClientes - Detalhes do Erro:", error);
+                setErro(`Falha ao carregar clientes (useEffect): ${message}`);
                 setClientesPage(null);
             } finally {
                 setLoading(false);
@@ -77,16 +77,20 @@ export default function ListarClientesPage() {
                     try {
                         const data = await listarClientes(currentPage, 5);
                         setClientesPage(data);
-                    } catch (error: any) {
-                        setErro(`Falha ao recarregar clientes: ${error.message || 'Erro desconhecido'}`);
+                    // Correção: Tipar error como unknown e tratar
+                    } catch (error: unknown) {
+                        const message = error instanceof Error ? error.message : 'Erro desconhecido';
+                        setErro(`Falha ao recarregar clientes: ${message}`);
                     } finally { setLoading(false); }
                 };
                 fetchCurrentPageAgain();
             }
-        } catch (error: any) {
-            addDebugInfo(`confirmarDelecao - ERRO ao deletar cliente ID: ${clienteParaDeletar.idCliente}: ${error.message}`);
+        // Correção: Tipar error como unknown e tratar
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            addDebugInfo(`confirmarDelecao - ERRO ao deletar cliente ID: ${clienteParaDeletar.idCliente}: ${message}`);
             console.error("[ListarClientesPage] confirmarDelecao - Detalhes do Erro:", error);
-            setErro(`Falha ao deletar cliente: ${error.message || 'Erro desconhecido'}`);
+            setErro(`Falha ao deletar cliente: ${message}`);
         } finally {
             setLoadingDelete(false);
         }
@@ -96,39 +100,17 @@ export default function ListarClientesPage() {
         return <div className="container"><p>Carregando clientes...</p></div>;
     }
 
-    if (erro && !showDeleteModal) { // Modificado para não mostrar o erro geral se o modal de deleção estiver ativo e tiver seu próprio erro
+    if (erro && !showDeleteModal) {
         return (
             <div className="container">
                 <p className="message error" style={{color: 'red', border: '1px solid red', padding: '10px', whiteSpace: 'pre-wrap'}}>
                     ERRO AO CARREGAR DADOS: {erro}
                 </p>
-                {/* Atenção: a chamada fetchClientes(currentPage) aqui pode causar um erro de escopo, 
-                  pois fetchClientes é definida dentro do useEffect.
-                  Considere uma estratégia diferente para "Tentar Novamente", como um reload completo
-                  ou reestruturar a função fetchClientes para ser acessível aqui.
-                */}
                 <Link href="/clientes/listar" className="button button-secondary" onClick={() => { 
                     setErro(null); 
-                    // Se fetchClientes não estiver acessível, você pode forçar o useEffect a rodar novamente
-                    // mudando currentPage para si mesmo (se isso fizer sentido) ou usar window.location.reload()
-                    // Ex: setCurrentPage(prev => prev); // Para tentar reativar o useEffect
-                    // Ou, para uma nova busca imediata sem depender do useEffect diretamente aqui:
-                    // const reloadEffect = async () => {
-                    //   setLoading(true);
-                    //   try {
-                    //     const data = await listarClientes(currentPage, 5);
-                    //     setClientesPage(data);
-                    //   } catch (e: any) { setErro(e.message); }
-                    //   finally { setLoading(false); }
-                    // };
-                    // reloadEffect();
-                    // Por ora, mantendo a estrutura original, mas ciente do potencial problema de escopo:
-                    // fetchClientes(currentPage); // Esta linha pode ter problemas de escopo.
-                    // Para uma solução simples de recarregar, pode-se usar:
                     window.location.reload();
                 }}>Tentar Novamente</Link>
                 <hr/>
-                {/* Área de Debug (REMOVIDA DA UI) */}
             </div>
         );
     }
@@ -223,10 +205,11 @@ export default function ListarClientesPage() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h2><span className="material-icons-outlined" style={{color: '#dc3545', fontSize:'1.5em'}}>warning_amber</span> Confirmar Deleção</h2>
-                        <p>Tem certeza que deseja deletar o cliente <strong>"{clienteParaDeletar.nome} {clienteParaDeletar.sobrenome}"</strong> (ID: {clienteParaDeletar.idCliente})?</p>
+                        {/* Correção: Escapar aspas duplas */}
+                        <p>Tem certeza que deseja deletar o cliente <strong>&quot;{clienteParaDeletar.nome} {clienteParaDeletar.sobrenome}&quot;</strong> (ID: {clienteParaDeletar.idCliente})?</p>
                         <p style={{color: '#dc3545', fontWeight:'bold'}}>Esta ação não pode ser desfeita.</p>
 
-                        {erro && loadingDelete === false && <p className="message error" style={{textAlign:'left'}}>{erro}</p>} {/* Exibe erro de deleção no modal */}
+                        {erro && loadingDelete === false && <p className="message error" style={{textAlign:'left'}}>{erro}</p>}
 
                         <div className="modal-actions">
                             <button onClick={confirmarDelecao} className="button button-danger" disabled={loadingDelete}>
@@ -239,17 +222,6 @@ export default function ListarClientesPage() {
                     </div>
                 </div>
             )}
-
-            {/* Área de Debug (REMOVIDA DA UI) */}
-            {/* {process.env.NODE_ENV === 'development' && (
-                 <div style={{marginTop: '30px', borderTop: '1px dashed #ccc', paddingTop: '15px'}}>
-                    <h3>Log de Depuração da Página:</h3>
-                    <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', backgroundColor: '#f0f0f0', fontSize: '0.8em' }}>
-                        {debugInfo.join('\n')} // debugInfo não existe mais
-                    </pre>
-                </div>
-            )}
-            */}
         </div>
     );
 }

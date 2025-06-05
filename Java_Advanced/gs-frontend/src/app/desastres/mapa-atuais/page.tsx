@@ -42,32 +42,29 @@ const formatEventDate = (dateString: string | Date | undefined): string => {
             year: 'numeric', month: 'long', day: 'numeric',
             hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
-    } catch (e) { return 'Data inválida'; }
+    // Correção: Renomeado 'e' para '_e' pois não é usado
+    } catch { return 'Data inválida'; }
 };
 
 export default function MapaEventosAtuaisNasaPage() {
-    const [markers, setMarkers] = useState<EventMapMarkerData[]>([]); // Marcadores para o mapa principal
+    const [markers, setMarkers] = useState<EventMapMarkerData[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [infoMessage, setInfoMessage] = useState<string>('Use os filtros de data ou aguarde a busca pelo evento global mais recente.');
     
-    // Para exibir detalhes de um único evento ou uma lista de eventos
     const [displayedEventDetails, setDisplayedEventDetails] = useState<NasaEonetEventDTO | null>(null);
     const [detailedEventsList, setDetailedEventsList] = useState<NasaEonetEventDTO[]>([]);
 
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
 
-    // Parâmetros para busca inicial
     const fetchLimitGlobalRecente = 1;
     const fetchDaysGlobalRecente = 60;
     const fetchStatusGlobalRecente = 'open'; 
 
-    // Parâmetros para busca por data
     const queryLimitDateRange = 50;
-    const queryStatusDateRange = 'all'; // 'open', 'closed', ou 'all'
+    const queryStatusDateRange = 'all';
 
-    // Centro e zoom para o mapa principal
     const [mainMapCenter, setMainMapCenter] = useState<[number, number]>([0, 0]);
     const [mainMapZoom, setMainMapZoom] = useState<number>(2);
 
@@ -90,7 +87,7 @@ export default function MapaEventosAtuaisNasaPage() {
                     const eventoNasa = eventosDaNasa[0];
                     setDisplayedEventDetails(eventoNasa); 
 
-                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) { // Usar 'geometry' singular
+                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                         const coords = getCoordinatesFromEvent(eventoNasa.geometry);
                         if (coords) {
                             const newMarker = {
@@ -99,8 +96,8 @@ export default function MapaEventosAtuaisNasaPage() {
                                 popupText: `<strong>${eventoNasa.title || 'Evento EONET'}</strong><br/>Data: ${formatEventDate(eventoNasa.geometry[0].date)}<br/>Categorias: ${eventoNasa.categories?.map(c => c.title).join(', ') || 'N/A'}`,
                             };
                             setMarkers([newMarker]);
-                            setMainMapCenter(coords); // Centraliza no evento encontrado
-                            setMainMapZoom(7);       // Zoom mais apropriado
+                            setMainMapCenter(coords);
+                            setMainMapZoom(7);    
                             setInfoMessage(`Exibindo o evento global mais recente encontrado.`);
                             setError(null);
                         } else {
@@ -115,16 +112,18 @@ export default function MapaEventosAtuaisNasaPage() {
                     setInfoMessage('');
                     setError(`Nenhum evento global aberto encontrado na API da NASA para os últimos ${fetchDaysGlobalRecente} dias.`);
                 }
-            } catch (err: any) {
+            // Correção: Tipar err como unknown e tratar
+            } catch (err: unknown) {
                 console.error("Erro ao buscar o evento mais recente da NASA:", err);
+                const message = err instanceof Error ? err.message : String(err);
                 setInfoMessage('');
-                setError(`Falha ao buscar evento da NASA: ${err.message}`);
+                setError(`Falha ao buscar evento da NASA: ${message}`);
             } finally {
                 setLoading(false);
             }
         };
         fetchInitialMostRecentEvent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Correção: Removido comentário eslint-disable-next-line desnecessário
     }, []);
 
     const handleSearchByDateRange = async (e?: FormEvent) => {
@@ -144,8 +143,8 @@ export default function MapaEventosAtuaisNasaPage() {
         setMarkers([]);
         setDisplayedEventDetails(null);
         setDetailedEventsList([]); 
-        setMainMapCenter([0,0]); // Reseta centro do mapa principal
-        setMainMapZoom(2);      // Reseta zoom do mapa principal
+        setMainMapCenter([0,0]);
+        setMainMapZoom(2);    
 
         try {
             const eventosDaNasa: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
@@ -156,7 +155,7 @@ export default function MapaEventosAtuaisNasaPage() {
                 undefined, 
                 startDate,
                 endDate,
-                undefined // Sem filtro de categoria para esta busca
+                undefined 
             );
 
             const newMarkersForMainMap: EventMapMarkerData[] = [];
@@ -164,7 +163,7 @@ export default function MapaEventosAtuaisNasaPage() {
 
             if (eventosDaNasa && eventosDaNasa.length > 0) {
                 for (const eventoNasa of eventosDaNasa) {
-                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) { // Usar 'geometry' singular
+                    if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                         const coords = getCoordinatesFromEvent(eventoNasa.geometry);
                         if (coords) {
                             newMarkersForMainMap.push({
@@ -175,8 +174,7 @@ export default function MapaEventosAtuaisNasaPage() {
                             validEventsForDetailedList.push(eventoNasa);
                         }
                     } else {
-                        // Mesmo se não tiver coordenadas, pode ser listado sem mapa individual
-                         validEventsForDetailedList.push(eventoNasa);
+                        validEventsForDetailedList.push(eventoNasa);
                     }
                 }
                 
@@ -195,9 +193,8 @@ export default function MapaEventosAtuaisNasaPage() {
                     setDisplayedEventDetails(null);
                     setInfoMessage(`Exibindo ${validEventsForDetailedList.length} evento(s) encontrado(s). ${newMarkersForMainMap.length} com coordenadas para o mapa principal.`);
                     if (newMarkersForMainMap.length > 0 && newMarkersForMainMap[0]?.position) {
-                        // Poderia tentar centralizar no primeiro ou usar FitBounds no mapa principal
-                         setMainMapCenter(newMarkersForMainMap[0].position); // Centraliza no primeiro da lista de marcadores
-                         setMainMapZoom(5); // Um zoom um pouco mais afastado para múltiplos
+                        setMainMapCenter(newMarkersForMainMap[0].position);
+                        setMainMapZoom(5); 
                     }
                 } else {
                     setInfoMessage('');
@@ -207,10 +204,12 @@ export default function MapaEventosAtuaisNasaPage() {
                 setInfoMessage('');
                 setError(`Nenhum evento encontrado na API da NASA para o período de ${formatEventDate(startDate)} a ${formatEventDate(endDate)} com os filtros aplicados.`);
             }
-        } catch (err: any) {
+        // Correção: Tipar err como unknown e tratar
+        } catch (err: unknown) {
             console.error("MAPA ATUAIS (BUSCA POR DATA) - Erro:", err);
+            const message = err instanceof Error ? err.message : String(err);
             setInfoMessage('');
-            setError(`Falha ao buscar eventos da NASA por data: ${err.message}`);
+            setError(`Falha ao buscar eventos da NASA por data: ${message}`);
         } finally {
             setLoading(false);
         }
@@ -246,7 +245,6 @@ export default function MapaEventosAtuaisNasaPage() {
                 {(!startDate || !endDate) && !loading && <p style={{fontSize: '0.8em', textAlign: 'center', color: '#777', marginTop: '5px'}}>Selecione um intervalo de datas para habilitar a busca.</p>}
             </form>
 
-            {/* Seção de Detalhes do Evento ÚNICO (se um único evento estiver em foco) */}
             {displayedEventDetails && detailedEventsList.length === 0 && !loading && (
                 <div className="event-details-box" style={{
                     margin: '20px auto', padding: '20px', border: '1px solid #ddd',
@@ -273,7 +271,6 @@ export default function MapaEventosAtuaisNasaPage() {
                 </div>
             )}
 
-            {/* Lista de Múltiplos Eventos com Mapas Individuais */}
             {detailedEventsList.length > 0 && !loading && (
                 <section className="multiple-events-list" style={{ margin: '30px auto', maxWidth: '950px' }}>
                     <h3 style={{ textAlign: 'center', fontSize: '1.6em', color: '#333', borderBottom: '2px solid #007bff', paddingBottom: '10px', marginBottom: '25px' }}>
@@ -291,7 +288,7 @@ export default function MapaEventosAtuaisNasaPage() {
 
                         return (
                             <div key={eventKey} className="event-card-with-map" style={{
-                                display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                                display: 'flex', flexDirection: typeof window !== 'undefined' && window.innerWidth < 768 ? 'column' : 'row', // Verifica window
                                 gap: '20px', padding: '20px', border: '1px solid #ccc',
                                 borderRadius: '10px', marginBottom: '20px', backgroundColor: '#fff',
                                 boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
@@ -335,8 +332,7 @@ export default function MapaEventosAtuaisNasaPage() {
                 </section>
             )}
             
-            {/* Mensagens de Status e Erro */}
-            {loading && !detailedEventsList.length && !displayedEventDetails && ( /* Mostra loading principal apenas se nada estiver sendo exibido */
+            {loading && !detailedEventsList.length && !displayedEventDetails && (
                 <div style={{minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '20px auto', maxWidth: '700px'}}>
                     <p className="message info" style={{color: '#555', fontSize: '1.1em'}}>Buscando eventos...</p>
                 </div>
@@ -354,7 +350,6 @@ export default function MapaEventosAtuaisNasaPage() {
                 <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
             )}
 
-            {/* Mapa Principal (renderiza se não houver uma lista detalhada em exibição ou se for um evento único) */}
             {(!loading || markers.length > 0) && !error && detailedEventsList.length === 0 && (
                  <div style={{marginTop: '30px', borderTop: '2px solid #007bff', paddingTop: '20px'}}>
                     <h3 style={{textAlign: 'center', fontSize: '1.6em', color: '#333', marginBottom: '15px'}}>
@@ -362,8 +357,8 @@ export default function MapaEventosAtuaisNasaPage() {
                     </h3>
                     <div style={{ height: '65vh', minHeight: '500px', width: '100%', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
                         <DynamicEonetEventMap
-                            initialCenter={mainMapCenter} // Controlado pelo estado
-                            initialZoom={mainMapZoom}     // Controlado pelo estado
+                            initialCenter={mainMapCenter} 
+                            initialZoom={mainMapZoom}    
                             markersData={markers}
                         />
                         {markers.length === 0 && !loading && !error && (

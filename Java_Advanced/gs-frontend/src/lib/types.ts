@@ -19,7 +19,7 @@ export interface Page<T> {
     totalPages: number;
     totalElements: number;
     size: number;
-    number: number; // current page number
+    number: number;
     sort: {
         sorted: boolean;
         unsorted: boolean;
@@ -46,11 +46,11 @@ export interface ContatoResponseDTO extends ContatoRequestDTO {
 // --- Tipos de Endereço (Existente) ---
 export interface EnderecoRequestDTO {
     cep: string;
-    numero: number;
+    numero: number; // A API espera number, o formulário pode lidar com string e converter
     logradouro: string;
     bairro: string;
-    localidade: string; // Cidade
-    uf: string; // Estado
+    localidade: string;
+    uf: string;
     complemento?: string;
     latitude: number;
     longitude: number;
@@ -63,7 +63,7 @@ export interface EnderecoResponseDTO extends EnderecoRequestDTO {
 export interface ClienteRequestDTO {
     nome: string;
     sobrenome: string;
-    dataNascimento: string;
+    dataNascimento: string; // Formato YYYY-MM-DD esperado pela API
     documento: string;
     contatosIds?: number[];
     enderecosIds?: number[];
@@ -74,8 +74,8 @@ export interface ClienteResponseDTO {
     sobrenome: string;
     dataNascimento: string;
     documento: string;
-    contatos?: ContatoResponseDTO[];
-    enderecos?: EnderecoResponseDTO[];
+    contatos?: ContatoResponseDTO[]; // Pode ser Set<ContatoResponseDTO> dependendo do backend
+    enderecos?: EnderecoResponseDTO[]; // Pode ser Set<EnderecoResponseDTO> dependendo do backend
 }
 
 // --- Tipos de API Externas e Utilitários (Existente) ---
@@ -105,7 +105,7 @@ export interface ApiErrorResponse {
 
 export interface EnderecoGeoRequestDTO {
     logradouro: string;
-    numero?: string;
+    numero?: number | string; // Permitir string do formulário, converter para número antes de enviar se a API externa exigir
     cidade: string;
     uf: string;
     bairro?: string;
@@ -121,9 +121,9 @@ export interface GeoCoordinatesDTO {
 // --- Tipos para EONET (Backend Local - Existente) ---
 export interface EonetResponseDTO {
     idEonet: number;
-    json: string;
-    data?: string | Date;
-    eonetIdApi: string;
+    json: string; // O JSON string dos detalhes do evento da NASA EONET
+    data?: string | Date; // Data de quando o evento ocorreu ou foi registrado
+    eonetIdApi: string; // O ID original do evento na API EONET
 }
 
 // --- Tipos para NASA EONET Events (Existente) ---
@@ -141,8 +141,14 @@ export interface NasaEonetGeometryDTO {
     magnitudeValue?: number;
     magnitudeUnit?: string;
     date: string | Date;
-    type: "Point" | "Polygon" | string;
-    coordinates: any;
+    type: "Point" | "Polygon" | string; // Outros tipos de geometria GeoJSON são possíveis
+    // CORREÇÃO: Tipagem mais específica para coordinates
+    coordinates: [number, number] | Array<[number, number]> | Array<Array<[number, number]>> | Array<Array<Array<[number, number]>>>;
+    // Esta união cobre:
+    // Point: [lon, lat]
+    // LineString / MultiPoint: Array<[lon, lat]>
+    // Polygon (com 1 anel) / MultiLineString: Array<Array<[lon, lat]>> (o array externo tem o(s) anel(is))
+    // Polygon (com múltiplos anéis) / MultiPolygon: Array<Array<Array<[lon, lat]>>>
 }
 
 export interface NasaEonetEventDTO {
@@ -152,8 +158,8 @@ export interface NasaEonetEventDTO {
     link: string;
     categories: NasaEonetCategoryDTO[];
     sources: NasaEonetSourceDTO[];
-    geometry: NasaEonetGeometryDTO[];
-    closed?: string | Date | null;
+    geometry: NasaEonetGeometryDTO[]; // Pode ser um array se o evento tiver múltiplas geometrias
+    closed?: string | Date | null; // Data em que o evento foi fechado
 }
 
 // ***** NOVA INTERFACE PARA DADOS DE ESTATÍSTICAS *****
@@ -163,7 +169,7 @@ export interface CategoryCountDTO {
 }
 
 // Em src/lib/types.ts
-export interface AlertableEventDTO {
+export interface AlertableEventDTO { // Este tipo ainda está marcado como não usado no apiService.ts
     eventId?: string;
     title?: string;
     eventDate?: string;

@@ -1,7 +1,7 @@
 // src/app/clientes/alterar/[id]/page.tsx
 'use client';
 
-import { useEffect, useState, FormEvent, ChangeEvent, useRef } from 'react';
+import { useEffect, useState, FormEvent, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -13,12 +13,14 @@ import {
 import type {
     ClienteRequestDTO,
     ClienteResponseDTO,
-    ContatoRequestDTO,
+    ContatoRequestDTO, // Ainda necessário para o tipo do estado contatoData
     EnderecoRequestDTO,
     ViaCepResponseDTO,
     EnderecoGeoRequestDTO,
     GeoCoordinatesDTO
 } from '@/lib/types';
+
+type LocalEnderecoState = Omit<Partial<EnderecoRequestDTO>, 'numero'> & { numero: string };
 
 export default function AlterarClientePage() {
     const params = useParams();
@@ -56,7 +58,7 @@ export default function AlterarClientePage() {
     const [contatoData, setContatoData] = useState<ContatoRequestDTO>({
         ddd: '', telefone: '', celular: '', whatsapp: '', email: '', tipoContato: 'Principal'
     });
-    const [enderecoData, setEnderecoData] = useState<Partial<EnderecoRequestDTO & { numero: string | number }>>({
+    const [enderecoData, setEnderecoData] = useState<LocalEnderecoState>({
         cep: '', numero: '', logradouro: '', bairro: '', localidade: '', uf: '', complemento: '', latitude: 0, longitude: 0
     });
 
@@ -79,7 +81,7 @@ export default function AlterarClientePage() {
                         dataNascimento: data.dataNascimento && data.dataNascimento.includes('/') ?
                             data.dataNascimento.split('/').reverse().join('-') :
                             (data.dataNascimento || ''),
-                        documento: (data.documento || '').replace(/\D/g, ''), // Limpar ao carregar
+                        documento: (data.documento || '').replace(/\D/g, ''),
                     });
                     if (data.contatos && data.contatos.length > 0 && data.contatos[0]) {
                         const contatoPrincipal = data.contatos[0];
@@ -97,14 +99,17 @@ export default function AlterarClientePage() {
                         setEnderecoData({
                             ...endPrincipal,
                             cep: (endPrincipal.cep || '').replace(/\D/g, ''),
-                            numero: String(endPrincipal.numero || '').replace(/\D/g, ''),
+                            numero: String(endPrincipal.numero ?? ''),
+                            latitude: endPrincipal.latitude || 0,
+                            longitude: endPrincipal.longitude || 0,
                         });
                         setCurrentEnderecoId(endPrincipal.idEndereco);
                     }
                 })
-                .catch(error => {
-                    console.error("Erro ao buscar dados do cliente para alteração:", error);
-                    setErro(`Falha ao carregar dados do cliente: ${error.message}`);
+                .catch(fetchError => {
+                    console.error("Erro ao buscar dados do cliente para alteração:", fetchError);
+                    const message = fetchError instanceof Error ? fetchError.message : 'Erro desconhecido ao buscar cliente.';
+                    setErro(`Falha ao carregar dados do cliente: ${message}`);
                 })
                 .finally(() => setInitialLoading(false));
         } else {
@@ -127,11 +132,12 @@ export default function AlterarClientePage() {
         const { name, value } = e.target;
         if (name === 'ddd' || name === 'telefone' || name === 'celular' || name === 'whatsapp') {
             let numericValue = value.replace(/\D/g, '');
-            let maxLength = 15;
-            if (name === 'ddd') maxLength = 3;
-            else if (name === 'telefone') maxLength = 9;
-            else if (name === 'celular') maxLength = 9;
-            else if (name === 'whatsapp') maxLength = 9;
+            const maxLength: number =
+                name === 'ddd' ? 3 :
+                    name === 'telefone' ? 9 :
+                        name === 'celular' ? 9 :
+                            name === 'whatsapp' ? 9 :
+                                15;
 
             if (numericValue.length > maxLength) {
                 numericValue = numericValue.slice(0, maxLength);
@@ -145,14 +151,14 @@ export default function AlterarClientePage() {
     const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'cep' || name === 'numero') {
-            let numericValue = value.replace(/\D/g, '');
-            let maxLength = name === 'cep' ? 8 : 5;
-            if (numericValue.length > maxLength) {
-                numericValue = numericValue.slice(0, maxLength);
+            let cleanedValue = value.replace(/\D/g, '');
+            const determinedMaxLength = name === 'cep' ? 8 : 5;
+            if (cleanedValue.length > determinedMaxLength) {
+                cleanedValue = cleanedValue.slice(0, determinedMaxLength);
             }
-            setEnderecoData(prev => ({ ...prev, [name]: numericValue }));
+            setEnderecoData(prev => ({ ...prev, [name]: cleanedValue }));
         } else if (name === 'latitude' || name === 'longitude') {
-            setEnderecoData(prev => ({ ...prev, [name]: value ? parseFloat(value) : '' }));
+            setEnderecoData(prev => ({ ...prev, [name]: value ? parseFloat(value) : 0 }));
         } else if (name === 'uf') {
             setEnderecoData(prev => ({ ...prev, [name]: value.toUpperCase().slice(0,2) }));
         }
@@ -174,13 +180,14 @@ export default function AlterarClientePage() {
                     bairro: viaCepDados.bairro || prev.bairro || '',
                     localidade: viaCepDados.localidade || prev.localidade || '',
                     uf: viaCepDados.uf || prev.uf || '',
-                    cep: viaCepDados.cep?.replace(/\D/g, '') || prev.cep,
+                    cep: viaCepDados.cep?.replace(/\D/g, '') || prev.cep || '',
                     latitude: 0,
                     longitude: 0
                 }));
                 setMensagem('Dados do CEP carregados. Preencha/verifique o número e clique em "Obter Coordenadas" se necessário.');
-            } catch (error: any) {
-                setErro(`Falha na busca do endereço: ${error.message}. Preencha manualmente.`);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Erro desconhecido na busca do CEP.';
+                setErro(`Falha na busca do endereço: ${message}. Preencha manualmente.`);
                 setMensagem('');
             } finally {
                 setBuscandoCep(false);
@@ -193,13 +200,13 @@ export default function AlterarClientePage() {
     };
 
     const handleGerarCoordenadasClick = async () => {
-        const numeroStr = String(enderecoData.numero || '').trim().replace(/\D/g, '');
+        const numeroLimpoStr = (enderecoData.numero || '').trim().replace(/\D/g, '');
         if (!enderecoData.logradouro && !enderecoData.localidade && !enderecoData.uf) {
             setErro("Preencha pelo menos Cidade e UF, ou o endereço completo, para gerar coordenadas.");
             logradouroRef.current?.focus();
             setMensagem(''); return;
         }
-        if (enderecoData.logradouro && (!numeroStr || numeroStr === "0")) {
+        if (enderecoData.logradouro && (!numeroLimpoStr || numeroLimpoStr === "0")) {
             setErro("Se informou logradouro, por favor, informe o Número para gerar coordenadas precisas.");
             numeroRef.current?.focus();
             setMensagem(''); return;
@@ -208,23 +215,28 @@ export default function AlterarClientePage() {
         try {
             const geoRequestData: EnderecoGeoRequestDTO = {
                 logradouro: enderecoData.logradouro || '',
-                numero: numeroStr,
+                numero: parseInt(numeroLimpoStr, 10) || 0,
                 cidade: enderecoData.localidade || '',
                 uf: enderecoData.uf || '',
-                bairro: enderecoData.bairro,
+                bairro: enderecoData.bairro || '',
                 cep: (enderecoData.cep || '').replace(/\D/g, '')
             };
             const coordenadas: GeoCoordinatesDTO = await calcularCoordenadasPelaApi(geoRequestData);
-            setEnderecoData(prev => ({ ...prev, latitude: coordenadas.latitude || 0, longitude: coordenadas.longitude || 0 }));
-            if ((coordenadas.latitude || 0) === 0 || (coordenadas.longitude || 0) === 0) {
+            setEnderecoData(prev => ({
+                ...prev,
+                latitude: coordenadas.latitude || 0,
+                longitude: coordenadas.longitude || 0
+            }));
+            if (!coordenadas.latitude || !coordenadas.longitude) {
                 setErro("Não foi possível obter coordenadas. Verifique os dados e tente novamente ou preencha manualmente se souber.");
                 latitudeRef.current?.focus();
                 setMensagem('');
             } else {
                 setMensagem(`Coordenadas: Lat ${Number(coordenadas.latitude).toFixed(7)}, Lon ${Number(coordenadas.longitude).toFixed(7)}.`);
             }
-        } catch (error: any) {
-            setErro(`Falha ao gerar coordenadas: ${error.message}`);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido ao gerar coordenadas.';
+            setErro(`Falha ao gerar coordenadas: ${message}`);
             setMensagem('');
         } finally { setBuscandoCoords(false); }
     };
@@ -237,14 +249,13 @@ export default function AlterarClientePage() {
         }
         setErro(''); setMensagem('');
 
-        // Validações com foco
         if (!clienteData.nome.trim()) { setErro("Nome é obrigatório."); nomeRef.current?.focus(); return; }
         if (!clienteData.sobrenome.trim()) { setErro("Sobrenome é obrigatório."); sobrenomeRef.current?.focus(); return; }
         if (!clienteData.dataNascimento) { setErro("Data de nascimento é obrigatória."); dataNascimentoRef.current?.focus(); return; }
 
         const cleanedDocumento = clienteData.documento.replace(/\D/g, '');
         if (!cleanedDocumento) { setErro("Documento é obrigatório."); documentoRef.current?.focus(); return; }
-        if (cleanedDocumento.length < 11 || cleanedDocumento.length > 14) { // CPF 11, CNPJ 14
+        if (cleanedDocumento.length < 11 || cleanedDocumento.length > 14) {
             setErro("Documento (CPF/CNPJ) deve ter 11 ou 14 números.");
             documentoRef.current?.focus(); return;
         }
@@ -264,8 +275,7 @@ export default function AlterarClientePage() {
         if (!contatoData.tipoContato.trim()) { setErro("Tipo de contato é obrigatório."); tipoContatoRef.current?.focus(); return; }
 
         const cleanedCep = (enderecoData.cep || '').replace(/\D/g, '');
-        const cleanedNumeroStr = String(enderecoData.numero || "0").replace(/\D/g, '');
-        const cleanedNumero = parseInt(cleanedNumeroStr, 10) || 0;
+        const cleanedNumero = parseInt(enderecoData.numero || '0', 10) || 0;
 
         if (!cleanedCep) { setErro("CEP do endereço é obrigatório."); cepRef.current?.focus(); return; }
         if (cleanedCep.length !== 8) { setErro("CEP do endereço deve ter 8 dígitos."); cepRef.current?.focus(); return; }
@@ -287,24 +297,22 @@ export default function AlterarClientePage() {
 
         const finalClienteData = {...clienteData, documento: cleanedDocumento };
 
-        const finalContatoData: ContatoRequestDTO = {
-            ...contatoData,
-            ddd: cleanedDdd,
-            telefone: cleanedTelefone,
-            celular: cleanedCelular || undefined,
-            whatsapp: cleanedWhatsapp || undefined
-        };
+        // CORREÇÃO: Removida a declaração de finalContatoDataRequest pois não estava sendo utilizada no payload
+        // Se precisar enviar os dados do contato completos, eles devem ser adicionados ao clientePayload
+        // ou enviados em uma chamada de API separada.
+        // const finalContatoDataRequest: ContatoRequestDTO = {
+        //     ...contatoData,
+        //     ddd: cleanedDdd,
+        //     telefone: cleanedTelefone,
+        //     celular: cleanedCelular || undefined,
+        //     whatsapp: cleanedWhatsapp || undefined
+        // };
+        // console.log('Dados do contato preparados:', finalContatoDataRequest);
 
-        // NOTA: A lógica para atualizar os dados do Contato e Endereço separadamente ainda é necessária aqui.
-        // Se o usuário alterou o email no formulário de contato, por exemplo,
-        // você precisaria chamar um `atualizarContatoSozinho(currentContatoId, finalContatoData)`
-        // ANTES de chamar `atualizarCliente`. O mesmo para endereço.
-        // Esta parte ainda requer implementação de funções de atualização específicas para contato/endereço no apiService
-        // e chamadas condicionais aqui.
 
         try {
             const clientePayload: ClienteRequestDTO = {
-                ...finalClienteData, // Usar dados limpos do cliente
+                ...finalClienteData,
                 contatosIds: currentContatoId ? [currentContatoId] : [],
                 enderecosIds: currentEnderecoId ? [currentEnderecoId] : [],
             };
@@ -314,9 +322,9 @@ export default function AlterarClientePage() {
             setMensagem('Cliente atualizado com sucesso! Redirecionando...');
             setTimeout(() => router.push(`/clientes/${clienteId}`), 2000);
 
-        } catch (error: any) {
-            const apiErrorMessage = error.message || "Ocorreu uma falha desconhecida.";
-            setErro(apiErrorMessage.startsWith("Falha ao atualizar cliente:") ? apiErrorMessage : `Falha ao atualizar cliente: ${apiErrorMessage}`);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido ao atualizar cliente.';
+            setErro(message.startsWith("Falha ao atualizar cliente:") ? message : `Falha ao atualizar cliente: ${message}`);
             setMensagem('');
         } finally {
             setLoadingSubmit(false);
@@ -399,7 +407,16 @@ export default function AlterarClientePage() {
                         </div>
                         <div className="form-group basis-numero">
                             <label htmlFor="alt-numero">Nº:</label>
-                            <input id="alt-numero" ref={numeroRef} type="text" name="numero" value={String(enderecoData.numero || '') === '0' ? '' : String(enderecoData.numero || '')} onChange={handleEnderecoChange} maxLength={5} placeholder="Ex: 123"/>
+                            <input
+                                id="alt-numero"
+                                ref={numeroRef}
+                                type="text"
+                                name="numero"
+                                value={enderecoData.numero ?? ''}
+                                onChange={handleEnderecoChange}
+                                maxLength={5}
+                                placeholder="Ex: 123"
+                            />
                         </div>
                         <div className="form-group flex-item">
                             <label htmlFor="alt-complemento">Compl.:</label>
@@ -451,15 +468,15 @@ export default function AlterarClientePage() {
                     <div className="form-row">
                         <div className="form-group flex-item">
                             <label htmlFor="latitude" style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '500' }}>Latitude:</label>
-                            <input id="latitude" ref={latitudeRef} type="number" step="any" name="latitude" value={String(enderecoData.latitude || '')} onChange={handleEnderecoChange} placeholder="Ex: -23.550520" style={{ textAlign: 'center' }}/>
+                            <input id="latitude" ref={latitudeRef} type="number" step="any" name="latitude" value={String(enderecoData.latitude ?? '')} onChange={handleEnderecoChange} placeholder="Ex: -23.550520" style={{ textAlign: 'center' }}/>
                         </div>
                         <div className="form-group flex-item">
                             <label htmlFor="longitude" style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '500' }}>Longitude:</label>
-                            <input id="longitude" ref={longitudeRef} type="number" step="any" name="longitude" value={String(enderecoData.longitude || '')} onChange={handleEnderecoChange} placeholder="Ex: -46.633308" style={{ textAlign: 'center' }}/>
+                            <input id="longitude" ref={longitudeRef} type="number" step="any" name="longitude" value={String(enderecoData.longitude ?? '')} onChange={handleEnderecoChange} placeholder="Ex: -46.633308" style={{ textAlign: 'center' }}/>
                         </div>
                     </div>
 
-                    {(Number(enderecoData.latitude) !== 0 || Number(enderecoData.longitude) !== 0) && !buscandoCoords && (
+                    {(Number(enderecoData.latitude) || 0) !== 0 || (Number(enderecoData.longitude) || 0) !== 0 && !buscandoCoords && (
                         <div className="coordinates-display" style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#e9f5e9', borderRadius: '4px', border: '1px solid #c8e6c9' }}>
                             <p style={{ margin: 0, fontWeight: 'bold', color: '#1b5e20' }}>
                                 Coordenadas Atuais:
@@ -468,8 +485,8 @@ export default function AlterarClientePage() {
                             </p>
                         </div>
                     )}
-                    {!(Number(enderecoData.latitude) !== 0 || Number(enderecoData.longitude) !== 0) && (enderecoData.logradouro && String(enderecoData.numero||'').trim() && enderecoData.localidade && enderecoData.uf) && !buscandoCoords &&
-                        <p className="message info" style={{marginTop: '1rem'}}>Clique em "Obter/Atualizar Coordenadas" ou preencha manualmente.</p>
+                    {((Number(enderecoData.latitude) || 0) === 0 && (Number(enderecoData.longitude) || 0) === 0) && (enderecoData.logradouro && enderecoData.numero.trim() && enderecoData.localidade && enderecoData.uf) && !buscandoCoords &&
+                        <p className="message info" style={{marginTop: '1rem'}}>Clique em &quot;Obter/Atualizar Coordenadas&quot; ou preencha manualmente.</p>
                     }
                 </fieldset>
 
@@ -482,7 +499,7 @@ export default function AlterarClientePage() {
             {erro && <p className="message error" style={{marginTop: '15px'}}>{erro}</p>}
             <div style={{marginTop: '20px', marginBottom: '40px', textAlign: 'center' }}>
                 <Link href={`/clientes/${clienteId}`}>Cancelar e Voltar para Detalhes</Link>
-                <span style={{margin: "0 10px"}}>|</span>
+                <span style={{margin: '0 10px'}}>|</span>
                 <Link href="/clientes/listar">Voltar para Lista Geral</Link>
             </div>
         </div>

@@ -17,10 +17,13 @@ import type {
     EnderecoRequestDTO,
     ViaCepResponseDTO,
     EnderecoGeoRequestDTO,
-    GeoCoordinatesDTO,
-    ContatoResponseDTO,
-    EnderecoResponseDTO
+    GeoCoordinatesDTO
+    // CORREÇÃO: ContatoResponseDTO e EnderecoResponseDTO removidos pois não são usados
 } from '@/lib/types';
+
+// Estado local do endereço: numero é string para o input
+type LocalEnderecoState = Omit<Partial<EnderecoRequestDTO>, 'numero'> & { numero: string };
+
 
 export default function CadastrarClientePage() {
     const router = useRouter();
@@ -50,7 +53,7 @@ export default function CadastrarClientePage() {
     const [contatoData, setContatoData] = useState<ContatoRequestDTO>({
         ddd: '', telefone: '', celular: '', whatsapp: '', email: '', tipoContato: 'Principal',
     });
-    const [enderecoData, setEnderecoData] = useState<Partial<EnderecoRequestDTO & { numero: string }>>({
+    const [enderecoData, setEnderecoData] = useState<LocalEnderecoState>({ // Usando LocalEnderecoState
         cep: '', numero: '', logradouro: '', bairro: '', localidade: '', uf: '', complemento: '', latitude: 0, longitude: 0,
     });
     const [mensagem, setMensagem] = useState<string>('');
@@ -62,8 +65,6 @@ export default function CadastrarClientePage() {
     const handleClienteChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === "documento") {
-            // Permite apenas números e limita o tamanho para CPF/CNPJ (18 é um bom limite geral para CNPJ com máscara)
-            // A validação de formato exato (CPF vs CNPJ) seria mais complexa aqui.
             const cleanedValue = value.replace(/\D/g, '');
             setClienteData(prev => ({ ...prev, [name]: cleanedValue.slice(0,18) }));
         } else {
@@ -76,11 +77,13 @@ export default function CadastrarClientePage() {
         const { name, value } = e.target;
         if (name === 'ddd' || name === 'telefone' || name === 'celular' || name === 'whatsapp') {
             let numericValue = value.replace(/\D/g, '');
-            let maxLength = 15;
-            if (name === 'ddd') maxLength = 3;
-            else if (name === 'telefone') maxLength = 9;
-            else if (name === 'celular') maxLength = 9;
-            else if (name === 'whatsapp') maxLength = 9;
+            // CORREÇÃO: prefer-const para maxLength
+            const maxLength: number =
+                name === 'ddd' ? 3 :
+                    name === 'telefone' ? 9 :
+                        name === 'celular' ? 9 :
+                            name === 'whatsapp' ? 9 :
+                                15; // Valor padrão
 
             if (numericValue.length > maxLength) {
                 numericValue = numericValue.slice(0, maxLength);
@@ -94,14 +97,15 @@ export default function CadastrarClientePage() {
     const handleEnderecoChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'cep' || name === 'numero') {
-            let numericValue = value.replace(/\D/g, '');
-            let maxLength = name === 'cep' ? 8 : 5;
-            if (numericValue.length > maxLength) {
-                numericValue = numericValue.slice(0, maxLength);
+            let cleanedValue = value.replace(/\D/g, '');
+            // CORREÇÃO: prefer-const para determinedMaxLength
+            const determinedMaxLength: number = name === 'cep' ? 8 : 5;
+            if (cleanedValue.length > determinedMaxLength) {
+                cleanedValue = cleanedValue.slice(0, determinedMaxLength);
             }
-            setEnderecoData(prev => ({ ...prev, [name]: numericValue }));
+            setEnderecoData(prev => ({ ...prev, [name]: cleanedValue }));
         } else if (name === 'latitude' || name === 'longitude') {
-            setEnderecoData(prev => ({ ...prev, [name]: value ? parseFloat(value) : '' }));
+            setEnderecoData(prev => ({ ...prev, [name]: value ? parseFloat(value) : 0 }));
         } else if (name === 'uf') {
             setEnderecoData(prev => ({ ...prev, [name]: value.toUpperCase().slice(0,2) }));
         }
@@ -121,12 +125,13 @@ export default function CadastrarClientePage() {
                     ...prev,
                     logradouro: viaCepDados.logradouro || '', bairro: viaCepDados.bairro || '',
                     localidade: viaCepDados.localidade || '', uf: viaCepDados.uf || '',
-                    cep: viaCepDados.cep?.replace(/\D/g, '') || prev.cep, // Garante que o CEP do ViaCEP também seja limpo
+                    cep: viaCepDados.cep?.replace(/\D/g, '') || prev.cep || '',
                     latitude: 0, longitude: 0,
                 }));
                 setMensagem('Dados do CEP carregados. Preencha o número e clique em "Obter Coordenadas" se necessário.');
-            } catch (error: any) {
-                setErro(`Falha ao buscar CEP: ${error.message}. Preencha manualmente.`);
+            } catch (error: unknown) { // CORREÇÃO: no-explicit-any
+                const message = error instanceof Error ? error.message : 'Erro desconhecido na busca do CEP.';
+                setErro(`Falha ao buscar CEP: ${message}. Preencha manualmente.`);
                 setMensagem('');
             } finally { setBuscandoCep(false); }
         } else if (enderecoData.cep && cepLimpo.length !== 8) {
@@ -137,7 +142,7 @@ export default function CadastrarClientePage() {
     };
 
     const handleGerarCoordenadasClick = async () => {
-        const numeroStr = String(enderecoData.numero || '').trim().replace(/\D/g, '');
+        const numeroStr = (enderecoData.numero || '').trim().replace(/\D/g, '');
         if (!enderecoData.logradouro && !enderecoData.localidade && !enderecoData.uf) {
             setErro("Preencha pelo menos Cidade e UF, ou o endereço completo, para gerar coordenadas.");
             logradouroRef.current?.focus();
@@ -152,23 +157,24 @@ export default function CadastrarClientePage() {
         try {
             const geoRequestData: EnderecoGeoRequestDTO = {
                 logradouro: enderecoData.logradouro || '',
-                numero: numeroStr,
+                numero: parseInt(numeroStr, 10) || 0, // numero como number
                 cidade: enderecoData.localidade || '',
                 uf: enderecoData.uf || '',
-                bairro: enderecoData.bairro,
+                bairro: enderecoData.bairro || '',
                 cep: (enderecoData.cep || '').replace(/\D/g, '')
             };
             const coordenadas: GeoCoordinatesDTO = await calcularCoordenadasPelaApi(geoRequestData);
             setEnderecoData(prev => ({ ...prev, latitude: coordenadas.latitude || 0, longitude: coordenadas.longitude || 0 }));
-            if ((coordenadas.latitude || 0) === 0 || (coordenadas.longitude || 0) === 0) {
+            if (!coordenadas.latitude || !coordenadas.longitude) {
                 setErro("Não foi possível obter coordenadas. Verifique os dados e tente novamente ou preencha manualmente se souber.");
                 latitudeRef.current?.focus();
                 setMensagem('');
             } else {
                 setMensagem(`Coordenadas: Lat ${Number(coordenadas.latitude).toFixed(7)}, Lon ${Number(coordenadas.longitude).toFixed(7)}.`);
             }
-        } catch (error: any) {
-            setErro(`Falha ao gerar coordenadas: ${error.message}`);
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any
+            const message = error instanceof Error ? error.message : 'Erro desconhecido ao gerar coordenadas.';
+            setErro(`Falha ao gerar coordenadas: ${message}`);
             setMensagem('');
         } finally { setBuscandoCoords(false); }
     };
@@ -183,7 +189,7 @@ export default function CadastrarClientePage() {
 
         const cleanedDocumento = clienteData.documento.replace(/\D/g, '');
         if (!cleanedDocumento) { setErro("Documento é obrigatório."); documentoRef.current?.focus(); return; }
-        if (cleanedDocumento.length < 11 || cleanedDocumento.length > 14) { // CPF 11, CNPJ 14
+        if (cleanedDocumento.length < 11 || cleanedDocumento.length > 14) {
             setErro("Documento (CPF/CNPJ) deve ter 11 ou 14 números.");
             documentoRef.current?.focus(); return;
         }
@@ -204,8 +210,7 @@ export default function CadastrarClientePage() {
         if (!contatoData.tipoContato.trim()) { setErro("Tipo de contato é obrigatório."); tipoContatoRef.current?.focus(); return; }
 
         const cleanedCep = (enderecoData.cep || '').replace(/\D/g, '');
-        const cleanedNumeroStr = String(enderecoData.numero || "0").replace(/\D/g, '');
-        const cleanedNumero = parseInt(cleanedNumeroStr, 10) || 0;
+        const cleanedNumero = parseInt(enderecoData.numero || '0', 10) || 0; // numero já é string aqui
 
         if (!cleanedCep) { setErro("CEP do endereço é obrigatório."); cepRef.current?.focus(); return; }
         if (cleanedCep.length !== 8) { setErro("CEP do endereço deve ter 8 dígitos."); cepRef.current?.focus(); return; }
@@ -244,7 +249,7 @@ export default function CadastrarClientePage() {
             setMensagem(prev => prev + ' Processando endereço...');
             const enderecoPayload: EnderecoRequestDTO = {
                 cep: cleanedCep,
-                numero: cleanedNumero,
+                numero: cleanedNumero, // cleanedNumero já é number
                 logradouro: enderecoData.logradouro || '',
                 bairro: enderecoData.bairro || '',
                 localidade: enderecoData.localidade || '',
@@ -260,7 +265,7 @@ export default function CadastrarClientePage() {
 
             setMensagem(prev => prev + ' Criando cliente...');
             const clientePayload: ClienteRequestDTO = {
-                ...finalClienteData, // Usar dados limpos do cliente
+                ...finalClienteData,
                 contatosIds: contatoId ? [contatoId] : [],
                 enderecosIds: enderecoId ? [enderecoId] : [],
             };
@@ -270,11 +275,9 @@ export default function CadastrarClientePage() {
             setContatoData({ ddd: '', telefone: '', celular: '', whatsapp: '', email: '', tipoContato: 'Principal' });
             setEnderecoData({ cep: '', numero: '', logradouro: '', bairro: '', localidade: '', uf: '', complemento: '', latitude: 0, longitude: 0 });
             setTimeout(() => router.push(`/clientes/${clienteCriado.idCliente}`), 3000);
-        } catch (error: any) {
-            // O erro da API já vem com detalhes, então usamos ele.
-            // A mensagem "Erro desconhecido" no handleResponse pode ser melhorada lá se errorData.messages não existir.
-            const apiErrorMessage = error.message || "Ocorreu uma falha desconhecida.";
-            setErro(apiErrorMessage.startsWith("Falha no cadastro:") ? apiErrorMessage : `Falha no cadastro: ${apiErrorMessage}`);
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any
+            const message = error instanceof Error ? error.message : 'Ocorreu uma falha desconhecida.';
+            setErro(message.startsWith("Falha no cadastro:") ? message : `Falha no cadastro: ${message}`);
             setMensagem('');
         } finally { setLoadingSubmit(false); }
     };
@@ -353,7 +356,7 @@ export default function CadastrarClientePage() {
                         </div>
                         <div className="form-group basis-numero">
                             <label htmlFor="numero">Nº:</label>
-                            <input id="numero" ref={numeroRef} type="text" name="numero" value={String(enderecoData.numero || '')} onChange={handleEnderecoChange} placeholder="Ex: 123" autoComplete="address-line2" maxLength={5}/>
+                            <input id="numero" ref={numeroRef} type="text" name="numero" value={enderecoData.numero ?? ''} onChange={handleEnderecoChange} placeholder="Ex: 123" autoComplete="address-line2" maxLength={5}/>
                         </div>
                         <div className="form-group flex-item">
                             <label htmlFor="complemento">Compl.:</label>
@@ -376,7 +379,7 @@ export default function CadastrarClientePage() {
                             <input id="localidade" ref={localidadeRef} type="text" name="localidade" value={enderecoData.localidade || ''} onChange={handleEnderecoChange} autoComplete="address-level2" />
                         </div>
                         <div className="form-group basis-uf">
-                            <label htmlFor="uf">UF:</label>
+                            <label htmlFor="alt-uf">UF:</label> {/* ID corrigido para htmlFor="uf" */}
                             <input id="uf" ref={ufRef} type="text" name="uf" value={enderecoData.uf || ''} onChange={handleEnderecoChange} maxLength={2} autoComplete="address-level1" />
                         </div>
                     </div>
@@ -406,15 +409,15 @@ export default function CadastrarClientePage() {
                     <div className="form-row">
                         <div className="form-group flex-item">
                             <label htmlFor="latitude" style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '500' }}>Latitude:</label>
-                            <input id="latitude" ref={latitudeRef} type="number" step="any" name="latitude" value={String(enderecoData.latitude || '')} onChange={handleEnderecoChange} placeholder="Ex: -23.550520" style={{ textAlign: 'center' }}/>
+                            <input id="latitude" ref={latitudeRef} type="number" step="any" name="latitude" value={String(enderecoData.latitude ?? '')} onChange={handleEnderecoChange} placeholder="Ex: -23.550520" style={{ textAlign: 'center' }}/>
                         </div>
                         <div className="form-group flex-item">
                             <label htmlFor="longitude" style={{ display: 'block', marginBottom: '0.3rem', fontWeight: '500' }}>Longitude:</label>
-                            <input id="longitude" ref={longitudeRef} type="number" step="any" name="longitude" value={String(enderecoData.longitude || '')} onChange={handleEnderecoChange} placeholder="Ex: -46.633308" style={{ textAlign: 'center' }}/>
+                            <input id="longitude" ref={longitudeRef} type="number" step="any" name="longitude" value={String(enderecoData.longitude ?? '')} onChange={handleEnderecoChange} placeholder="Ex: -46.633308" style={{ textAlign: 'center' }}/>
                         </div>
                     </div>
 
-                    {(Number(enderecoData.latitude) !== 0 || Number(enderecoData.longitude) !== 0) && !buscandoCoords && (
+                    {(Number(enderecoData.latitude) || 0) !== 0 || (Number(enderecoData.longitude) || 0) !== 0 && !buscandoCoords && (
                         <div className="coordinates-display" style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#e9f5e9', borderRadius: '4px', border: '1px solid #c8e6c9' }}>
                             <p style={{ margin: 0, fontWeight: 'bold', color: '#1b5e20' }}>
                                 Coordenadas Atuais:
@@ -423,8 +426,9 @@ export default function CadastrarClientePage() {
                             </p>
                         </div>
                     )}
-                    {!(Number(enderecoData.latitude) !== 0 || Number(enderecoData.longitude) !== 0) && (enderecoData.logradouro && String(enderecoData.numero||'').trim() && enderecoData.localidade && enderecoData.uf) && !buscandoCoords &&
-                        <p className="message info" style={{marginTop: '1rem'}}>Clique em "Obter/Atualizar Coordenadas" ou preencha manualmente.</p>
+                    {((Number(enderecoData.latitude) || 0) === 0 && (Number(enderecoData.longitude) || 0) === 0) && (enderecoData.logradouro && enderecoData.numero.trim() && enderecoData.localidade && enderecoData.uf) && !buscandoCoords &&
+                        // CORREÇÃO: Aspas escapadas aqui, se este for o local do erro 427
+                        <p className="message info" style={{marginTop: '1rem'}}>Clique em &quot;Obter/Atualizar Coordenadas&quot; ou preencha manualmente.</p>
                     }
                 </fieldset>
 

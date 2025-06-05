@@ -1,12 +1,14 @@
+// src/app/page.tsx
 'use client';
 
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react'; // React importado
-import Slider from "react-slick"; // Importa o Slider
-import "slick-carousel/slick/slick.css"; 
+import React, { useEffect, useState } from 'react';
+import Slider from "react-slick";
+import Image from 'next/image'; // CORREÇÃO: Importar Image do Next.js
+import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-// --- Definição de Tipos (pode mover para src/lib/types.ts) ---
+// --- Definição de Tipos ---
 interface NoticiaDesastre {
   id: string;
   titulo: string;
@@ -37,14 +39,12 @@ interface ReliefWebApiResponse {
   data: ReliefWebReport[];
 }
 
-// Interface para os shields de tecnologia
 interface TechShield {
   name: string;
   backgroundColor: string;
   color?: string;
 }
 
-// Array com as tecnologias e seus estilos (baseado na imagem fornecida)
 const technologies: TechShield[] = [
   { name: 'JAVA', backgroundColor: '#f89820', color: '#000000' },
   { name: 'SPRING BOOT', backgroundColor: '#6DB33F', color: '#FFFFFF' },
@@ -65,7 +65,6 @@ const technologies: TechShield[] = [
 ];
 
 
-// --- Componente da Página ---
 export default function HomePage() {
   const [noticias, setNoticias] = useState<NoticiaDesastre[]>([]);
   const [loadingNoticias, setLoadingNoticias] = useState<boolean>(true);
@@ -83,25 +82,25 @@ export default function HomePage() {
           throw new Error(`Falha ao buscar notícias da ReliefWeb: ${response.status} ${response.statusText}`);
         }
         const apiData: ReliefWebApiResponse = await response.json();
-        
+
         if (apiData && apiData.data) {
           const noticiasFormatadas: NoticiaDesastre[] = apiData.data.map(item => {
             let imageUrl: string | undefined = undefined;
             if (item.fields.image?.url) {
-                imageUrl = item.fields.image.url;
+              imageUrl = item.fields.image.url;
             } else if (item.fields.image?.["url-small"]) {
-                imageUrl = item.fields.image["url-small"];
+              imageUrl = item.fields.image["url-small"];
             } else if (item.fields.file && item.fields.file.length > 0 && item.fields.file[0]?.preview?.["url-small"]) {
-                imageUrl = item.fields.file[0].preview["url-small"];
+              imageUrl = item.fields.file[0].preview["url-small"];
             }
 
             let linkNoticiaFinal: string;
             if (item.fields.url) {
-                linkNoticiaFinal = item.fields.url; 
+              linkNoticiaFinal = item.fields.url;
             } else {
-                linkNoticiaFinal = `https://reliefweb.int/report/${item.id}`; 
+              linkNoticiaFinal = `https://reliefweb.int/report/${item.id}`;
             }
-            
+
             console.log(`Notícia: "${item.fields.title}", Link CORRIGIDO: ${linkNoticiaFinal}, API Href (JSON): ${item.href}`);
 
             return {
@@ -118,9 +117,15 @@ export default function HomePage() {
         } else {
           setNoticias([]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) { // CORREÇÃO: no-explicit-any (linha ~121)
         console.error("Erro ao buscar notícias:", err);
-        setErroNoticias(err.message || 'Não foi possível carregar as últimas notícias sobre desastres.');
+        let errorMessage = 'Não foi possível carregar as últimas notícias sobre desastres.';
+        if (err instanceof Error) {
+          errorMessage = err.message || errorMessage;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+        setErroNoticias(errorMessage);
       } finally {
         setLoadingNoticias(false);
       }
@@ -131,31 +136,30 @@ export default function HomePage() {
 
   const sliderSettings = {
     dots: true,
-    infinite: noticias.length > 4, 
+    infinite: noticias.length > 4,
     speed: 600,
-    slidesToShow: 4, 
+    slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 6000,
     pauseOnHover: true,
-    arrows: true, 
+    arrows: true,
     responsive: [
       {
-        breakpoint: 1200, 
+        breakpoint: 1200,
         settings: { slidesToShow: 3, arrows: true }
       },
       {
-        breakpoint: 992, 
+        breakpoint: 992,
         settings: { slidesToShow: 2, arrows: false }
       },
       {
-        breakpoint: 768, 
+        breakpoint: 768,
         settings: { slidesToShow: 1, arrows: false }
       }
     ]
   };
 
-  // --- Estilos ---
   const heroStyle: React.CSSProperties = {
     padding: '50px 20px', backgroundColor: '#00579D', color: 'white',
     textAlign: 'center', marginBottom: '40px', borderRadius: '8px',
@@ -164,12 +168,12 @@ export default function HomePage() {
     marginBottom: '40px', padding: '20px',
     backgroundColor: '#f9f9f9', borderRadius: '8px',
   };
-  const newsSectionStyle: React.CSSProperties = { 
-    margin: '0px auto 40px auto', 
-    padding: '20px', 
-    maxWidth: '100%', 
+  const newsSectionStyle: React.CSSProperties = {
+    margin: '0px auto 40px auto',
+    padding: '20px',
+    maxWidth: '100%',
     boxSizing: 'border-box',
-    backgroundColor: '#f0f3f5', 
+    backgroundColor: '#f0f3f5',
     borderRadius: '8px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.07)'
   };
@@ -195,65 +199,58 @@ export default function HomePage() {
   const cardDescriptionStyle: React.CSSProperties = {
     fontSize: '0.9em', color: '#555', lineHeight: '1.5',
   };
-  const githubLinkStyle: React.CSSProperties = { 
-    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', 
-    backgroundColor: '#28a745', color: 'white', textDecoration: 'none', 
-    borderRadius: '5px', fontWeight: '500', 
+  const githubLinkStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px',
+    backgroundColor: '#28a745', color: 'white', textDecoration: 'none',
+    borderRadius: '5px', fontWeight: '500',
     transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
   };
-  const fiapLinkStyle: React.CSSProperties = { 
-    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px', 
-    backgroundColor: '#007bff', color: 'white', textDecoration: 'none', 
-    borderRadius: '5px', fontWeight: '500', 
+  const fiapLinkStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px',
+    backgroundColor: '#007bff', color: 'white', textDecoration: 'none',
+    borderRadius: '5px', fontWeight: '500',
     transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
   };
 
-  // Estilo para a nova seção combinada (Recursos Adicionais + Desenvolvido Com)
   const resourcesAndTechSectionStyle: React.CSSProperties = {
     padding: '30px 20px',
-    backgroundColor: '#F8F9FA', // Fundo claro como na imagem de exemplo
+    backgroundColor: '#F8F9FA',
     borderRadius: '8px',
     marginTop: '40px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.07)', // Sombra sutil
+    boxShadow: '0 4px 12px rgba(0,0,0,0.07)',
   };
 
-  // Estilo para o título da subseção "Desenvolvido Com"
   const developedWithTitleStyle: React.CSSProperties = {
     textAlign: 'center',
     fontSize: '1.8em',
     marginBottom: '25px',
     color: '#4A4A4A',
-    fontWeight: 500, // Peso mais leve para o subtítulo
+    fontWeight: 500,
   };
 
-  // Estilo para o ícone ao lado do título "Desenvolvido Com"
   const developedWithIconStyle: React.CSSProperties = {
-    fontSize: '1em', 
+    fontSize: '1em',
     verticalAlign: 'middle',
     marginRight: '10px',
     color: '#4A4A4A',
   };
-  
-  // Estilo para o container dos shields de tecnologia
+
   const techShieldsContainerStyle: React.CSSProperties = {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: '10px', // Espaçamento entre os shields
-    marginTop: '20px' // Espaçamento em relação ao título "Desenvolvido Com"
+    gap: '10px',
+    marginTop: '20px'
   };
 
-  // Estilo base para cada shield de tecnologia
   const shieldStyle: React.CSSProperties = {
     padding: '6px 12px',
     borderRadius: '4px',
     fontSize: '0.9em',
     fontWeight: 500,
     display: 'inline-block',
-    // As cores (backgroundColor e color) serão aplicadas dinamicamente
   };
-  
-  // Funções de hover
+
   const handleMouseOverCard = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.currentTarget.style.transform = 'translateY(-5px)';
     e.currentTarget.style.boxShadow = '0 8px 15px rgba(0,0,0,0.2)';
@@ -317,86 +314,91 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SEÇÃO DE NOTÍCIAS */}
-        {loadingNoticias && 
-          <div style={{textAlign: 'center', padding: '30px'}}>
-            <p className="message info">Carregando últimas notícias sobre desastres...</p>
-          </div>
+        {loadingNoticias &&
+            <div style={{textAlign: 'center', padding: '30px'}}>
+              <p className="message info">Carregando últimas notícias sobre desastres...</p>
+            </div>
         }
-        {erroNoticias && 
-          <div style={{textAlign: 'center', padding: '30px'}}>
-            <p className="message error">{erroNoticias}</p>
-          </div>
+        {erroNoticias &&
+            <div style={{textAlign: 'center', padding: '30px'}}>
+              <p className="message error">{erroNoticias}</p>
+            </div>
         }
         {!loadingNoticias && noticias.length > 0 && (
-          <section style={newsSectionStyle}>
-            <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>
+            <section style={newsSectionStyle}>
+              <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.1em', verticalAlign: 'bottom', marginRight: '8px' }}>feed</span>
                 Últimas Notícias e Alertas de Desastres
-            </h2>
-            <Slider {...sliderSettings}>
-              {noticias.map(noticia => (
-                <div key={noticia.id} style={{ padding: '0 8px' }}>
-                  <a href={noticia.linkUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ler mais sobre ${noticia.titulo}`}
-                     style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '380px' }}>
-                    <div style={{ 
-                        border: '1px solid #ddd', borderRadius: '8px', 
-                        overflow: 'hidden', backgroundColor: 'white',
-                        display: 'flex', flexDirection: 'column', height: '100%',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)';}}
-                    onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';}}
-                    >
-                      {noticia.imagemUrl ? (
-                        <img src={noticia.imagemUrl} alt=""  
-                             style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '180px', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d' }}>
-                            <span className="material-icons-outlined" style={{fontSize: '3em'}}>image_not_supported</span>
-                        </div>
-                      )}
-                      <div style={{ padding: '15px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                            <h3 style={{ 
-                                fontSize: '1rem', fontWeight: 'bold', margin: '0 0 8px 0', 
+              </h2>
+              <Slider {...sliderSettings}>
+                {noticias.map(noticia => (
+                    <div key={noticia.id} style={{ padding: '0 8px' }}>
+                      <a href={noticia.linkUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ler mais sobre ${noticia.titulo}`}
+                         style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '380px' }}>
+                        <div style={{
+                          border: '1px solid #ddd', borderRadius: '8px',
+                          overflow: 'hidden', backgroundColor: 'white',
+                          display: 'flex', flexDirection: 'column', height: '100%',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                        }}
+                             onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)';}}
+                             onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';}}
+                        >
+                          {/* CORREÇÃO: Usar <Image /> do Next.js (linha ~353) */}
+                          {noticia.imagemUrl ? (
+                              <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+                                <Image
+                                    src={noticia.imagemUrl}
+                                    alt={`Imagem da notícia: ${noticia.titulo}`}
+                                    fill={true} // Para preencher o contêiner pai
+                                    style={{ objectFit: 'cover' }}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Opcional: para otimizar o carregamento em diferentes telas
+                                />
+                              </div>
+                          ) : (
+                              <div style={{ width: '100%', height: '180px', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d' }}>
+                                <span className="material-icons-outlined" style={{fontSize: '3em'}}>image_not_supported</span>
+                              </div>
+                          )}
+                          <div style={{ padding: '15px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                              <h3 style={{
+                                fontSize: '1rem', fontWeight: 'bold', margin: '0 0 8px 0',
                                 color: '#0056b3',
-                                height: '60px', 
-                                overflow: 'hidden', 
+                                height: '60px',
+                                overflow: 'hidden',
                                 display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical'
-                            }} title={noticia.titulo}>
+                              }} title={noticia.titulo}>
                                 {noticia.titulo}
-                            </h3>
-                        </div>
-                        <div>
-                            <small style={{ color: '#007bff', fontWeight: '500', display: 'block', marginBottom: '3px' }}>
+                              </h3>
+                            </div>
+                            <div>
+                              <small style={{ color: '#007bff', fontWeight: '500', display: 'block', marginBottom: '3px' }}>
                                 {noticia.fonte || 'Fonte não disponível'}
-                            </small>
-                            <small style={{ color: '#777', display: 'block' }}>
+                              </small>
+                              <small style={{ color: '#777', display: 'block' }}>
                                 {new Date(noticia.dataPublicacao).toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'})}
-                            </small>
+                              </small>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      </a>
                     </div>
-                  </a>
-                </div>
-              ))}
-            </Slider>
-          </section>
+                ))}
+              </Slider>
+            </section>
         )}
         {!loadingNoticias && noticias.length === 0 && !erroNoticias &&
             <div style={{textAlign: 'center', padding: '30px'}}>
-                <p className="message info">Nenhuma notícia de desastre recente encontrada no momento.</p>
+              <p className="message info">Nenhuma notícia de desastre recente encontrada no momento.</p>
             </div>
         }
-        {/* FIM DA SEÇÃO DE NOTÍCIAS */}
 
-        {/* SEÇÃO DE RECURSOS ADICIONAIS E TECNOLOGIAS UTILIZADAS */}
         <section style={resourcesAndTechSectionStyle}>
           <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>Recursos Adicionais</h2>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <a href="https://github.com/carmipa/GS_FIAP_2025_1SM" target="_blank" rel="noopener noreferrer" style={githubLinkStyle} 
+            <a href="https://github.com/carmipa/GS_FIAP_2025_1SM" target="_blank" rel="noopener noreferrer" style={githubLinkStyle}
                onMouseOver={(e) => handleMouseOverButton(e, true)} onMouseOut={(e) => handleMouseOutButton(e, true)}>
               <span className="material-icons-outlined">code</span>
               Ver Projeto no GitHub
@@ -408,23 +410,22 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* Subseção Desenvolvido Com */}
-          <div style={{ marginTop: '50px' }}> {/* Adiciona um espaço maior acima do "Desenvolvido Com" */}
+          <div style={{ marginTop: '50px' }}>
             <h2 style={developedWithTitleStyle}>
               <span className="material-icons-outlined" style={developedWithIconStyle}>schedule</span>
               Desenvolvido Com
             </h2>
             <div style={techShieldsContainerStyle}>
               {technologies.map(tech => (
-                <span 
-                  key={tech.name} 
-                  style={{
-                    ...shieldStyle, 
-                    backgroundColor: tech.backgroundColor, 
-                    color: tech.color || '#FFFFFF' // Default text color branco se não especificado
-                  }}
-                  title={tech.name} // Adiciona um tooltip com o nome da tecnologia
-                >
+                  <span
+                      key={tech.name}
+                      style={{
+                        ...shieldStyle,
+                        backgroundColor: tech.backgroundColor,
+                        color: tech.color || '#FFFFFF'
+                      }}
+                      title={tech.name}
+                  >
                   {tech.name}
                 </span>
               ))}

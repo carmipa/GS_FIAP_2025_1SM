@@ -53,7 +53,11 @@ export default function BuscarUsuarioPage() {
                 return;
             }
             router.push(`/clientes/${termoBusca}`);
+<<<<<<< HEAD
             // setLoading(false) não é ideal aqui, pois o carregamento é da próxima página.
+=======
+            // setLoading(false); // Opcional, pois a navegação muda a UI.
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
         } else if (tipoBusca === 'documento') {
             const documentoLimpo = termoBusca.replace(/\D/g, '');
             if (!documentoLimpo || (documentoLimpo.length !== 11 && documentoLimpo.length !== 14)) {
@@ -72,12 +76,28 @@ export default function BuscarUsuarioPage() {
                     console.warn(`Busca por documento ${documentoLimpo} retornou sucesso mas sem dados de usuário válidos.`);
                     setErro(`Não foi possível encontrar informações para o documento ${documentoLimpo}.`);
                 }
+<<<<<<< HEAD
             // Correção: Tipar error como unknown e tratar
             } catch (error: unknown) {
                 console.error(`Falha ao buscar usuário por documento ${documentoLimpo}:`, error);
                 // Verifica se error é uma instância de Error para acessar error.message de forma segura
                 const message = error instanceof Error ? error.message : `Nenhum usuário encontrado com o documento ${documentoLimpo}.`;
                 setErro(message);
+=======
+            } catch (error: unknown) { // CORREÇÃO: de 'any' para 'unknown'
+                console.error(`Falha ao buscar usuário por documento ${documentoLimpo}:`, error);
+                let errorMessage = `Nenhum usuário encontrado com o documento ${documentoLimpo}. Verifique o documento e tente novamente.`;
+                if (error instanceof Error) {
+                    // Se a mensagem da API já for "amigável", podemos usá-la, senão, uma mensagem genérica.
+                    // Exemplo: se error.message for "Cliente não encontrado com o documento X", podemos preferir a mensagem mais genérica.
+                    // Se error.message for algo como "Erro de rede", pode ser útil mostrá-la.
+                    // A lógica abaixo tenta priorizar a mensagem do erro se ela existir.
+                    errorMessage = error.message || errorMessage;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                setErro(errorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             } finally {
                 setLoading(false);
             }

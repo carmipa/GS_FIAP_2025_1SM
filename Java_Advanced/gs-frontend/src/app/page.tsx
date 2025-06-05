@@ -3,14 +3,22 @@
 'use client';
 
 import Link from 'next/link';
+<<<<<<< HEAD
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+=======
+import React, { useEffect, useState } from 'react';
+import Slider from "react-slick";
+import Image from 'next/image'; // CORREÇÃO: Importar Image do Next.js
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 
-// --- Definição de Tipos (pode mover para src/lib/types.ts) ---
+// --- Definição de Tipos ---
 interface NoticiaDesastre {
   id: string;
   titulo: string;
@@ -41,7 +49,32 @@ interface ReliefWebApiResponse {
   data: ReliefWebReport[];
 }
 
-// --- Componente da Página ---
+interface TechShield {
+  name: string;
+  backgroundColor: string;
+  color?: string;
+}
+
+const technologies: TechShield[] = [
+  { name: 'JAVA', backgroundColor: '#f89820', color: '#000000' },
+  { name: 'SPRING BOOT', backgroundColor: '#6DB33F', color: '#FFFFFF' },
+  { name: 'ORACLE', backgroundColor: '#F80000', color: '#FFFFFF' },
+  { name: 'SWAGGER', backgroundColor: '#85EA2D', color: '#000000' },
+  { name: 'OPENAPI', backgroundColor: '#6BA539', color: '#FFFFFF' },
+  { name: 'NEXT.JS', backgroundColor: '#000000', color: '#FFFFFF' },
+  { name: 'REACT', backgroundColor: '#61DAFB', color: '#000000' },
+  { name: 'TYPESCRIPT', backgroundColor: '#3178C6', color: '#FFFFFF' },
+  { name: 'LEAFLET', backgroundColor: '#199900', color: '#FFFFFF' },
+  { name: 'CHART.JS', backgroundColor: '#FF6384', color: '#FFFFFF' },
+  { name: 'REACT SLICK', backgroundColor: '#3498DB', color: '#FFFFFF' },
+  { name: 'NASA EONET API', backgroundColor: '#11356F', color: '#FFFFFF' },
+  { name: 'GOOGLE GEOCODING API', backgroundColor: '#34A853', color: '#FFFFFF' },
+  { name: 'VIACEP API', backgroundColor: '#5CB85C', color: '#FFFFFF' },
+  { name: 'RELIEFWEB API', backgroundColor: '#007bff', color: '#FFFFFF' },
+  { name: 'OPENSTREETMAP', backgroundColor: '#7FBC6E', color: '#000000' },
+];
+
+
 export default function HomePage() {
   const [noticias, setNoticias] = useState<NoticiaDesastre[]>([]);
   const [loadingNoticias, setLoadingNoticias] = useState<boolean>(true);
@@ -69,6 +102,7 @@ export default function HomePage() {
             let imageUrl: string | undefined = undefined;
             if (item.fields.image?.url) {
               imageUrl = item.fields.image.url;
+<<<<<<< HEAD
             } else if (item.fields.image?.['url-small']) {
               imageUrl = item.fields.image['url-small'];
             } else if (
@@ -77,11 +111,27 @@ export default function HomePage() {
               item.fields.file[0]?.preview?.['url-small']
             ) {
               imageUrl = item.fields.file[0].preview['url-small'];
+=======
+            } else if (item.fields.image?.["url-small"]) {
+              imageUrl = item.fields.image["url-small"];
+            } else if (item.fields.file && item.fields.file.length > 0 && item.fields.file[0]?.preview?.["url-small"]) {
+              imageUrl = item.fields.file[0].preview["url-small"];
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             }
+
+            let linkNoticiaFinal: string;
+            if (item.fields.url) {
+              linkNoticiaFinal = item.fields.url;
+            } else {
+              linkNoticiaFinal = `https://reliefweb.int/report/${item.id}`;
+            }
+
+            console.log(`Notícia: "${item.fields.title}", Link CORRIGIDO: ${linkNoticiaFinal}, API Href (JSON): ${item.href}`);
 
             return {
               id: item.id,
               titulo: item.fields.title,
+<<<<<<< HEAD
               linkUrl: item.fields.url || item.href || '#',
               dataPublicacao: item.fields.date.created,
               fonte:
@@ -89,6 +139,12 @@ export default function HomePage() {
                   ? item.fields.source[0].name
                   : 'ReliefWeb',
               resumoHtml: item.fields['body-html'],
+=======
+              linkUrl: linkNoticiaFinal,
+              dataPublicacao: item.fields.date.created,
+              fonte: item.fields.source && item.fields.source.length > 0 ? item.fields.source[0].name : 'ReliefWeb',
+              resumoHtml: item.fields["body-html"],
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
               imagemUrl: imageUrl,
             };
           });
@@ -96,12 +152,24 @@ export default function HomePage() {
         } else {
           setNoticias([]);
         }
+<<<<<<< HEAD
       } catch (err: unknown) {
         console.error('Erro ao buscar notícias:', err);
         const message = err instanceof Error ? err.message : String(err);
         setErroNoticias(
           message || 'Não foi possível carregar as últimas notícias sobre desastres.'
         );
+=======
+      } catch (err: unknown) { // CORREÇÃO: no-explicit-any (linha ~121)
+        console.error("Erro ao buscar notícias:", err);
+        let errorMessage = 'Não foi possível carregar as últimas notícias sobre desastres.';
+        if (err instanceof Error) {
+          errorMessage = err.message || errorMessage;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+        setErroNoticias(errorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
       } finally {
         setLoadingNoticias(false);
       }
@@ -123,6 +191,7 @@ export default function HomePage() {
     responsive: [
       {
         breakpoint: 1200,
+<<<<<<< HEAD
         settings: { slidesToShow: 3, arrows: true },
       },
       {
@@ -134,15 +203,43 @@ export default function HomePage() {
         settings: { slidesToShow: 1, arrows: false },
       },
     ],
+=======
+        settings: { slidesToShow: 3, arrows: true }
+      },
+      {
+        breakpoint: 992,
+        settings: { slidesToShow: 2, arrows: false }
+      },
+      {
+        breakpoint: 768,
+        settings: { slidesToShow: 1, arrows: false }
+      }
+    ]
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
   };
 
-  // Estilos (mantidos da sua versão anterior da página)
   const heroStyle: React.CSSProperties = {
+<<<<<<< HEAD
     padding: '50px 20px',
     backgroundColor: '#00579D',
     color: 'white',
     textAlign: 'center',
     marginBottom: '40px',
+=======
+    padding: '50px 20px', backgroundColor: '#00579D', color: 'white',
+    textAlign: 'center', marginBottom: '40px', borderRadius: '8px',
+  };
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: '40px', padding: '20px',
+    backgroundColor: '#f9f9f9', borderRadius: '8px',
+  };
+  const newsSectionStyle: React.CSSProperties = {
+    margin: '0px auto 40px auto',
+    padding: '20px',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    backgroundColor: '#f0f3f5',
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
     borderRadius: '8px',
   };
 
@@ -206,6 +303,7 @@ export default function HomePage() {
     color: '#555',
     lineHeight: '1.5',
   };
+<<<<<<< HEAD
 
   const githubLinkStyle: React.CSSProperties = {
     display: 'inline-flex',
@@ -234,6 +332,60 @@ export default function HomePage() {
   };
 
   // Funções de hover (você pode otimizar ou mover para CSS)
+=======
+  const githubLinkStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px',
+    backgroundColor: '#28a745', color: 'white', textDecoration: 'none',
+    borderRadius: '5px', fontWeight: '500',
+    transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+  };
+  const fiapLinkStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 20px',
+    backgroundColor: '#007bff', color: 'white', textDecoration: 'none',
+    borderRadius: '5px', fontWeight: '500',
+    transition: 'background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+  };
+
+  const resourcesAndTechSectionStyle: React.CSSProperties = {
+    padding: '30px 20px',
+    backgroundColor: '#F8F9FA',
+    borderRadius: '8px',
+    marginTop: '40px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.07)',
+  };
+
+  const developedWithTitleStyle: React.CSSProperties = {
+    textAlign: 'center',
+    fontSize: '1.8em',
+    marginBottom: '25px',
+    color: '#4A4A4A',
+    fontWeight: 500,
+  };
+
+  const developedWithIconStyle: React.CSSProperties = {
+    fontSize: '1em',
+    verticalAlign: 'middle',
+    marginRight: '10px',
+    color: '#4A4A4A',
+  };
+
+  const techShieldsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '10px',
+    marginTop: '20px'
+  };
+
+  const shieldStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: '4px',
+    fontSize: '0.9em',
+    fontWeight: 500,
+    display: 'inline-block',
+  };
+
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
   const handleMouseOverCard = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.currentTarget.style.transform = 'translateY(-5px)';
     e.currentTarget.style.boxShadow = '0 8px 15px rgba(0,0,0,0.2)';
@@ -319,6 +471,7 @@ export default function HomePage() {
             </span>
           </Link>
 
+<<<<<<< HEAD
           <Link
             href="/desastres"
             style={cardStyle}
@@ -489,6 +642,125 @@ export default function HomePage() {
               </div>
             ))}
           </Slider>
+=======
+        {loadingNoticias &&
+            <div style={{textAlign: 'center', padding: '30px'}}>
+              <p className="message info">Carregando últimas notícias sobre desastres...</p>
+            </div>
+        }
+        {erroNoticias &&
+            <div style={{textAlign: 'center', padding: '30px'}}>
+              <p className="message error">{erroNoticias}</p>
+            </div>
+        }
+        {!loadingNoticias && noticias.length > 0 && (
+            <section style={newsSectionStyle}>
+              <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>
+                <span className="material-icons-outlined" style={{ fontSize: '1.1em', verticalAlign: 'bottom', marginRight: '8px' }}>feed</span>
+                Últimas Notícias e Alertas de Desastres
+              </h2>
+              <Slider {...sliderSettings}>
+                {noticias.map(noticia => (
+                    <div key={noticia.id} style={{ padding: '0 8px' }}>
+                      <a href={noticia.linkUrl} target="_blank" rel="noopener noreferrer" aria-label={`Ler mais sobre ${noticia.titulo}`}
+                         style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '380px' }}>
+                        <div style={{
+                          border: '1px solid #ddd', borderRadius: '8px',
+                          overflow: 'hidden', backgroundColor: 'white',
+                          display: 'flex', flexDirection: 'column', height: '100%',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                          transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                        }}
+                             onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)';}}
+                             onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';}}
+                        >
+                          {/* CORREÇÃO: Usar <Image /> do Next.js (linha ~353) */}
+                          {noticia.imagemUrl ? (
+                              <div style={{ position: 'relative', width: '100%', height: '180px' }}>
+                                <Image
+                                    src={noticia.imagemUrl}
+                                    alt={`Imagem da notícia: ${noticia.titulo}`}
+                                    fill={true} // Para preencher o contêiner pai
+                                    style={{ objectFit: 'cover' }}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Opcional: para otimizar o carregamento em diferentes telas
+                                />
+                              </div>
+                          ) : (
+                              <div style={{ width: '100%', height: '180px', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d' }}>
+                                <span className="material-icons-outlined" style={{fontSize: '3em'}}>image_not_supported</span>
+                              </div>
+                          )}
+                          <div style={{ padding: '15px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                              <h3 style={{
+                                fontSize: '1rem', fontWeight: 'bold', margin: '0 0 8px 0',
+                                color: '#0056b3',
+                                height: '60px',
+                                overflow: 'hidden',
+                                display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical'
+                              }} title={noticia.titulo}>
+                                {noticia.titulo}
+                              </h3>
+                            </div>
+                            <div>
+                              <small style={{ color: '#007bff', fontWeight: '500', display: 'block', marginBottom: '3px' }}>
+                                {noticia.fonte || 'Fonte não disponível'}
+                              </small>
+                              <small style={{ color: '#777', display: 'block' }}>
+                                {new Date(noticia.dataPublicacao).toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'})}
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
+                ))}
+              </Slider>
+            </section>
+        )}
+        {!loadingNoticias && noticias.length === 0 && !erroNoticias &&
+            <div style={{textAlign: 'center', padding: '30px'}}>
+              <p className="message info">Nenhuma notícia de desastre recente encontrada no momento.</p>
+            </div>
+        }
+
+        <section style={resourcesAndTechSectionStyle}>
+          <h2 style={{ textAlign: 'center', fontSize: '2em', marginBottom: '25px', color: '#333' }}>Recursos Adicionais</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <a href="https://github.com/carmipa/GS_FIAP_2025_1SM" target="_blank" rel="noopener noreferrer" style={githubLinkStyle}
+               onMouseOver={(e) => handleMouseOverButton(e, true)} onMouseOut={(e) => handleMouseOutButton(e, true)}>
+              <span className="material-icons-outlined">code</span>
+              Ver Projeto no GitHub
+            </a>
+            <a href="https://www.fiap.com.br/graduacao/global-solution/" target="_blank" rel="noopener noreferrer" style={fiapLinkStyle}
+               onMouseOver={(e) => handleMouseOverButton(e, false)} onMouseOut={(e) => handleMouseOutButton(e, false)}>
+              <span className="material-icons-outlined">school</span>
+              Saiba mais sobre a Global Solution FIAP
+            </a>
+          </div>
+
+          <div style={{ marginTop: '50px' }}>
+            <h2 style={developedWithTitleStyle}>
+              <span className="material-icons-outlined" style={developedWithIconStyle}>schedule</span>
+              Desenvolvido Com
+            </h2>
+            <div style={techShieldsContainerStyle}>
+              {technologies.map(tech => (
+                  <span
+                      key={tech.name}
+                      style={{
+                        ...shieldStyle,
+                        backgroundColor: tech.backgroundColor,
+                        color: tech.color || '#FFFFFF'
+                      }}
+                      title={tech.name}
+                  >
+                  {tech.name}
+                </span>
+              ))}
+            </div>
+          </div>
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
         </section>
       )}
       {!loadingNoticias && noticias.length === 0 && !erroNoticias && (

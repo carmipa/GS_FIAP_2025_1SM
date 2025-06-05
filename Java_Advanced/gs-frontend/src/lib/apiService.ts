@@ -8,6 +8,10 @@ import type {
     EonetResponseDTO, NasaEonetEventDTO,
     CategoryCountDTO,
     UserAlertRequestDTO
+<<<<<<< HEAD
+=======
+    // CORREÇÃO: AlertableEventDTO removido pois não é usado
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -19,7 +23,12 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
 
     if (!response.ok) {
         const errorPrefix = `[apiService][${timestamp}] ERRO na API para ${requestUrl}`;
+<<<<<<< HEAD
         let errorPayload: unknown = null;
+=======
+        // CORREÇÃO: Tipagem de errorPayload para Partial<ApiErrorResponse> | null
+        let errorPayload: Partial<ApiErrorResponse> | null = null;
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
         let errorTextMessage: string | null = null;
         const responseCloneForErrorParsing = response.clone();
 
@@ -27,12 +36,17 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
             const contentType = response.headers.get("content-type");
             console.log(`${errorPrefix} - Content-Type da resposta de erro: ${contentType}`);
             if (contentType && contentType.includes("application/json")) {
+<<<<<<< HEAD
                 errorPayload = await response.json();
+=======
+                errorPayload = await response.json() as Partial<ApiErrorResponse>;
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 console.log(`${errorPrefix} - Corpo do erro (JSON parseado):`, errorPayload);
             } else {
                 errorTextMessage = await response.text();
                 console.log(`${errorPrefix} - Corpo do erro (Texto puro):`, errorTextMessage);
             }
+<<<<<<< HEAD
         } catch (e) {
             console.warn(`${errorPrefix} - Falha ao parsear o corpo do erro.`, e);
             try {
@@ -40,10 +54,22 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
                 console.log(`${errorPrefix} - Texto do clone após falha:`, errorTextMessage);
             } catch (e2) {
                 console.warn(`${errorPrefix} - Falha ao ler texto do clone.`, e2);
+=======
+        } catch (e: unknown) { // Tipar erro do catch
+            const parseErrorMessage = e instanceof Error ? e.message : String(e);
+            console.warn(`${errorPrefix} - Falha ao parsear o corpo do erro (JSON ou Texto). Tentando ler o corpo do clone como texto. Erro original do parse:`, parseErrorMessage);
+            try {
+                errorTextMessage = await responseCloneForErrorParsing.text();
+                console.log(`${errorPrefix} - Corpo do erro (Texto do clone após falha no parse):`, errorTextMessage);
+            } catch (e2: unknown) { // Tipar erro do catch
+                const parseCloneErrorMessage = e2 instanceof Error ? e2.message : String(e2);
+                console.warn(`${errorPrefix} - Falha crítica ao ler o corpo do erro como texto do clone.`, parseCloneErrorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             }
         }
 
         let finalErrorMessage = `Erro ${response.status}: ${response.statusText || "Falha na requisição"}`;
+<<<<<<< HEAD
         if (typeof errorPayload === 'object' && errorPayload !== null) {
             const payload = errorPayload as Record<string, unknown>;
             if (typeof payload.message === 'string' && payload.message.trim()) {
@@ -54,6 +80,15 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
                 finalErrorMessage = `${payload.error} (Status: ${payload.status || response.status})`;
             }
         } else if (errorTextMessage?.trim()) {
+=======
+        if (errorPayload && typeof errorPayload.message === 'string' && errorPayload.message.trim() !== '') {
+            finalErrorMessage = errorPayload.message;
+        } else if (errorPayload && Array.isArray(errorPayload.messages) && errorPayload.messages.length > 0) {
+            finalErrorMessage = errorPayload.messages.join('; ');
+        } else if (errorPayload && typeof errorPayload.error === 'string') {
+            finalErrorMessage = `${errorPayload.error} (Status: ${errorPayload.status || response.status})`;
+        } else if (errorTextMessage && errorTextMessage.trim() !== '') {
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             finalErrorMessage = errorTextMessage.substring(0, 300);
         }
 
@@ -62,7 +97,11 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
     }
 
     if (response.status === 204) {
+<<<<<<< HEAD
         console.log(`[apiService][${timestamp}] Resposta 204 (No Content) para ${requestUrl}.`);
+=======
+        console.log(`[apiService][${timestamp}] Resposta 204 (No Content) para ${requestUrl}. Retornando null.`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
         return null as T;
     }
 
@@ -70,15 +109,38 @@ async function handleResponse<T>(response: Response, requestUrl: string): Promis
         const contentType = response.headers.get("content-type");
         if (contentType?.includes("application/json")) {
             const jsonData = await response.json();
+<<<<<<< HEAD
             return jsonData as T;
         } else {
             const textData = await response.text();
+=======
+            const previewData = JSON.stringify(jsonData).substring(0, 300) + (JSON.stringify(jsonData).length > 300 ? "..." : "");
+            console.log(`[apiService][${timestamp}] Resposta JSON OK para ${requestUrl}. Preview dos dados:`, previewData);
+            return jsonData as T;
+        } else {
+            const textData = await response.text();
+            console.log(`[apiService][${timestamp}] Resposta Texto OK para ${requestUrl}:`, textData.substring(0,300) + "...");
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             return textData as unknown as T;
         }
-    } catch (e) {
+    } catch (e: unknown) { // Tipar erro do catch
         const errorTimestamp = new Date().toISOString();
+<<<<<<< HEAD
         console.error(`[apiService][${errorTimestamp}] Erro ao parsear resposta para ${requestUrl}`, e);
         throw new Error(`Erro ao processar a resposta da API (${requestUrl}): ${(e as Error).message}`);
+=======
+        const parseErrorMessage = e instanceof Error ? (e as Error).message : String(e);
+        console.error(`[apiService][${errorTimestamp}] Erro CRÍTICO ao parsear resposta OK para ${requestUrl}. Isso não deveria acontecer se a API envia JSON válido. Erro:`, parseErrorMessage);
+        let responseTextForDebug = "[Não foi possível ler o corpo da resposta como texto]";
+        try {
+            const responseClone = response.clone();
+            responseTextForDebug = await responseClone.text();
+        } catch { // CORREÇÃO: eDebug removido pois não é usado
+            // Silencia o erro de leitura do corpo para depuração
+        }
+        console.error(`[apiService][${errorTimestamp}] Corpo da resposta (texto) que falhou no parse JSON para ${requestUrl}:`, responseTextForDebug.substring(0, 500) + "...");
+        throw new Error(`Falha ao processar a resposta JSON da API para ${requestUrl}. Detalhes: ${parseErrorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
     }
 }
 
@@ -161,7 +223,7 @@ export async function deletarCliente(id: number): Promise<void> {
     console.log(`[apiService] deletarCliente - Preparando para chamar: ${requestUrl}. API_BASE_URL: "${API_BASE_URL}"`);
     try {
         const response = await fetch(requestUrl, { method: 'DELETE' });
-        await handleResponse<void>(response, requestUrl);
+        await handleResponse<void>(response, requestUrl); // handleResponse retornará null para 204, que é void
     } catch (error) {
         console.error(`[apiService] deletarCliente - Erro CAPTURADO no fetch para ${requestUrl}:`, error instanceof Error ? error.message : error, error);
         throw error;
@@ -347,14 +409,14 @@ export async function triggerUserSpecificAlert(data: UserAlertRequestDTO): Promi
                     } else if (errorJson.error && typeof errorJson.error === 'string' && errorJson.status) {
                         errorMessage = `${errorJson.error} (Status: ${errorJson.status})`;
                     }
-
                 } else {
                     const errorText = await response.text();
                     console.log(`${errorPrefix} - Corpo do erro (Texto):`, errorText);
                     if (errorText) errorMessage = errorText;
                 }
-            } catch (e) {
-                console.error(`${errorPrefix} - Erro ao processar resposta de erro da API:`, e);
+            } catch (e: unknown) { // Tipar erro do catch
+                const parseErrorMessage = e instanceof Error ? e.message : String(e);
+                console.error(`${errorPrefix} - Erro ao processar resposta de erro da API:`, parseErrorMessage);
             }
             console.error(`[apiService] API Error (triggerUserSpecificAlert): ${errorMessage}`);
             throw new Error(errorMessage);

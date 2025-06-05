@@ -18,8 +18,13 @@ import type {
     NasaEonetCategoryDTO,
     NasaEonetGeometryDTO,
     ClienteResponseDTO,
+<<<<<<< HEAD
     UserAlertRequestDTO,
     // AlertableEventDTO, // Removido pois não é usado diretamente
+=======
+    UserAlertRequestDTO
+    // CORREÇÃO: AlertableEventDTO removido se não for usado (o linter indicou)
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 } from '@/lib/types';
 
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
@@ -38,8 +43,9 @@ const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'),
 const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | null => {
     try {
         return JSON.parse(jsonString) as Partial<NasaEonetEventDTO>;
-    } catch (error) {
-        console.error("Erro ao parsear JSON do evento EONET:", error, jsonString);
+    } catch (error: unknown) { // Melhorar tipagem do catch
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("Erro ao parsear JSON do evento EONET:", message, jsonString);
         return null;
     }
 };
@@ -52,10 +58,10 @@ const getCoordinatesFromEvent = (geometry: NasaEonetGeometryDTO[] | undefined): 
     }
     const firstGeom = geometry[0];
     if (firstGeom && Array.isArray(firstGeom.coordinates)) {
-        if (firstGeom.type === "Polygon" && 
-            Array.isArray(firstGeom.coordinates[0]) && 
+        if (firstGeom.type === "Polygon" &&
+            Array.isArray(firstGeom.coordinates[0]) &&
             Array.isArray(firstGeom.coordinates[0][0]) &&
-            firstGeom.coordinates[0][0].length === 2 
+            firstGeom.coordinates[0][0].length === 2
         ) {
             return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
         }
@@ -122,16 +128,27 @@ export default function DesastresPage() {
         try {
             const data = await listarEventosEonet(page, 5);
             setEventosLocaisPage(data);
+<<<<<<< HEAD
         // Correção: Tipar error como unknown e tratar
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             setErroListagemLocal(`Falha ao carregar eventos locais: ${message || 'Erro desconhecido'}`);
+=======
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~113)
+            let errorMessage = 'Erro desconhecido ao carregar eventos locais.';
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroListagemLocal(`Falha ao carregar eventos locais: ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setEventosLocaisPage(null);
         } finally {
             setLoadingListagemLocal(false);
         }
     };
-    
+
     useEffect(() => {
         setSyncMensagem(null); setSyncErro(null);
         if (erroProximidade && !(erroProximidade.includes("Usuário") || erroProximidade.includes("ID de Usuário") || erroProximidade.includes("coordenadas"))) {
@@ -139,7 +156,7 @@ export default function DesastresPage() {
         }
         setMensagemAlertaProximidade(null); setErroAlertaProximidade(null);
         setMensagemAlertarUsuario(null); setErroAlertarUsuario(null);
-    
+
         if (activeTab !== 'alertarUsuario') {
             setAlertarUsuarioParams({ usuarioId: '', eventoEonetId: '' });
             setVerifiedUsuario(null);
@@ -148,18 +165,18 @@ export default function DesastresPage() {
         if (activeTab !== 'buscarProximos' && !proximidadeParams.clienteId) {
             setNomeUsuarioParaCoords(null);
         }
-    
+
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab]); 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab]);
 
     useEffect(() => {
         if (activeTab === 'listarLocais') {
             fetchEventosLocais(currentLocalPage);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentLocalPage]);
 
     const handleSyncParamChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -174,6 +191,7 @@ export default function DesastresPage() {
         try {
             const eventosSincronizados = await sincronizarNasaEonet(limitNum, daysNum, syncParams.status || undefined, syncParams.source || undefined);
             setSyncMensagem(`${eventosSincronizados.length} evento(s) processado(s) / sincronizado(s) com sucesso!`);
+<<<<<<< HEAD
              if (activeTab === 'listarLocais') { 
                  fetchEventosLocais(0); 
                  setCurrentLocalPage(0);
@@ -182,6 +200,20 @@ export default function DesastresPage() {
         } catch (error: unknown) { 
             const message = error instanceof Error ? error.message : String(error);
             setSyncErro(`Falha na sincronização: ${message || 'Erro desconhecido'}`); 
+=======
+            if (activeTab === 'listarLocais') {
+                fetchEventosLocais(0);
+                setCurrentLocalPage(0);
+            }
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~167)
+            let errorMessage = 'Erro desconhecido na sincronização.';
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setSyncErro(`Falha na sincronização: ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setSyncMensagem(null);
         } finally { setLoadingSync(false); }
     };
@@ -220,10 +252,21 @@ export default function DesastresPage() {
                 setErroProximidade(`Usuário ID ${proximidadeParams.clienteId} (${usuario.nome}) encontrado, mas não possui endereço principal com coordenadas válidas.`);
                 setProximidadeParams(prev => ({ ...prev, latitude: '', longitude: '' }));
             }
+<<<<<<< HEAD
         // Correção: Tipar error como unknown e tratar
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             setErroProximidade(`Falha ao buscar dados do usuário (ID: ${proximidadeParams.clienteId}): ${message}`);
+=======
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~207)
+            let errorMessage = 'Erro desconhecido ao buscar dados do usuário.';
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroProximidade(`Falha ao buscar dados do usuário (ID: ${proximidadeParams.clienteId}): ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setProximidadeParams(prev => ({ ...prev, latitude: '', longitude: '' }));
         } finally { setLoadingProximidade(false); }
     };
@@ -251,7 +294,7 @@ export default function DesastresPage() {
                 proximidadeParams.limit ? parseInt(proximidadeParams.limit, 10) : undefined,
                 proximidadeParams.days ? parseInt(proximidadeParams.days, 10) : undefined,
                 proximidadeParams.status || undefined, proximidadeParams.source || undefined,
-                undefined, undefined, undefined 
+                undefined, undefined, undefined
             );
             setEventosProximos(eventosRecebidos || []);
 
@@ -265,7 +308,7 @@ export default function DesastresPage() {
                 }
                 if (proximidadeParams.clienteId && nomeUsuarioParaCoords) {
                     const eventoPrincipal = eventosRecebidos[0];
-                    const dataEvento = eventoPrincipal.geometry?.[0]?.date; 
+                    const dataEvento = eventoPrincipal.geometry?.[0]?.date;
                     const alertaPayload: UserAlertRequestDTO = {
                         userId: Number(proximidadeParams.clienteId),
                         eventDetails: {
@@ -275,9 +318,10 @@ export default function DesastresPage() {
                             description: eventoPrincipal.description || `Um evento "${eventoPrincipal.title}" foi detectado próximo à área de ${nomeUsuarioParaCoords} em ${formatDate(dataEvento?.toString())}.`,
                         }
                     };
-                    try {
+                    try { // CORREÇÃO: no-explicit-any (linha ~263) - este catch interno
                         const alertResponseMsg = await triggerUserSpecificAlert(alertaPayload);
                         setMensagemAlertaProximidade(alertResponseMsg || "Alerta sobre evento próximo foi processado.");
+<<<<<<< HEAD
                     // Correção: Tipar errAlerta como unknown e tratar
                     } catch (errAlerta: unknown) {
                         const message = errAlerta instanceof Error ? errAlerta.message : String(errAlerta);
@@ -289,9 +333,30 @@ export default function DesastresPage() {
         } catch (error: unknown) { 
             const message = error instanceof Error ? error.message : String(error);
             setErroProximidade(`Falha ao buscar eventos próximos: ${message}`);
+=======
+                    } catch (errAlerta: unknown) {
+                        let errorMessage = "Não foi possível processar o envio do alerta no momento.";
+                        if (errAlerta instanceof Error) {
+                            errorMessage = errAlerta.message || errorMessage;
+                        } else if (typeof errAlerta === 'string') {
+                            errorMessage = errAlerta;
+                        }
+                        setErroAlertaProximidade(errorMessage);
+                    }
+                }
+            }
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~268) - catch principal da função
+            let errorMessage = 'Erro desconhecido ao buscar eventos próximos.';
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroProximidade(`Falha ao buscar eventos próximos: ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
         } finally { setLoadingProximidade(false); }
     };
-    
+
     const handleAlertarUsuarioParamChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setAlertarUsuarioParams(prev => ({ ...prev, [name]: value }));
@@ -311,10 +376,21 @@ export default function DesastresPage() {
             const usuario = await buscarClientePorId(Number(alertarUsuarioParams.usuarioId));
             setVerifiedUsuario(usuario);
             setErroAlertarUsuario(null);
+<<<<<<< HEAD
         // Correção: Tipar error como unknown e tratar
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             setErroAlertarUsuario(message || `Erro ao buscar usuário ID ${alertarUsuarioParams.usuarioId}.`);
+=======
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~292)
+            let errorMessage = `Erro ao buscar usuário ID ${alertarUsuarioParams.usuarioId}.`;
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroAlertarUsuario(errorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setVerifiedUsuario(null);
         } finally { setLoadingVerifyUsuario(false); }
     };
@@ -328,16 +404,27 @@ export default function DesastresPage() {
         try {
             const eventoLocal = await buscarEventoLocalPorEonetApiId(alertarUsuarioParams.eventoEonetId);
             const eventoNasaDetails = parseEonetEventJson(eventoLocal.json);
-            if (eventoNasaDetails) { 
+            if (eventoNasaDetails) {
                 if (!eventoNasaDetails.id && eventoLocal.eonetIdApi) eventoNasaDetails.id = eventoLocal.eonetIdApi;
-                setVerifiedEvento(eventoNasaDetails); 
-                setErroAlertarUsuario(null); 
+                setVerifiedEvento(eventoNasaDetails);
+                setErroAlertarUsuario(null);
             }
             else { throw new Error("Não foi possível interpretar os detalhes do evento EONET."); }
+<<<<<<< HEAD
         // Correção: Tipar error como unknown e tratar
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             setErroAlertarUsuario(message || `Erro ao buscar evento EONET ID ${alertarUsuarioParams.eventoEonetId}. Verifique se o evento foi sincronizado.`);
+=======
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~313)
+            let errorMessage = `Erro ao buscar evento EONET ID ${alertarUsuarioParams.eventoEonetId}. Verifique se o evento foi sincronizado.`;
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroAlertarUsuario(errorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setVerifiedEvento(null);
         } finally { setLoadingVerifyEvento(false); }
     };
@@ -363,6 +450,7 @@ export default function DesastresPage() {
             };
             const alertResponseMsg = await triggerUserSpecificAlert(alertaPayload);
             setMensagemAlertarUsuario(alertResponseMsg || `Alerta sobre o evento "${alertaPayload.eventDetails.title}" foi processado para o usuário ${verifiedUsuario.nome}.`);
+<<<<<<< HEAD
         // Correção: Tipar error como unknown e tratar
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
@@ -371,11 +459,35 @@ export default function DesastresPage() {
     };
 
     // Correção: Removida função formatDate duplicada e parâmetro keyPrefix não utilizado
+=======
+        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~340)
+            let errorMessage = "Não foi possível processar o envio do alerta específico.";
+            if (error instanceof Error) {
+                errorMessage = error.message || errorMessage;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            setErroAlertarUsuario(errorMessage);
+        } finally { setLoadingAlertarUsuario(false); }
+    };
+
+    const formatDate = (dateString?: string | Date): string => {
+        if (!dateString) return 'N/A';
+        try {
+            return new Date(dateString).toLocaleDateString('pt-BR', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+            });
+        } catch { return 'Data inválida'; } // CORREÇÃO: Variável 'e' não utilizada (linha ~352)
+    };
+
+    // CORREÇÃO: Removido o parâmetro keyPrefix se não for usado
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
     const renderEventoItem = (evento: NasaEonetEventDTO | Partial<NasaEonetEventDTO>) => {
         const dataEvento = evento?.geometry?.[0]?.date;
         const categorias = evento?.categories?.map((cat: NasaEonetCategoryDTO) => cat.title).join(', ') || 'N/A';
         return (
-            <div className="client-info-section" style={{flex: 1}}> 
+            <div className="client-info-section" style={{flex: 1}}>
                 <strong>{evento?.title || 'Título não disponível'}</strong>
                 {evento?.id && <p><span className="label">ID NASA:</span> {evento.id}</p>}
                 <p><span className="label">Data do Evento:</span> {formatDate(dataEvento?.toString())}</p>
@@ -387,20 +499,20 @@ export default function DesastresPage() {
 
     const tabButtonStyle = (tabKey: TabKey): React.CSSProperties => ({
         padding: '10px 20px', cursor: 'pointer', border: '1px solid transparent',
-        borderBottomColor: activeTab === tabKey ? 'var(--white-bg)' : 'var(--border-color)',
-        backgroundColor: activeTab === tabKey ? 'var(--white-bg)' : 'var(--light-gray-bg)',
+        borderBottomColor: activeTab === tabKey ? 'var(--white-bg, #fff)' : 'var(--border-color, #ccc)',
+        backgroundColor: activeTab === tabKey ? 'var(--white-bg, #fff)' : 'var(--light-gray-bg, #f0f0f0)',
         fontWeight: activeTab === tabKey ? '600' : '500', marginRight: '5px',
-        borderTopLeftRadius: 'var(--card-border-radius)', borderTopRightRadius: 'var(--card-border-radius)',
+        borderTopLeftRadius: 'var(--card-border-radius, 6px)', borderTopRightRadius: 'var(--card-border-radius, 6px)',
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        color: activeTab === tabKey ? 'var(--primary-color)' : 'var(--text-color)',
+        color: activeTab === tabKey ? 'var(--primary-color, blue)' : 'var(--text-color, black)',
         position: 'relative', bottom: '-1px', zIndex: activeTab === tabKey ? 2 : 1,
     });
 
     const tabContentStyle: React.CSSProperties = {
-        border: '1px solid var(--border-color)', padding: '20px',
-        borderRadius: '0 var(--card-border-radius) var(--card-border-radius) var(--card-border-radius)',
-        backgroundColor: 'var(--white-bg)', marginTop: '-1px', boxShadow: 'var(--card-shadow)',
-        minHeight: '400px', 
+        border: '1px solid var(--border-color, #ccc)', padding: '20px',
+        borderRadius: '0 var(--card-border-radius, 6px) var(--card-border-radius, 6px) var(--card-border-radius, 6px)',
+        backgroundColor: 'var(--white-bg, #fff)', marginTop: '-1px', boxShadow: 'var(--card-shadow, 0 1px 3px rgba(0,0,0,0.1))',
+        minHeight: '400px',
     };
 
     return (
@@ -410,7 +522,7 @@ export default function DesastresPage() {
                 Gerenciamento de Eventos de Desastres (EONET)
             </h1>
 
-            <div style={{ marginBottom: '0px', borderBottom: '1px solid var(--border-color)' }}>
+            <div style={{ marginBottom: '0px', borderBottom: '1px solid var(--border-color, #ccc)' }}>
                 <button style={tabButtonStyle('sincronizar')} onClick={() => setActiveTab('sincronizar')}>
                     <span className="material-icons-outlined">sync</span> Sincronizar NASA
                 </button>
@@ -460,10 +572,14 @@ export default function DesastresPage() {
                         {loadingListagemLocal && !eventosLocaisPage && <p className="message info">Carregando eventos locais...</p>}
                         {erroListagemLocal && <p className="message error">{erroListagemLocal}</p>}
                         {(!eventosLocaisPage || eventosLocaisPage.content.length === 0) && !loadingListagemLocal && !erroListagemLocal && (
-                            <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed var(--border-color)', borderRadius: 'var(--card-border-radius)', marginTop: '1rem' }}>
+                            <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed var(--border-color, #ccc)', borderRadius: 'var(--card-border-radius, 6px)', marginTop: '1rem' }}>
                                 <p>Nenhum evento EONET encontrado no banco de dados local.</p>
+<<<<<<< HEAD
                                 {/* Correção: Escapar aspas */}
                                 <p>Vá para a aba &quot;Sincronizar NASA&quot; para buscar novos eventos.</p>
+=======
+                                <p>Vá para a aba &quot;Sincronizar NASA&quot; para buscar novos eventos.</p> {/* CORREÇÃO: Aspas */}
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                             </div>
                         )}
                         {eventosLocaisPage && eventosLocaisPage.content.length > 0 && (
@@ -479,7 +595,7 @@ export default function DesastresPage() {
                                     }] : [];
 
                                     return (
-                                        <li key={eventKey} className="desastre-page-event-list-item event-card-item-layout"> 
+                                        <li key={eventKey} className="desastre-page-event-list-item event-card-item-layout">
                                             <div style={{flex: '2 1 300px', minWidth: '280px'}}>
                                                 {renderEventoItem(eventoDetalhes || { title: `Detalhes indisponíveis para ID ${eonetResp.eonetIdApi}` })}
                                                 <small style={{display: 'block', textAlign:'right', color: 'var(--muted-text-color)', paddingRight: '15px', paddingBottom: '5px', marginTop:'5px'}}>
@@ -488,14 +604,14 @@ export default function DesastresPage() {
                                             </div>
                                             {coords && eventoDetalhes ? (
                                                 <div className="event-mini-map-container" style={{
-                                                    flex: '1 1 250px', minHeight: '200px', 
+                                                    flex: '1 1 250px', minHeight: '200px',
                                                     borderRadius: 'var(--card-border-radius, 8px)',
                                                     overflow: 'hidden', border: '1px solid #ccc'
                                                 }}>
                                                     <DynamicEonetEventMap
                                                         key={eventKey + "-map"}
                                                         initialCenter={coords}
-                                                        initialZoom={7} 
+                                                        initialZoom={7}
                                                         markersData={miniMapMarker}
                                                         mapContainerStyle={{ height: '100%', width: '100%' }}
                                                     />
@@ -514,11 +630,19 @@ export default function DesastresPage() {
                             </ul>
                         )}
                         {eventosLocaisPage && eventosLocaisPage.totalPages > 1 && (
+<<<<<<< HEAD
                                <div className="pagination-controls">
                                   <button onClick={() => setCurrentLocalPage(p => Math.max(0, p - 1))} disabled={eventosLocaisPage.first || loadingListagemLocal} className="button button-secondary"> <span className="material-icons-outlined">navigate_before</span> Anterior </button>
                                   <span>Página {eventosLocaisPage.number + 1} de {eventosLocaisPage.totalPages}</span>
                                   <button onClick={() => setCurrentLocalPage(p => Math.min(eventosLocaisPage.totalPages - 1, p + 1))} disabled={eventosLocaisPage.last || loadingListagemLocal} className="button button-secondary"> Próxima <span className="material-icons-outlined">navigate_next</span> </button>
                               </div>
+=======
+                            <div className="pagination-controls">
+                                <button onClick={() => setCurrentLocalPage(p => Math.max(0, p - 1))} disabled={eventosLocaisPage.first || loadingListagemLocal} className="button button-secondary"> <span className="material-icons-outlined">navigate_before</span> Anterior </button>
+                                <span>Página {eventosLocaisPage.number + 1} de {eventosLocaisPage.totalPages}</span>
+                                <button onClick={() => setCurrentLocalPage(p => Math.min(eventosLocaisPage.totalPages - 1, p + 1))} disabled={eventosLocaisPage.last || loadingListagemLocal} className="button button-secondary"> Próxima <span className="material-icons-outlined">navigate_next</span> </button>
+                            </div>
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                         )}
                     </section>
                 )}
@@ -579,14 +703,14 @@ export default function DesastresPage() {
                                 <p className="message error" style={{marginTop: '20px'}}>{erroProximidade}</p>
                             )}
                         </form>
-                        
+
                         {loadingProximidade && !eventosProximos.length && !(proximidadeParams.clienteId && !nomeUsuarioParaCoords && !erroProximidade) && (
                             <p className="message info" style={{textAlign:'center', margin:'15px 0'}}>Buscando eventos próximos na API da NASA...</p>
                         )}
 
                         {eventosProximos.length > 0 && !loadingProximidade && (
                             <div style={{marginTop: '20px'}}>
-                                <h3 style={{borderBottom: '1px solid var(--border-color)', paddingBottom:'5px', color: 'var(--text-color)', fontSize: '1.1rem', fontWeight: '600'}}>
+                                <h3 style={{borderBottom: '1px solid var(--border-color, #ccc)', paddingBottom:'5px', color: 'var(--text-color, black)', fontSize: '1.1rem', fontWeight: '600'}}>
                                     Resultados da Busca por Proximidade ({eventosProximos.length} evento(s)):
                                 </h3>
                                 <ul style={{ listStyle: 'none', padding: 0, maxHeight: '500px', overflowY: 'auto', marginTop: '1rem' }}>
@@ -598,13 +722,13 @@ export default function DesastresPage() {
                                             popupText: `<strong>${evento.title || 'Evento EONET'}</strong>`
                                         }] : [];
                                         return (
-                                            <li key={eventKey} className="desastre-page-event-list-item event-card-item-layout"> 
+                                            <li key={eventKey} className="desastre-page-event-list-item event-card-item-layout">
                                                 <div style={{flex: '2 1 300px', minWidth: '280px'}}>
                                                     {renderEventoItem(evento)}
                                                 </div>
                                                 {coords ? (
                                                     <div className="event-mini-map-container" style={{
-                                                        flex: '1 1 250px', minHeight: '200px', 
+                                                        flex: '1 1 250px', minHeight: '200px',
                                                         borderRadius: 'var(--card-border-radius, 8px)',
                                                         overflow: 'hidden', border: '1px solid #ccc'
                                                     }}>
@@ -628,7 +752,7 @@ export default function DesastresPage() {
                                 </ul>
                             </div>
                         )}
-                         {eventosProximos.length === 0 && !loadingProximidade && !erroProximidade && proximidadeParams.latitude && proximidadeParams.longitude && (
+                        {eventosProximos.length === 0 && !loadingProximidade && !erroProximidade && proximidadeParams.latitude && proximidadeParams.longitude && (
                             <p className="message info" style={{textAlign:'center', margin:'15px 0'}}>
                                 Nenhum evento encontrado para os critérios de proximidade informados.
                             </p>
@@ -637,7 +761,11 @@ export default function DesastresPage() {
                 )}
 
                 {activeTab === 'alertarUsuario' && (
+<<<<<<< HEAD
                        <section>
+=======
+                    <section>
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                         <h2 className="section-title">
                             <span className="material-icons-outlined">campaign</span>
                             Disparar Alerta Específico para Usuário
@@ -683,12 +811,12 @@ export default function DesastresPage() {
                                     Data: {formatDate(verifiedEvento.geometry?.[0]?.date)}
                                 </div>
                             )}
-                             {!loadingVerifyEvento && erroAlertarUsuario && alertarUsuarioParams.eventoEonetId && !verifiedEvento && erroAlertarUsuario.toLowerCase().includes("evento") && ( 
+                            {!loadingVerifyEvento && erroAlertarUsuario && alertarUsuarioParams.eventoEonetId && !verifiedEvento && erroAlertarUsuario.toLowerCase().includes("evento") && (
                                 <p className="message error" style={{fontSize: '0.9em', padding: '0.5rem 1rem', marginBottom:'1rem', marginTop: '-0.5rem'}}>{erroAlertarUsuario}</p>
                             )}
-                            
+
                             {!loadingAlertarUsuario && erroAlertarUsuario && !(erroAlertarUsuario.toLowerCase().includes("usuário") || erroAlertarUsuario.toLowerCase().includes("evento")) && (
-                                 <p className="message error" style={{marginTop: '1rem'}}>{erroAlertarUsuario}</p>
+                                <p className="message error" style={{marginTop: '1rem'}}>{erroAlertarUsuario}</p>
                             )}
                             {mensagemAlertarUsuario && <p className="message success" style={{marginTop: '1rem'}}>{mensagemAlertarUsuario}</p>}
 
@@ -714,12 +842,12 @@ export default function DesastresPage() {
                 .desastre-page-event-list-item:hover {
                     transform: translateY(-5px);
                     box-shadow: var(--card-shadow-hover, 0 8px 20px rgba(0, 0, 0, 0.12));
-                    position: relative; 
-                    z-index: 10;    
+                    position: relative;
+                    z-index: 10;
                 }
-                .event-card-item-layout { 
-                     display: flex;
-                     gap: 15px;
+                .event-card-item-layout {
+                    display: flex;
+                    gap: 15px;
                 }
                 @media (max-width: 767px) {
                     .event-card-item-layout {
@@ -727,7 +855,7 @@ export default function DesastresPage() {
                     }
                 }
                 .desastre-page-event-list-item .client-info-section a {
-                    pointer-events: auto !important; 
+                    pointer-events: auto !important;
                 }
             `}</style>
         </div>

@@ -33,10 +33,22 @@ export default function DeletarClienteConfirmPage() {
                     setErro(null);
                     setTimeout(() => confirmButtonRef.current?.focus(), 0);
                 })
+<<<<<<< HEAD
                 .catch(error => { // Tipo de error inferido ou pode ser unknown
                     console.error("Erro ao buscar Usuário para deleção:", error);
                     const message = error instanceof Error ? error.message : 'Usuário não encontrado.';
                     setErro(`Falha ao carregar Usuário para deleção: ${message}`);
+=======
+                .catch((fetchError: unknown) => { // CORREÇÃO: Parênteses adicionados
+                    console.error("Erro ao buscar Usuário para deleção:", fetchError);
+                    let errorMessage = 'Usuário não encontrado.';
+                    if (fetchError instanceof Error) {
+                        errorMessage = fetchError.message || errorMessage;
+                    } else if (typeof fetchError === 'string') {
+                        errorMessage = fetchError;
+                    }
+                    setErro(`Falha ao carregar Usuário para deleção: ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                     setCliente(null);
                 })
                 .finally(() => setLoading(false));
@@ -52,6 +64,7 @@ export default function DeletarClienteConfirmPage() {
             setErro(null);
             try {
                 await deletarCliente(cliente.idCliente);
+<<<<<<< HEAD
                 alert('Usuário deletado com sucesso!'); // Considere usar um sistema de notificação melhor
                 router.push('/clientes/listar');
             // Correção: Tipar error como unknown e tratar
@@ -60,6 +73,19 @@ export default function DeletarClienteConfirmPage() {
                 // Verifica se error é uma instância de Error para acessar error.message de forma segura
                 const message = error instanceof Error ? error.message : "Erro desconhecido ao tentar deletar.";
                 setErro(`Falha ao deletar Usuário: ${message}`);
+=======
+                alert('Usuário deletado com sucesso!');
+                router.push('/clientes/listar');
+            } catch (error: unknown) {
+                console.error("Erro ao confirmar deleção:", error);
+                let apiErrorMessage = "Erro desconhecido ao tentar deletar.";
+                if (error instanceof Error) {
+                    apiErrorMessage = error.message || apiErrorMessage;
+                } else if (typeof error === 'string') {
+                    apiErrorMessage = error;
+                }
+                setErro(`Falha ao deletar Usuário: ${apiErrorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 setDeleting(false);
             }
         }

@@ -1,10 +1,15 @@
 // src/app/desastres/mapa-historico/page.tsx
 'use client';
 
+<<<<<<< HEAD
 import React, { useState, FormEvent } from 'react';
+=======
+import React, { useState, FormEvent } from 'react'; // CORREÇÃO: ChangeEvent removido
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 import dynamic from 'next/dynamic';
 import { buscarEventosNasaProximos } from '@/lib/apiService';
-import type { NasaEonetEventDTO, NasaEonetGeometryDTO } from '@/lib/types';
+// CORREÇÃO: NasaEonetEventDTO removido (assumindo inferência de tipo)
+import type { NasaEonetGeometryDTO } from '@/lib/types';
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
 // Ajuste: O tipo genérico aqui se refere às props do componente EonetEventMap.
@@ -42,8 +47,12 @@ const formatDate = (dateString?: string | Date): string => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
+<<<<<<< HEAD
     // Correção: Renomeado 'e' para '_e'
     } catch { return 'Data inválida'; }
+=======
+    } catch { return 'Data inválida'; } // CORREÇÃO: Variável 'e' removida
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 };
 
 const periodOptions = [
@@ -95,29 +104,50 @@ export default function MapaHistoricoPage() {
         setMarkers([]);
 
         try {
+<<<<<<< HEAD
             // Correção: Tipando a constante 'eventos'
             const eventos: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
+=======
+            // TypeScript deve inferir o tipo de 'eventos' como NasaEonetEventDTO[]
+            const eventos = await buscarEventosNasaProximos(
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 undefined,
                 undefined,
                 undefined,
                 eventSearchLimit,
                 selectedPeriodDays,
+<<<<<<< HEAD
                 "all", // status
                 undefined, // sourceId (opcional, não usado aqui)
                 undefined, // startDate (opcional, não usado aqui pois usamos 'days')
                 undefined, // endDate (opcional, não usado aqui pois usamos 'days')
                 selectedCategoryId || undefined 
+=======
+                "all",
+                undefined,
+                undefined,
+                undefined,
+                selectedCategoryId || undefined
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             );
 
             if (!eventos || eventos.length === 0) {
                 setInfoMessage("Nenhum evento histórico encontrado para os filtros selecionados.");
+<<<<<<< HEAD
                 setLoading(false); // Parar loading se não houver eventos
+=======
+                setLoading(false); // Adicionado para parar o loading
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 return;
             }
 
             const newMarkers: EventMapMarkerData[] = [];
+<<<<<<< HEAD
             // eventoNasa será inferido como NasaEonetEventDTO devido à tipagem de 'eventos'
             for (const eventoNasa of eventos) {
+=======
+            for (const eventoNasa of eventos) { // eventoNasa será do tipo inferido
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                     const coords = getCoordinatesFromEvent(eventoNasa.geometry);
                     if (coords) {
@@ -136,11 +166,23 @@ export default function MapaHistoricoPage() {
                 setInfoMessage("Eventos foram encontrados, mas nenhum possui coordenadas válidas para exibição no mapa.");
             }
 
+<<<<<<< HEAD
         // Correção: Tipar err como unknown e tratar
         } catch (err: unknown) {
             console.error("Erro ao buscar eventos históricos:", err);
             const message = err instanceof Error ? err.message : String(err);
             setError(`Falha ao buscar eventos históricos: ${message || 'Erro desconhecido.'}`);
+=======
+        } catch (err: unknown) { // CORREÇÃO: no-explicit-any (linha ~132)
+            console.error("Erro ao buscar eventos históricos:", err);
+            let errorMessage = 'Erro desconhecido ao buscar eventos históricos.';
+            if (err instanceof Error) {
+                errorMessage = err.message || errorMessage;
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            setError(`Falha ao buscar eventos históricos: ${errorMessage}`);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setInfoMessage(null);
         } finally {
             setLoading(false);
@@ -188,7 +230,11 @@ export default function MapaHistoricoPage() {
                             id="eventLimitInput"
                             value={eventSearchLimit}
                             min="1"
+<<<<<<< HEAD
                             max="1000" 
+=======
+                            max="1000"
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                             onChange={(e) => setEventSearchLimit(Number(e.target.value))}
                             disabled={loading}
                             style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
@@ -209,7 +255,11 @@ export default function MapaHistoricoPage() {
                 </div>
             )}
             {infoMessage && !loading && !error && (
+<<<<<<< HEAD
                     <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+=======
+                <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             )}
 
             <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>

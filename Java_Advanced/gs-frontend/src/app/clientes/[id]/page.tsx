@@ -1,14 +1,18 @@
 // src/app/clientes/[id]/page.tsx
 'use client'; // Necessário para hooks
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { useParams } from 'next/navigation';
+=======
+import { useParams } from 'next/navigation'; // CORREÇÃO: useRouter removido
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 import Link from 'next/link';
 import { buscarClientePorId } from '@/lib/apiService'; // Ajuste o caminho se necessário
 import type { ClienteResponseDTO } from '@/lib/types'; // Ajuste o caminho se necessário
 
 export default function ClienteDetalhesPage() {
     const params = useParams();
-    // const router = useRouter(); // Descomente se usar router.push ou similar
+    // CORREÇÃO: Linha do const router = useRouter(); removida pois não era utilizada
     const idPath = Array.isArray(params.id) ? params.id[0] : params.id;
 
     const [cliente, setCliente] = useState<ClienteResponseDTO | null>(null);

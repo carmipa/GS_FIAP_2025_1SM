@@ -5,7 +5,12 @@
 import React, { useState, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { buscarEventosNasaProximos, buscarClientePorId } from '@/lib/apiService';
+<<<<<<< HEAD
 import type { NasaEonetEventDTO, NasaEonetGeometryDTO, ClienteResponseDTO } from '@/lib/types';
+=======
+// CORREÇÃO: NasaEonetEventDTO removido da importação direta (assumindo inferência)
+import type { NasaEonetGeometryDTO, ClienteResponseDTO } from '@/lib/types';
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
 const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
@@ -25,10 +30,10 @@ const getCoordinatesFromEvent = (geometry: NasaEonetGeometryDTO[] | undefined): 
     }
     const firstGeom = geometry[0];
     if (firstGeom && Array.isArray(firstGeom.coordinates)) {
-        if (firstGeom.type === "Polygon" && 
-            Array.isArray(firstGeom.coordinates[0]) && 
+        if (firstGeom.type === "Polygon" &&
+            Array.isArray(firstGeom.coordinates[0]) &&
             Array.isArray(firstGeom.coordinates[0][0]) &&
-            firstGeom.coordinates[0][0].length === 2 
+            firstGeom.coordinates[0][0].length === 2
         ) {
             return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
         }
@@ -38,14 +43,18 @@ const getCoordinatesFromEvent = (geometry: NasaEonetGeometryDTO[] | undefined): 
 
 const formatDate = (dateString?: string | Date): string => {
     if (!dateString) return 'N/A';
-    try { 
-        return new Date(dateString).toLocaleDateString('pt-BR', { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute: '2-digit', timeZone: 'UTC' 
+    try {
+        return new Date(dateString).toLocaleDateString('pt-BR', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
+<<<<<<< HEAD
     } catch {
         return 'Data inválida'; 
     }
+=======
+    } catch { return 'Data inválida'; } // CORREÇÃO: Variável de erro removida do catch
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 };
 
 
@@ -59,9 +68,9 @@ export default function MapaEventosUsuarioPage() {
     const [mapCenter, setMapCenter] = useState<[number, number]>([-14.235004, -51.92528]);
     const [mapZoom, setMapZoom] = useState<number>(4);
 
-    const searchRadiusKm = 1000; 
-    const eventLimit = 50;       
-    const eventDays = 30;        
+    const searchRadiusKm = 1000;
+    const eventLimit = 50;
+    const eventDays = 30;
 
     const handleBuscaPorUsuario = async (e: FormEvent) => {
         e.preventDefault();
@@ -88,6 +97,10 @@ export default function MapaEventosUsuarioPage() {
             if (!cliente) {
                 throw new Error(`Usuário com ID ${idNum} não encontrado.`);
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             const enderecosArray = cliente.enderecos ? Array.from(cliente.enderecos) : [];
             if (enderecosArray.length === 0 || !enderecosArray[0]) {
                 throw new Error(`Usuário ${cliente.nome} (ID: ${idNum}) encontrado, mas não possui endereços cadastrados.`);
@@ -96,30 +109,47 @@ export default function MapaEventosUsuarioPage() {
             if (typeof enderecoPrincipal.latitude !== 'number' || typeof enderecoPrincipal.longitude !== 'number' || enderecoPrincipal.latitude === 0 || enderecoPrincipal.longitude === 0) {
                 throw new Error(`Endereço principal do usuário ${cliente.nome} (ID: ${idNum}) não possui coordenadas válidas (Lat: ${enderecoPrincipal.latitude}, Lon: ${enderecoPrincipal.longitude}).`);
             }
-            
+
             setSearchedUser(cliente);
             const userLat = enderecoPrincipal.latitude;
             const userLon = enderecoPrincipal.longitude;
 
             setMapCenter([userLat, userLon]);
+<<<<<<< HEAD
             setMapZoom(8); 
 
             setInfoMessage(`Buscando eventos próximos a ${cliente.nome} (Lat: ${userLat.toFixed(4)}, Lon: ${userLon.toFixed(4)})...`);
 
             const eventosProximos: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
+=======
+            setMapZoom(8);
+
+            setInfoMessage(`Buscando eventos próximos a ${cliente.nome} (Lat: ${userLat.toFixed(4)}, Lon: ${userLon.toFixed(4)})...`);
+
+            // A função buscarEventosNasaProximos deve retornar NasaEonetEventDTO[]
+            const eventosProximos = await buscarEventosNasaProximos(
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 userLat, userLon, searchRadiusKm,
                 eventLimit, eventDays, 'open', undefined
             );
 
             if (!eventosProximos || eventosProximos.length === 0) {
                 setInfoMessage(`Nenhum evento aberto encontrado próximo a ${cliente.nome} nos últimos ${eventDays} dias (raio de ${searchRadiusKm}km).`);
+<<<<<<< HEAD
                 setLoading(false); // Certifique-se de parar o loading
+=======
+                setLoading(false);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                 return;
             }
 
             const newMarkers: EventMapMarkerData[] = [];
+<<<<<<< HEAD
             // Correção: Removida a anotação de tipo de eventoNasa.
             // O tipo é inferido de eventosProximos.
+=======
+            // TypeScript deve inferir 'eventoNasa' como tipo dos elementos de 'eventosProximos'
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             for (const eventoNasa of eventosProximos) {
                 if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                     const coords = getCoordinatesFromEvent(eventoNasa.geometry);
@@ -136,13 +166,25 @@ export default function MapaEventosUsuarioPage() {
             if (newMarkers.length > 0) {
                 setInfoMessage(`${newMarkers.length} evento(s) encontrado(s) próximo(s) a ${cliente.nome}.`);
             } else {
-                 setInfoMessage(`Eventos foram encontrados próximos a ${cliente.nome}, mas nenhum possui coordenadas válidas para exibição no mapa.`);
+                setInfoMessage(`Eventos foram encontrados próximos a ${cliente.nome}, mas nenhum possui coordenadas válidas para exibição no mapa.`);
             }
 
+<<<<<<< HEAD
         } catch (err: unknown) { // err tipado como unknown
             console.error("Erro na busca por usuário ou eventos próximos:", err);
             const message = err instanceof Error ? err.message : String(err);
             setError(`${message || 'Falha ao processar a busca. Verifique o ID do usuário e tente novamente.'}`);
+=======
+        } catch (err: unknown) {
+            console.error("Erro na busca por usuário ou eventos próximos:", err);
+            let errorMessage = 'Falha ao processar a busca. Verifique o ID do usuário e tente novamente.';
+            if (err instanceof Error) {
+                errorMessage = err.message || errorMessage;
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            setError(errorMessage);
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             setInfoMessage(null);
             setSearchedUser(null);
             setMarkers([]);
@@ -186,9 +228,15 @@ export default function MapaEventosUsuarioPage() {
                 </div>
             )}
             {infoMessage && !loading && !error && (
+<<<<<<< HEAD
                  <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
             )}
             
+=======
+                <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+            )}
+
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
             {searchedUser && !loading && !error && (
                 <div style={{
                     margin: '20px auto',
@@ -204,7 +252,7 @@ export default function MapaEventosUsuarioPage() {
                         Exibindo Eventos Para:
                     </h3>
                     <p style={{ margin: '5px 0' }}><strong>Nome:</strong> {searchedUser.nome} {searchedUser.sobrenome || ''} (ID: {searchedUser.idCliente})</p>
-                    
+
                     {(searchedUser.enderecos && Array.from(searchedUser.enderecos).length > 0) ? (() => {
                         const enderecoPrincipal = Array.from(searchedUser.enderecos)[0];
                         return (
@@ -240,7 +288,7 @@ export default function MapaEventosUsuarioPage() {
                     )}
                 </div>
             )}
-            
+
             <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
                 <DynamicEonetEventMap
                     initialCenter={mapCenter}

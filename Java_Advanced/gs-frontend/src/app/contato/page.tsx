@@ -3,7 +3,11 @@
 
 import React, { FormEvent, useState } from "react";
 import dynamic from "next/dynamic";
+<<<<<<< HEAD
 import Image from 'next/image'; // Importação já existente e usada para fotos da equipe
+=======
+import Image from 'next/image'; // Já importado
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
 import { FaGithub, FaWhatsapp } from "react-icons/fa";
 import {
     User,
@@ -128,7 +132,11 @@ const ContactsPage: React.FC = () => {
                                         border: '3px solid #007bff'
                                     }}
                                     className="mx-auto"
+<<<<<<< HEAD
                                     priority={true} // Considerar remover priority se não for LCP e houver muitas imagens
+=======
+                                    priority={true} // Considerar se todas são LCP ou apenas a primeira visível
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                                 />
                             </div>
                             <h3
@@ -165,9 +173,19 @@ const ContactsPage: React.FC = () => {
                                 <div className="member-info github-badge-container" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <FaGithub size={16} /> GitHub:
                                     <a href={member.githubLink} target="_blank" rel="noopener noreferrer" className="ml-1" title={`Perfil de ${member.name} no GitHub`}>
+<<<<<<< HEAD
                                         {/* Correção: Adicionado comentário para desabilitar a regra do ESLint para esta linha específica */}
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`} alt={`GitHub ${member.githubUser} Shield`} />
+=======
+                                        {/* CORREÇÃO: Usar o componente Image do Next.js */}
+                                        <Image
+                                            src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`}
+                                            alt={`GitHub ${member.githubUser} Shield`}
+                                            width={150} // Largura estimada para o badge
+                                            height={20}  // Altura padrão para shields.io badges
+                                        />
+>>>>>>> dd583459bef31fabd0d1b8b4b8eaf4c633191e84
                                     </a>
                                 </div>
                                 <p className="member-info" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -1,7 +1,7 @@
 # 💾 **Mastering Relational and Non-Relational Database**
 
 <p align="center">
-  <a href="https://youtu.be/M-Ia0UnPZjI" target="_blank">
+  <a href="https://www.youtube.com/watch?v=j_qpO5N5fVY" target="_blank">
     <img src="https://img.shields.io/badge/Nossa%20Apresenta%C3%A7%C3%A3o-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
   </a>
 </p>

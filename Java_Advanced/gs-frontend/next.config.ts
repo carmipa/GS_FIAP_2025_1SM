@@ -1,10 +1,31 @@
+// next.config.ts
+
 import path from "path";
-import { NextConfig } from "next";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     reactStrictMode: true,
 
-    // Configuração de rewrites para evitar problemas de CORS
+    images: {
+        remotePatterns: [
+            // Configuração que já existia
+            {
+                protocol: 'https',
+                hostname: 'reliefweb.int',
+                port: '',
+                pathname: '/sites/default/files/**',
+            },
+            // NOVO: Adicionado para permitir badges do shields.io
+            {
+                protocol: 'https',
+                hostname: 'img.shields.io',
+                port: '',
+                pathname: '/badge/**',
+            },
+        ],
+    },
+
+    // Sua configuração de rewrites (mantida)
     async rewrites() {
         return [
             {
@@ -15,12 +36,11 @@ const nextConfig: NextConfig = {
                 source: "/api/endereco",
                 destination: "http://localhost:8080/api/endereco",
             },
-            // Adicione outros endpoints conforme necessário
         ];
     },
 
+    // Sua configuração do Webpack (mantida)
     webpack(config) {
-        // Alias para facilitar importações
         config.resolve.alias = {
             ...config.resolve.alias,
             "@": path.resolve(__dirname, "src"),

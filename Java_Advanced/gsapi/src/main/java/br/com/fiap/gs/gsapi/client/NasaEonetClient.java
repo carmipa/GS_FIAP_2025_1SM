@@ -43,9 +43,12 @@ public class NasaEonetClient {
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    // ***** MÉTODO MODIFICADO PARA INCLUIR categoryId *****
+    /**
+     * Consulta eventos do EONET, podendo filtrar por categoria, data, etc.
+     * Para buscar TODAS as categorias, chame SEM o parâmetro categoryId (null ou vazio).
+     */
     public NasaEonetApiResponseDTO getEvents(Integer limit, Integer days, String status, String source,
-                                             String bbox, String startDate, String endDate, String categoryId) { // Novo parâmetro categoryId
+                                             String bbox, String startDate, String endDate, String categoryId) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(eonetApiUrl);
 
         if (limit != null && limit > 0) {
@@ -57,8 +60,7 @@ public class NasaEonetClient {
         }
         if (StringUtils.hasText(endDate)) {
             uriBuilder.queryParam("end", endDate);
-        }
-        else if (days != null && days > 0) {
+        } else if (days != null && days > 0) {
             uriBuilder.queryParam("days", days);
         }
 
@@ -71,14 +73,14 @@ public class NasaEonetClient {
         if (StringUtils.hasText(bbox)) {
             uriBuilder.queryParam("bbox", bbox);
         }
-        // Adicionar o novo parâmetro de categoria se presente
+        // Só filtra categoria se estiver presente!
         if (StringUtils.hasText(categoryId)) {
             uriBuilder.queryParam("category", categoryId);
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0 (gs.metamind@fiap.com.br)"); // Atualize se necessário
+        headers.set("User-Agent", "GSAPI_Fiap_Project/1.0 (gs.metamind@fiap.com.br)");
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         String url = uriBuilder.toUriString();
@@ -94,7 +96,6 @@ public class NasaEonetClient {
             if (responseAsString.getStatusCode().is2xxSuccessful() && responseAsString.getBody() != null) {
                 String jsonResponse = responseAsString.getBody();
                 logger.info("Resposta BRUTA da NASA EONET API para URL '{}':\n{}", url, jsonResponse.substring(0, Math.min(jsonResponse.length(), 1000)) + (jsonResponse.length() > 1000 ? "..." : ""));
-
 
                 NasaEonetApiResponseDTO apiResponse = objectMapper.readValue(jsonResponse, NasaEonetApiResponseDTO.class);
 
@@ -121,7 +122,17 @@ public class NasaEonetClient {
             throw new ServiceUnavailableException("Erro inesperado ao processar consulta à NASA EONET.", e);
         }
     }
-    // ***** FIM DA MODIFICAÇÃO *****
+
+    /**
+     * Exemplo de método para importar TODOS os eventos dos últimos 10 anos (3650 dias), sem filtro de categoria.
+     * Basta chamar esse método na sua rotina de importação!
+     */
+    public NasaEonetApiResponseDTO getAllEventsLast10Years() {
+        int days = 3650; // 10 anos
+        Integer limit = null; // ou defina um valor se precisar paginar
+        return getEvents(limit, days, null, null, null, null, null, null);
+        // categoryId == null -> busca TUDO
+    }
 
     public String convertEventDtoToJsonString(NasaEonetEventDTO eventDto) {
         try {

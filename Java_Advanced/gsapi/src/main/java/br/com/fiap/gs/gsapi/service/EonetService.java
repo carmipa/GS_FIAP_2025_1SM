@@ -247,4 +247,6 @@ public class EonetService {
                 .sorted((c1, c2) -> Long.compare(c2.getCount(), c1.getCount())) // Ordena por contagem decrescente
                 .collect(Collectors.toList());
     }
+
+
 }

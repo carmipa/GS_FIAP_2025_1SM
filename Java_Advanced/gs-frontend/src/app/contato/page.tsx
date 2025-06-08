@@ -1,9 +1,8 @@
-// src/app/contato/page.tsx
 "use client";
 
 import React, { FormEvent, useState } from "react";
 import dynamic from "next/dynamic";
-import Image from 'next/image'; // Já importado
+import Image from 'next/image';
 import { FaGithub, FaWhatsapp } from "react-icons/fa";
 import {
     User,
@@ -128,7 +127,7 @@ const ContactsPage: React.FC = () => {
                                         border: '3px solid #007bff'
                                     }}
                                     className="mx-auto"
-                                    priority={true} // Considerar se todas são LCP ou apenas a primeira visível
+                                    priority={true} // Considerar remover priority se não for LCP e houver muitas imagens
                                 />
                             </div>
                             <h3
@@ -165,7 +164,10 @@ const ContactsPage: React.FC = () => {
                                 <div className="member-info github-badge-container" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <FaGithub size={16} /> GitHub:
                                     <a href={member.githubLink} target="_blank" rel="noopener noreferrer" className="ml-1" title={`Perfil de ${member.name} no GitHub`}>
-                                        {/* CORREÇÃO: Usar o componente Image do Next.js */}
+                                        {/* Nota: Usar o componente Image do Next.js é a melhor prática. 
+                                            Pode ser necessário adicionar 'img.shields.io' ao seu arquivo next.config.js 
+                                            na seção 'images.remotePatterns' para que isso funcione.
+                                        */}
                                         <Image
                                             src={`https://img.shields.io/badge/GitHub-${member.githubUser}-brightgreen?style=flat-square&logo=github`}
                                             alt={`GitHub ${member.githubUser} Shield`}

@@ -1,4 +1,3 @@
-// src/app/clientes/buscar/page.tsx
 'use client';
 
 import { useState, FormEvent, useRef, ChangeEvent } from 'react';
@@ -53,7 +52,8 @@ export default function BuscarUsuarioPage() {
                 return;
             }
             router.push(`/clientes/${termoBusca}`);
-            // setLoading(false); // Opcional, pois a navegação muda a UI.
+            // setLoading(false) não é ideal aqui, pois o carregamento é da próxima página.
+
         } else if (tipoBusca === 'documento') {
             const documentoLimpo = termoBusca.replace(/\D/g, '');
             if (!documentoLimpo || (documentoLimpo.length !== 11 && documentoLimpo.length !== 14)) {
@@ -72,19 +72,13 @@ export default function BuscarUsuarioPage() {
                     console.warn(`Busca por documento ${documentoLimpo} retornou sucesso mas sem dados de usuário válidos.`);
                     setErro(`Não foi possível encontrar informações para o documento ${documentoLimpo}.`);
                 }
-            } catch (error: unknown) { // CORREÇÃO: de 'any' para 'unknown'
+            } catch (error: unknown) {
                 console.error(`Falha ao buscar usuário por documento ${documentoLimpo}:`, error);
-                let errorMessage = `Nenhum usuário encontrado com o documento ${documentoLimpo}. Verifique o documento e tente novamente.`;
-                if (error instanceof Error) {
-                    // Se a mensagem da API já for "amigável", podemos usá-la, senão, uma mensagem genérica.
-                    // Exemplo: se error.message for "Cliente não encontrado com o documento X", podemos preferir a mensagem mais genérica.
-                    // Se error.message for algo como "Erro de rede", pode ser útil mostrá-la.
-                    // A lógica abaixo tenta priorizar a mensagem do erro se ela existir.
-                    errorMessage = error.message || errorMessage;
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
-                }
-                setErro(errorMessage);
+                // Lógica de erro combinada para maior clareza
+                const message = error instanceof Error
+                    ? error.message
+                    : `Nenhum usuário encontrado com o documento ${documentoLimpo}. Verifique o documento e tente novamente.`;
+                setErro(message);
             } finally {
                 setLoading(false);
             }

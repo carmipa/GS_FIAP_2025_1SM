@@ -1,53 +1,60 @@
 // next.config.ts
-
 import path from "path";
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
+
+const javaApiBaseUrl = process.env.JAVA_API_BASE_URL || "http://localhost:8080";
 
 const nextConfig: NextConfig = {
-    reactStrictMode: true,
+  reactStrictMode: true,
+  output: "standalone",
 
-    images: {
-        remotePatterns: [
-            // Configuração que já existia
-            {
-                protocol: 'https',
-                hostname: 'reliefweb.int',
-                port: '',
-                pathname: '/sites/default/files/**',
-            },
-            // NOVO: Adicionado para permitir badges do shields.io
-            {
-                protocol: 'https',
-                hostname: 'img.shields.io',
-                port: '',
-                pathname: '/badge/**',
-            },
-        ],
-    },
+  // Configuração para permitir SVG externos (shields.io, etc)
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.shields.io",
+        port: "",
+        pathname: "/badge/**"
+      },
+      {
+        protocol: "https",
+        hostname: "reliefweb.int",
+        port: "",
+        pathname: "/**"
+      },
+      {
+        protocol: "https",
+        hostname: "api.reliefweb.int",
+        port: "",
+        pathname: "/**"
+      },
+      {
+        protocol: "https",
+        hostname: "unpkg.com",
+        port: "",
+        pathname: "/**"
+      }
+      // Adicione outros padrões, se necessário
+    ],
+  },
 
-    // Sua configuração de rewrites (mantida)
-    async rewrites() {
-        return [
-            {
-                source: "/api/clientes",
-                destination: "http://localhost:8080/api/clientes",
-            },
-            {
-                source: "/api/endereco",
-                destination: "http://localhost:8080/api/endereco",
-            },
-        ];
-    },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${javaApiBaseUrl}/api/:path*`,
+      },
+    ];
+  },
 
-    // Sua configuração do Webpack (mantida)
-    webpack(config) {
-        config.resolve.alias = {
-            ...config.resolve.alias,
-            "@": path.resolve(__dirname, "src"),
-        };
-
-        return config;
-    },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "src"),
+    };
+    return config;
+  },
 };
 
 export default nextConfig;

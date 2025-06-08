@@ -1,11 +1,10 @@
 // src/app/clientes/[id]/page.tsx
 'use client'; // Necessário para hooks
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // CORREÇÃO: useRouter removido
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { buscarClientePorId } from '@/lib/apiService'; // Ajuste o caminho se necessário
 import type { ClienteResponseDTO } from '@/lib/types'; // Ajuste o caminho se necessário
-
 export default function ClienteDetalhesPage() {
     const params = useParams();
     // CORREÇÃO: Linha do const router = useRouter(); removida pois não era utilizada

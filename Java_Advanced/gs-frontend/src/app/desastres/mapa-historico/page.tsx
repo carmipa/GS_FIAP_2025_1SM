@@ -7,9 +7,9 @@ import type { NasaEonetEventDTO, NasaEonetGeometryDTO } from '@/lib/types';
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
 const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
-    ssr: false,
+    ssr: false, 
     loading: () => (
-        <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{ minHeight: '400px' }}>
+        <div className="flex items-center justify-center w-full h-full bg-slate-100/80 rounded-md" style={{minHeight: '400px'}}>
             <p className="text-center text-slate-600 py-4 text-lg">Carregando mapa...</p>
         </div>
     ),
@@ -23,12 +23,7 @@ const getCoordinatesFromEvent = (geometry: NasaEonetGeometryDTO[] | undefined): 
     }
     const firstGeom = geometry[0];
     if (firstGeom && Array.isArray(firstGeom.coordinates)) {
-        if (
-            firstGeom.type === "Polygon" &&
-            Array.isArray(firstGeom.coordinates[0]) &&
-            Array.isArray(firstGeom.coordinates[0][0]) &&
-            firstGeom.coordinates[0][0].length === 2
-        ) {
+        if (firstGeom.type === "Polygon" && Array.isArray(firstGeom.coordinates[0]) && Array.isArray(firstGeom.coordinates[0][0]) && firstGeom.coordinates[0][0].length === 2) {
             return [firstGeom.coordinates[0][0][1] as number, firstGeom.coordinates[0][0][0] as number];
         }
     }
@@ -42,9 +37,7 @@ const formatDate = (dateString?: string | Date): string => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
-    } catch {
-        return 'Data inválida';
-    }
+    } catch { return 'Data inválida'; }
 };
 
 const periodOptions = [
@@ -55,7 +48,7 @@ const periodOptions = [
     { label: 'Último Ano (365 dias)', value: 365 },
     { label: 'Últimos 2 Anos', value: 365 * 2 },
     { label: 'Últimos 5 Anos', value: 365 * 5 },
-    { label: 'Últimos 10 Anos (Limite Real Aprox.)', value: 365 * 10 }
+    { label: 'Últimos 10 Anos', value: 365 * 10 },
 ];
 
 const categoriasTraduzidas = [
@@ -66,12 +59,10 @@ const categoriasTraduzidas = [
     { id: "floods", nome: "Inundações" },
     { id: "landslides", nome: "Deslizamentos de Terra" },
     { id: "manmade", nome: "Eventos Causados pelo Homem" },
-    { id: "seaLakeIce", nome: "Gelo Marinho e de Lagos" },
+    { id: "seaLakeIce", nome: "Gelo Marinho/Lacustre" },
     { id: "severeStorms", nome: "Tempestades Severas" },
     { id: "snow", nome: "Neve Intensa" },
-    // { id: "spaceDebris", nome: "Detritos Espaciais" },
     { id: "tempExtremes", nome: "Temperaturas Extremas" },
-    // { id: "tropicalCyclones", nome: "Ciclones Tropicais" },
     { id: "volcanoes", nome: "Vulcões" },
     { id: "waterColor", nome: "Alterações na Cor da Água" },
     { id: "wildfires", nome: "Incêndios Florestais" },
@@ -79,7 +70,7 @@ const categoriasTraduzidas = [
 
 export default function MapaHistoricoPage() {
     const [markers, setMarkers] = useState<EventMapMarkerData[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [infoMessage, setInfoMessage] = useState<string | null>("Selecione os filtros e clique em buscar para ver os eventos históricos.");
 
@@ -94,13 +85,10 @@ export default function MapaHistoricoPage() {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        const categoriaNome = categoriasTraduzidas.find(c => c.id === selectedCategoryId)?.nome || 'Todos os Tipos';
-        setInfoMessage(`Buscando eventos históricos (Período: ${periodOptions.find(p => p.value === selectedPeriodDays)?.label || selectedPeriodDays + ' dias'}, Categoria: ${categoriaNome})...`);
+        setInfoMessage(`Buscando eventos históricos (Período: ${periodOptions.find(p=>p.value === selectedPeriodDays)?.label || selectedPeriodDays + ' dias'}, Categoria: ${categoriasTraduzidas.find(c=>c.id === selectedCategoryId)?.nome || 'Todos'})...`);
         setMarkers([]);
 
         try {
-            // Correção: só envia categoryId se realmente for uma categoria
-            const isTodosTipos = !selectedCategoryId || selectedCategoryId === '' || selectedCategoryId === 'all' || selectedCategoryId === 'todos';
             const eventos: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
                 undefined,
                 undefined,
@@ -111,7 +99,7 @@ export default function MapaHistoricoPage() {
                 undefined,
                 undefined,
                 undefined,
-                isTodosTipos ? undefined : selectedCategoryId
+                selectedCategoryId || undefined
             );
 
             if (!eventos || eventos.length === 0) {
@@ -120,29 +108,35 @@ export default function MapaHistoricoPage() {
                 return;
             }
 
-            const newMarkers: EventMapMarkerData[] = eventos
-                .map(evento => {
-                    const coords = getCoordinatesFromEvent(evento.geometry);
-                    if (!coords) return null;
-                    return {
-                        id: evento.id,
-                        position: coords,
-                        popupText: `<strong>${evento.title || 'Evento EONET'}</strong><br/>Data: ${formatDate(evento.geometry?.[0]?.date)}<br/>Categoria: ${evento.categories?.map(c => c.title).join(', ') || 'N/A'}`
-                    };
-                })
-                .filter(Boolean) as EventMapMarkerData[];
-
+            const newMarkers: EventMapMarkerData[] = [];
+            for (const eventoNasa of eventos) {
+                if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
+                    const coords = getCoordinatesFromEvent(eventoNasa.geometry);
+                    if (coords) {
+                        newMarkers.push({
+                            id: eventoNasa.id,
+                            position: coords,
+                            popupText: `<strong>${eventoNasa.title || 'Evento EONET'}</strong><br/>Data: ${formatDate(eventoNasa.geometry[0].date)}<br/>Categoria: ${eventoNasa.categories?.map(c => c.title).join(', ') || 'N/A'}`,
+                        });
+                    }
+                }
+            }
             setMarkers(newMarkers);
+            if (newMarkers.length > 0) {
+                setInfoMessage(`${newMarkers.length} evento(s) histórico(s) encontrado(s).`);
+            } else {
+                setInfoMessage("Eventos foram encontrados, mas nenhum possui coordenadas válidas para exibição no mapa.");
+            }
 
-            setInfoMessage(
-                newMarkers.length > 0
-                    ? `${newMarkers.length} evento(s) histórico(s) encontrado(s).`
-                    : "Eventos foram encontrados, mas nenhum possui coordenadas válidas para exibição no mapa."
-            );
-
-        } catch (err) {
+        } catch (err: unknown) {
             console.error("Erro ao buscar eventos históricos:", err);
-            setError("Falha ao buscar eventos históricos: " + (err instanceof Error ? err.message : String(err)));
+            let errorMessage = 'Erro desconhecido ao buscar eventos históricos.';
+            if (err instanceof Error) {
+                errorMessage = err.message || errorMessage;
+            } else if (typeof err === 'string') {
+                errorMessage = err;
+            }
+            setError(`Falha ao buscar eventos históricos: ${errorMessage}`);
             setInfoMessage(null);
         } finally {
             setLoading(false);
@@ -150,42 +144,87 @@ export default function MapaHistoricoPage() {
     };
 
     return (
-        <div className="container_mapa_historico_page" style={{ paddingBottom: '20px', fontFamily: 'Arial, sans-serif' }}>
-            <h1 className="page-title" style={{ textAlign: 'center', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+        <div className="container_mapa_historico_page" style={{paddingBottom: '20px', fontFamily: 'Arial, sans-serif'}}>
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
                 <span className="material-icons-outlined" style={{ fontSize: '1.8em' }}>history</span>
                 Mapa Interativo de Desastres Históricos (NASA API)
             </h1>
 
-            <form onSubmit={handleBuscarEventosHistoricos} className="form-container" style={{ maxWidth: '800px', margin: '0 auto 30px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                    <div className="form-group" style={{ flex: '1 1 200px' }}>
+            <form onSubmit={handleBuscarEventosHistoricos} className="form-container" style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '800px', margin: '0 auto 30px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+                <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+                    <div className="form-group" style={{flex: '1 1 200px'}}>
                         <label htmlFor="periodSelect" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Período:</label>
-                        <select id="periodSelect" value={selectedPeriodDays} onChange={e => setSelectedPeriodDays(Number(e.target.value))} disabled={loading} style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}>
-                            {periodOptions.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                        <select
+                            id="periodSelect"
+                            value={selectedPeriodDays}
+                            onChange={(e) => setSelectedPeriodDays(Number(e.target.value))}
+                            disabled={loading}
+                            style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
+                        >
+                            {periodOptions.map(option => (<option key={option.value} value={option.value}>{option.label}</option>))}
                         </select>
                     </div>
-                    <div className="form-group" style={{ flex: '1 1 200px' }}>
+
+                    <div className="form-group" style={{flex: '1 1 200px'}}>
                         <label htmlFor="categorySelect" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Tipo de Desastre:</label>
-                        <select id="categorySelect" value={selectedCategoryId} onChange={e => setSelectedCategoryId(e.target.value)} disabled={loading} style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}>
+                        <select
+                            id="categorySelect"
+                            value={selectedCategoryId}
+                            onChange={(e) => setSelectedCategoryId(e.target.value)}
+                            disabled={loading}
+                            style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
+                        >
                             {categoriasTraduzidas.map(cat => (<option key={cat.id} value={cat.id}>{cat.nome}</option>))}
                         </select>
                     </div>
-                    <div className="form-group" style={{ flex: '1 1 150px' }}>
+                    <div className="form-group" style={{flex: '1 1 150px'}}>
                         <label htmlFor="eventLimitInput" style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Limite de Eventos:</label>
-                        <input type="number" id="eventLimitInput" value={eventSearchLimit} min={1} max={1000} onChange={e => setEventSearchLimit(Number(e.target.value))} disabled={loading} style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}} />
+                        <input
+                            type="number"
+                            id="eventLimitInput"
+                            value={eventSearchLimit}
+                            min="1"
+                            max="1000"
+                            onChange={(e) => setEventSearchLimit(Number(e.target.value))}
+                            disabled={loading}
+                            style={{width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc'}}
+                        />
                     </div>
                 </div>
-                <button type="submit" className="button button-primary" disabled={loading} style={{ marginTop: '20px', width: '100%', padding: '12px' }}>
+                <button type="submit" className="button button-primary" disabled={loading} style={{width: '100%', padding: '12px', fontSize: '1.1em', marginTop: '10px'}}>
                     {loading ? 'Buscando Eventos...' : 'Buscar Eventos Históricos'}
                 </button>
             </form>
 
-            {loading && <p className="message info" style={{ textAlign: 'center' }}>Buscando dados...</p>}
-            {error && <p className="message error" style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-            {infoMessage && !error && <p className="message info" style={{ textAlign: 'center', color: '#555' }}>{infoMessage}</p>}
+            {loading && (
+                <div style={{textAlign: 'center', margin: '20px 0'}}><p className="message info">Buscando dados...</p></div>
+            )}
+            {error && !loading && (
+                <div className="message error" style={{textAlign: 'center', padding: '15px', border: '1px solid #f5c6cb', borderRadius: '8px', backgroundColor: '#f8d7da', color: '#721c24', maxWidth: '700px', margin: '20px auto'}}>
+                    <p style={{margin:0}}>{error}</p>
+                </div>
+            )}
+            {infoMessage && !loading && !error && (
+                <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+            )}
 
-            <div style={{ height: '70vh', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden' }}>
-                <DynamicEonetEventMap initialCenter={initialMapCenter} initialZoom={initialMapZoom} markersData={markers} />
+            <div style={{ height: '70vh', minHeight: '500px', width: '100%', marginTop: '20px', border: '1px solid #ccc', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative' }}>
+                <DynamicEonetEventMap
+                    initialCenter={initialMapCenter}
+                    initialZoom={initialMapZoom}
+                    markersData={markers}
+                />
+                {markers.length === 0 && !loading && !error && (!infoMessage || !infoMessage.includes("encontrado(s)")) && (
+                    <div style={{
+                        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)', padding: '20px 30px', borderRadius: '8px',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.2)', textAlign: 'center', zIndex: 1000
+                    }}
+                        className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
+                    >
+                        {infoMessage || "Selecione os filtros e clique em 'Buscar Eventos Históricos'."}
+                    </div>
+                )}
             </div>
         </div>
     );

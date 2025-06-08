@@ -1,4 +1,3 @@
-// src/app/clientes/listar/page.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -32,7 +31,7 @@ export default function ListarClientesPage() {
                 const data = await listarClientes(page, 5);
                 addDebugInfo(`fetchClientes - Dados recebidos para página ${page}: ${data ? `Total: ${data.totalElements}, Conteúdo: ${data.content.length} itens` : 'Nenhum dado'}`);
                 setClientesPage(data);
-            } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~39)
+            } catch (error: unknown) {
                 let errorMessage = 'Erro desconhecido ao carregar clientes.';
                 if (error instanceof Error) {
                     errorMessage = error.message || errorMessage;
@@ -62,7 +61,7 @@ export default function ListarClientesPage() {
         if (!clienteParaDeletar) return;
         addDebugInfo(`confirmarDelecao - Deletando cliente ID: ${clienteParaDeletar.idCliente}`);
         setLoadingDelete(true);
-        setErro(null); // Limpa erro anterior antes de tentar deletar
+        setErro(null);
         try {
             await deletarCliente(clienteParaDeletar.idCliente);
             addDebugInfo(`confirmarDelecao - Cliente ID: ${clienteParaDeletar.idCliente} deletado com sucesso.`);
@@ -75,11 +74,11 @@ export default function ListarClientesPage() {
             } else {
                 addDebugInfo(`confirmarDelecao - Recarregando página atual: ${currentPage}`);
                 const fetchCurrentPageAgain = async () => {
-                    setLoading(true); setErro(null); // Limpa erro antes de recarregar
+                    setLoading(true); setErro(null);
                     try {
                         const data = await listarClientes(currentPage, 5);
                         setClientesPage(data);
-                    } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~86)
+                    } catch (error: unknown) {
                         let errorMessage = 'Erro desconhecido ao recarregar clientes.';
                         if (error instanceof Error) {
                             errorMessage = error.message || errorMessage;
@@ -91,7 +90,7 @@ export default function ListarClientesPage() {
                 };
                 fetchCurrentPageAgain();
             }
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~80)
+        } catch (error: unknown) {
             let errorMessage = 'Erro desconhecido ao deletar cliente.';
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -101,7 +100,6 @@ export default function ListarClientesPage() {
             addDebugInfo(`confirmarDelecao - ERRO ao deletar cliente ID: ${clienteParaDeletar.idCliente}: ${errorMessage}`);
             console.error("[ListarClientesPage] confirmarDelecao - Detalhes do Erro:", error);
             setErro(`Falha ao deletar cliente: ${errorMessage}`);
-            // Não fechar o modal automaticamente em caso de erro, para o usuário ver a mensagem
         } finally {
             setLoadingDelete(false);
         }
@@ -117,9 +115,10 @@ export default function ListarClientesPage() {
                 <p className="message error" style={{color: 'red', border: '1px solid red', padding: '10px', whiteSpace: 'pre-wrap'}}>
                     ERRO AO CARREGAR DADOS: {erro}
                 </p>
-                <button className="button button-secondary" onClick={() => window.location.reload()}>
-                    Tentar Novamente
-                </button>
+                <Link href="/clientes/listar" className="button button-secondary" onClick={() => { 
+                    setErro(null); 
+                    window.location.reload();
+                }}>Tentar Novamente</Link>
             </div>
         );
     }
@@ -188,7 +187,7 @@ export default function ListarClientesPage() {
                 </ul>
             )}
 
-            {clientesPage && clientesPage.totalPages > 0 && (
+            {clientesPage && clientesPage.totalPages > 1 && (
                 <div className="pagination-controls">
                     <button
                         onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
@@ -214,7 +213,6 @@ export default function ListarClientesPage() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h2><span className="material-icons-outlined" style={{color: '#dc3545', fontSize:'1.5em'}}>warning_amber</span> Confirmar Deleção</h2>
-                        {/* CORREÇÃO: Aspas escapadas (linha ~226) */}
                         <p>Tem certeza que deseja deletar o cliente <strong>&quot;{clienteParaDeletar.nome} {clienteParaDeletar.sobrenome}&quot;</strong> (ID: {clienteParaDeletar.idCliente})?</p>
                         <p style={{color: '#dc3545', fontWeight:'bold'}}>Esta ação não pode ser desfeita.</p>
 

@@ -1,11 +1,9 @@
-// src/app/desastres/mapa/page.tsx
 'use client';
 
 import React, { useState, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { buscarEventosNasaProximos, buscarClientePorId } from '@/lib/apiService';
-// CORREÇÃO: NasaEonetEventDTO removido da importação direta (assumindo inferência)
-import type { NasaEonetGeometryDTO, ClienteResponseDTO } from '@/lib/types';
+import type { NasaEonetEventDTO, NasaEonetGeometryDTO, ClienteResponseDTO } from '@/lib/types';
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
 
 const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'), {
@@ -43,8 +41,11 @@ const formatDate = (dateString?: string | Date): string => {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
         });
-    } catch { return 'Data inválida'; } // CORREÇÃO: Variável de erro removida do catch
+    } catch {
+        return 'Data inválida'; 
+    }
 };
+
 
 export default function MapaEventosUsuarioPage() {
     const [markers, setMarkers] = useState<EventMapMarkerData[]>([]);
@@ -85,7 +86,6 @@ export default function MapaEventosUsuarioPage() {
             if (!cliente) {
                 throw new Error(`Usuário com ID ${idNum} não encontrado.`);
             }
-
             const enderecosArray = cliente.enderecos ? Array.from(cliente.enderecos) : [];
             if (enderecosArray.length === 0 || !enderecosArray[0]) {
                 throw new Error(`Usuário ${cliente.nome} (ID: ${idNum}) encontrado, mas não possui endereços cadastrados.`);
@@ -100,12 +100,11 @@ export default function MapaEventosUsuarioPage() {
             const userLon = enderecoPrincipal.longitude;
 
             setMapCenter([userLat, userLon]);
-            setMapZoom(8);
+            setMapZoom(8); 
 
             setInfoMessage(`Buscando eventos próximos a ${cliente.nome} (Lat: ${userLat.toFixed(4)}, Lon: ${userLon.toFixed(4)})...`);
 
-            // A função buscarEventosNasaProximos deve retornar NasaEonetEventDTO[]
-            const eventosProximos = await buscarEventosNasaProximos(
+            const eventosProximos: NasaEonetEventDTO[] = await buscarEventosNasaProximos(
                 userLat, userLon, searchRadiusKm,
                 eventLimit, eventDays, 'open', undefined
             );
@@ -117,7 +116,7 @@ export default function MapaEventosUsuarioPage() {
             }
 
             const newMarkers: EventMapMarkerData[] = [];
-            // TypeScript deve inferir 'eventoNasa' como tipo dos elementos de 'eventosProximos'
+            // O tipo de 'eventoNasa' é inferido a partir do array 'eventosProximos'
             for (const eventoNasa of eventosProximos) {
                 if (eventoNasa.geometry && eventoNasa.geometry.length > 0) {
                     const coords = getCoordinatesFromEvent(eventoNasa.geometry);
@@ -189,9 +188,9 @@ export default function MapaEventosUsuarioPage() {
                 </div>
             )}
             {infoMessage && !loading && !error && (
-                <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
+                 <p className="message info" style={{textAlign: 'center', margin: '20px 0', color: '#555', fontSize: '1em'}}>{infoMessage}</p>
             )}
-
+            
             {searchedUser && !loading && !error && (
                 <div style={{
                     margin: '20px auto',
@@ -256,7 +255,7 @@ export default function MapaEventosUsuarioPage() {
                         backgroundColor: 'rgba(255, 255, 255, 0.95)', padding: '20px 30px', borderRadius: '8px',
                         boxShadow: '0 2px 10px rgba(0,0,0,0.2)', textAlign: 'center', zIndex: 1000
                     }}
-                         className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
+                        className="text-slate-700 text-lg p-4 rounded-md shadow-lg"
                     >
                         {infoMessage || "Utilize a busca acima para encontrar eventos próximos a um usuário."}
                     </div>

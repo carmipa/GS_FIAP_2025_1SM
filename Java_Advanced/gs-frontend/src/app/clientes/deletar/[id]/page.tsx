@@ -1,5 +1,5 @@
-// src/app/clientes/deletar/[id]/page.tsx
 'use client';
+
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { buscarClientePorId, deletarCliente } from '@/lib/apiService';
@@ -33,15 +33,10 @@ export default function DeletarClienteConfirmPage() {
                     setErro(null);
                     setTimeout(() => confirmButtonRef.current?.focus(), 0);
                 })
-                .catch((fetchError: unknown) => { // CORREÇÃO: Parênteses adicionados
-                    console.error("Erro ao buscar Usuário para deleção:", fetchError);
-                    let errorMessage = 'Usuário não encontrado.';
-                    if (fetchError instanceof Error) {
-                        errorMessage = fetchError.message || errorMessage;
-                    } else if (typeof fetchError === 'string') {
-                        errorMessage = fetchError;
-                    }
-                    setErro(`Falha ao carregar Usuário para deleção: ${errorMessage}`);
+                .catch((error: unknown) => {
+                    console.error("Erro ao buscar Usuário para deleção:", error);
+                    const message = error instanceof Error ? error.message : 'Usuário não encontrado ou falha na comunicação.';
+                    setErro(`Falha ao carregar Usuário para deleção: ${message}`);
                     setCliente(null);
                 })
                 .finally(() => setLoading(false));
@@ -57,17 +52,12 @@ export default function DeletarClienteConfirmPage() {
             setErro(null);
             try {
                 await deletarCliente(cliente.idCliente);
-                alert('Usuário deletado com sucesso!');
+                alert('Usuário deletado com sucesso!'); // Considere usar um sistema de notificação melhor
                 router.push('/clientes/listar');
             } catch (error: unknown) {
                 console.error("Erro ao confirmar deleção:", error);
-                let apiErrorMessage = "Erro desconhecido ao tentar deletar.";
-                if (error instanceof Error) {
-                    apiErrorMessage = error.message || apiErrorMessage;
-                } else if (typeof error === 'string') {
-                    apiErrorMessage = error;
-                }
-                setErro(`Falha ao deletar Usuário: ${apiErrorMessage}`);
+                const message = error instanceof Error ? error.message : "Erro desconhecido ao tentar deletar.";
+                setErro(`Falha ao deletar Usuário: ${message}`);
                 setDeleting(false);
             }
         }

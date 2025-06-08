@@ -1,4 +1,3 @@
-// src/app/desastres/page.tsx
 'use client';
 
 import React, { useEffect, useState, FormEvent, useRef, ChangeEvent } from 'react';
@@ -19,7 +18,6 @@ import type {
     NasaEonetGeometryDTO,
     ClienteResponseDTO,
     UserAlertRequestDTO
-    // CORREÇÃO: AlertableEventDTO removido se não for usado (o linter indicou)
 } from '@/lib/types';
 
 import type { EventMapMarkerData } from '@/components/EonetEventMap';
@@ -38,7 +36,7 @@ const DynamicEonetEventMap = dynamic(() => import('@/components/EonetEventMap'),
 const parseEonetEventJson = (jsonString: string): Partial<NasaEonetEventDTO> | null => {
     try {
         return JSON.parse(jsonString) as Partial<NasaEonetEventDTO>;
-    } catch (error: unknown) { // Melhorar tipagem do catch
+    } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         console.error("Erro ao parsear JSON do evento EONET:", message, jsonString);
         return null;
@@ -62,6 +60,16 @@ const getCoordinatesFromEvent = (geometry: NasaEonetGeometryDTO[] | undefined): 
         }
     }
     return null;
+};
+
+const formatDate = (dateString?: string | Date): string => {
+    if (!dateString) return 'N/A';
+    try { 
+        return new Date(dateString).toLocaleDateString('pt-BR', { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit', timeZone: 'UTC' 
+        });
+    } catch { return 'Data inválida'; }
 };
 
 type TabKey = 'sincronizar' | 'listarLocais' | 'buscarProximos' | 'alertarUsuario';
@@ -99,11 +107,7 @@ export default function DesastresPage() {
     const [erroAlertarUsuario, setErroAlertarUsuario] = useState<string | null>(null);
 
     const usuarioIdRef = useRef<HTMLInputElement>(null);
-    const latitudeRef = useRef<HTMLInputElement>(null);
-    const longitudeRef = useRef<HTMLInputElement>(null);
-    const raioKmRef = useRef<HTMLInputElement>(null);
     const alertarUsuarioIdInputRef = useRef<HTMLInputElement>(null);
-    const alertarEventoIdInputRef = useRef<HTMLInputElement>(null);
 
     const fetchEventosLocais = async (page: number) => {
         setLoadingListagemLocal(true);
@@ -111,7 +115,7 @@ export default function DesastresPage() {
         try {
             const data = await listarEventosEonet(page, 5);
             setEventosLocaisPage(data);
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~113)
+        } catch (error: unknown) {
             let errorMessage = 'Erro desconhecido ao carregar eventos locais.';
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -167,11 +171,11 @@ export default function DesastresPage() {
         try {
             const eventosSincronizados = await sincronizarNasaEonet(limitNum, daysNum, syncParams.status || undefined, syncParams.source || undefined);
             setSyncMensagem(`${eventosSincronizados.length} evento(s) processado(s) / sincronizado(s) com sucesso!`);
-            if (activeTab === 'listarLocais') {
-                fetchEventosLocais(0);
-                setCurrentLocalPage(0);
+             if (activeTab === 'listarLocais') { 
+                 fetchEventosLocais(0); 
+                 setCurrentLocalPage(0);
             }
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~167)
+        } catch (error: unknown) { 
             let errorMessage = 'Erro desconhecido na sincronização.';
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -217,7 +221,7 @@ export default function DesastresPage() {
                 setErroProximidade(`Usuário ID ${proximidadeParams.clienteId} (${usuario.nome}) encontrado, mas não possui endereço principal com coordenadas válidas.`);
                 setProximidadeParams(prev => ({ ...prev, latitude: '', longitude: '' }));
             }
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~207)
+        } catch (error: unknown) {
             let errorMessage = 'Erro desconhecido ao buscar dados do usuário.';
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -273,10 +277,10 @@ export default function DesastresPage() {
                             eventId: eventoPrincipal.id, title: eventoPrincipal.title,
                             eventDate: dataEvento ? new Date(dataEvento).toISOString() : "Data não disponível",
                             link: eventoPrincipal.link,
-                            description: eventoPrincipal.description || `Um evento "${eventoPrincipal.title}" foi detectado próximo à área de ${nomeUsuarioParaCoords} em ${formatDate(dataEvento)}.`,
+                            description: eventoPrincipal.description || `Um evento "${eventoPrincipal.title}" foi detectado próximo à área de ${nomeUsuarioParaCoords} em ${formatDate(dataEvento?.toString())}.`,
                         }
                     };
-                    try { // CORREÇÃO: no-explicit-any (linha ~263) - este catch interno
+                    try {
                         const alertResponseMsg = await triggerUserSpecificAlert(alertaPayload);
                         setMensagemAlertaProximidade(alertResponseMsg || "Alerta sobre evento próximo foi processado.");
                     } catch (errAlerta: unknown) {
@@ -290,7 +294,7 @@ export default function DesastresPage() {
                     }
                 }
             }
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~268) - catch principal da função
+        } catch (error: unknown) {
             let errorMessage = 'Erro desconhecido ao buscar eventos próximos.';
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -320,7 +324,7 @@ export default function DesastresPage() {
             const usuario = await buscarClientePorId(Number(alertarUsuarioParams.usuarioId));
             setVerifiedUsuario(usuario);
             setErroAlertarUsuario(null);
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~292)
+        } catch (error: unknown) {
             let errorMessage = `Erro ao buscar usuário ID ${alertarUsuarioParams.usuarioId}.`;
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -347,7 +351,7 @@ export default function DesastresPage() {
                 setErroAlertarUsuario(null);
             }
             else { throw new Error("Não foi possível interpretar os detalhes do evento EONET."); }
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~313)
+        } catch (error: unknown) {
             let errorMessage = `Erro ao buscar evento EONET ID ${alertarUsuarioParams.eventoEonetId}. Verifique se o evento foi sincronizado.`;
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -380,7 +384,7 @@ export default function DesastresPage() {
             };
             const alertResponseMsg = await triggerUserSpecificAlert(alertaPayload);
             setMensagemAlertarUsuario(alertResponseMsg || `Alerta sobre o evento "${alertaPayload.eventDetails.title}" foi processado para o usuário ${verifiedUsuario.nome}.`);
-        } catch (error: unknown) { // CORREÇÃO: no-explicit-any (linha ~340)
+        } catch (error: unknown) {
             let errorMessage = "Não foi possível processar o envio do alerta específico.";
             if (error instanceof Error) {
                 errorMessage = error.message || errorMessage;
@@ -391,17 +395,6 @@ export default function DesastresPage() {
         } finally { setLoadingAlertarUsuario(false); }
     };
 
-    const formatDate = (dateString?: string | Date): string => {
-        if (!dateString) return 'N/A';
-        try {
-            return new Date(dateString).toLocaleDateString('pt-BR', {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-            });
-        } catch { return 'Data inválida'; } // CORREÇÃO: Variável 'e' não utilizada (linha ~352)
-    };
-
-    // CORREÇÃO: Removido o parâmetro keyPrefix se não for usado
     const renderEventoItem = (evento: NasaEonetEventDTO | Partial<NasaEonetEventDTO>) => {
         const dataEvento = evento?.geometry?.[0]?.date;
         const categorias = evento?.categories?.map((cat: NasaEonetCategoryDTO) => cat.title).join(', ') || 'N/A';
@@ -493,7 +486,7 @@ export default function DesastresPage() {
                         {(!eventosLocaisPage || eventosLocaisPage.content.length === 0) && !loadingListagemLocal && !erroListagemLocal && (
                             <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed var(--border-color, #ccc)', borderRadius: 'var(--card-border-radius, 6px)', marginTop: '1rem' }}>
                                 <p>Nenhum evento EONET encontrado no banco de dados local.</p>
-                                <p>Vá para a aba &quot;Sincronizar NASA&quot; para buscar novos eventos.</p> {/* CORREÇÃO: Aspas */}
+                                <p>Vá para a aba &quot;Sincronizar NASA&quot; para buscar novos eventos.</p>
                             </div>
                         )}
                         {eventosLocaisPage && eventosLocaisPage.content.length > 0 && (
@@ -544,11 +537,11 @@ export default function DesastresPage() {
                             </ul>
                         )}
                         {eventosLocaisPage && eventosLocaisPage.totalPages > 1 && (
-                            <div className="pagination-controls">
-                                <button onClick={() => setCurrentLocalPage(p => Math.max(0, p - 1))} disabled={eventosLocaisPage.first || loadingListagemLocal} className="button button-secondary"> <span className="material-icons-outlined">navigate_before</span> Anterior </button>
-                                <span>Página {eventosLocaisPage.number + 1} de {eventosLocaisPage.totalPages}</span>
-                                <button onClick={() => setCurrentLocalPage(p => Math.min(eventosLocaisPage.totalPages - 1, p + 1))} disabled={eventosLocaisPage.last || loadingListagemLocal} className="button button-secondary"> Próxima <span className="material-icons-outlined">navigate_next</span> </button>
-                            </div>
+                             <div className="pagination-controls">
+                                  <button onClick={() => setCurrentLocalPage(p => Math.max(0, p - 1))} disabled={eventosLocaisPage.first || loadingListagemLocal} className="button button-secondary"> <span className="material-icons-outlined">navigate_before</span> Anterior </button>
+                                  <span>Página {eventosLocaisPage.number + 1} de {eventosLocaisPage.totalPages}</span>
+                                  <button onClick={() => setCurrentLocalPage(p => Math.min(eventosLocaisPage.totalPages - 1, p + 1))} disabled={eventosLocaisPage.last || loadingListagemLocal} className="button button-secondary"> Próxima <span className="material-icons-outlined">navigate_next</span> </button>
+                              </div>
                         )}
                     </section>
                 )}
@@ -585,9 +578,9 @@ export default function DesastresPage() {
                                 </div>
                             </div>
                             <div className="form-row">
-                                <div className="form-group flex-item"> <label htmlFor="latitude">Latitude:</label> <input type="number" step="any" id="latitude" name="latitude" ref={latitudeRef} value={proximidadeParams.latitude} onChange={handleProximidadeParamChange} placeholder="-23.550520" required /> </div>
-                                <div className="form-group flex-item"> <label htmlFor="longitude">Longitude:</label> <input type="number" step="any" id="longitude" name="longitude" ref={longitudeRef} value={proximidadeParams.longitude} onChange={handleProximidadeParamChange} placeholder="-46.633308" required /> </div>
-                                <div className="form-group flex-item"> <label htmlFor="raioKm">Raio (km):</label> <input type="number" id="raioKm" name="raioKm" ref={raioKmRef} value={proximidadeParams.raioKm} onChange={handleProximidadeParamChange} placeholder="100" required /> </div>
+                                <div className="form-group flex-item"> <label htmlFor="latitude">Latitude:</label> <input type="number" step="any" id="latitude" name="latitude" value={proximidadeParams.latitude} onChange={handleProximidadeParamChange} placeholder="-23.550520" required /> </div>
+                                <div className="form-group flex-item"> <label htmlFor="longitude">Longitude:</label> <input type="number" step="any" id="longitude" name="longitude" value={proximidadeParams.longitude} onChange={handleProximidadeParamChange} placeholder="-46.633308" required /> </div>
+                                <div className="form-group flex-item"> <label htmlFor="raioKm">Raio (km):</label> <input type="number" id="raioKm" name="raioKm" value={proximidadeParams.raioKm} onChange={handleProximidadeParamChange} placeholder="100" required /> </div>
                             </div>
                             <p style={{fontSize: '0.85em', color: 'var(--muted-text-color)', margin: '0.5rem 0 1rem 0'}}>Filtros adicionais (opcionais):</p>
                             <div className="form-row">
@@ -698,7 +691,7 @@ export default function DesastresPage() {
                             <div className="form-row" style={{alignItems: 'flex-end', gap: '0.5rem', marginTop: '1rem'}}>
                                 <div className="form-group" style={{flexGrow: 1}}>
                                     <label htmlFor="alertarEventoIdInput">ID do Evento EONET:</label>
-                                    <input type="text" id="alertarEventoIdInput" name="eventoEonetId" ref={alertarEventoIdInputRef} value={alertarUsuarioParams.eventoEonetId} onChange={handleAlertarUsuarioParamChange} placeholder="Ex: EONET_5678" required />
+                                    <input type="text" id="alertarEventoIdInput" name="eventoEonetId" value={alertarUsuarioParams.eventoEonetId} onChange={handleAlertarUsuarioParamChange} placeholder="Ex: EONET_5678" required />
                                 </div>
                                 <div className="form-group" style={{flexShrink: 0, marginBottom: '1rem'}}>
                                     <button type="button" onClick={handleVerificarEvento} className="button button-secondary" disabled={loadingVerifyEvento || !alertarUsuarioParams.eventoEonetId}>

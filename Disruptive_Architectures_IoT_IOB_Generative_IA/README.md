@@ -1,6 +1,8 @@
 
 # 🤖 **Disruptive Architectures: IoT, IOB & Generative IA**
 
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
 ## 🔶 **Objetivos:**
 Integrar a sua solução proposta a um sistema IoT que integre sensores e/ou atuadores para coletar, 
 processar e exibir os dados em tempo real, utilizando plataformas e protocolos adequados para a 

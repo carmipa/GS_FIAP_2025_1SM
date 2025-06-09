@@ -1,5 +1,7 @@
 # 📱 **Mobile Application Development**
 
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
 ## 🔶 **Objetivos:**
  A partir da solução escolhida na Global Solution, seu desafio é desenvolver um aplicativo usando React Native.
 

@@ -1,5 +1,7 @@
 # ☁️ **DevOps Tools & Cloud Computing**
 
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
 ## 🔶 **Objetivos:**
 Sua equipe DevOps deverá conteinerizar a API desenvolvida na disciplina de JAVA ADVANCED ou de ADVANCED BUSINESS DEVELOPMENT WITH .NET, utilizando Dockerfile e seguindo as boas práticas de infraestrutura como código.
 

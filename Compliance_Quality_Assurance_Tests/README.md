@@ -1,5 +1,7 @@
 # 🛠️ **Compliance, Quality Assurance & Tests**
 
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
 ## Entrega 1 (80 pts): 
 - arquitetura da solução, aplicando o modelo TOGAF, com a ferramenta ARCHI, contendo:
 - Visão de arquitetura com indicação de stakeholders, objetivos e requisitos (peso 20);

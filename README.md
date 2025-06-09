@@ -2,6 +2,12 @@
 
 ![GLOBAL SOLUTION 2025 - 1º SEMESTRE](https://raw.githubusercontent.com/carmipa/GS_FIAP_2025_1SM/main/Captura%20de%20tela%202025-05-26%20125818.png)
 
+-- 
+
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
+--
+
 # **Global Solution 2025 – 1º Semestre**
 
 ## 📑 Índice

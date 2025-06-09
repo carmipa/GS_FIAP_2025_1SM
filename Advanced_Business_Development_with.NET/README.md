@@ -1,6 +1,8 @@
 
 # 📄 Documentação do Projeto: GS Alerta Desastres (Equipe MetaMind)
 
+## Nosso projeto online em VPS Hostimger: http://31.97.64.208/
+
 <p align="center">
   <a href="https://www.youtube.com/watch?v=Ad20_tE9ccU" target="_blank">
     <img src="https://img.shields.io/badge/Nossa%20Apresentação-%20%E2%96%B6%EF%B8%8F-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Vídeo de Apresentação">
